@@ -166,6 +166,7 @@ const translations = {
   "news.fetchFail": { en: "Live feed unavailable. Showing daily briefing.", bm: "Suapan langsung tidak tersedia. Menunjukkan taklimat harian." },
   "news.articlesLive": { en: "articles from live sources", bm: "artikel dari sumber langsung" },
   "news.autoRefresh": { en: "New articles checked every 5 min", bm: "Artikel baharu disemak setiap 5 minit" },
+  "news.cat.leaders": { en: "Leaders", bm: "Pemimpin" },
 
   // ── CURRENCIES TAB ──
   "cur.converter": { en: "CURRENCY CONVERTER", bm: "PENUKAR MATA WANG" },

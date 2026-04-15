@@ -1043,9 +1043,18 @@ function translateToBM(text: string): string {
   return result;
 }
 
-// RSS feeds via rss2json.com — full coverage: wire services + regional + energy + Gulf + Israel
-// All feeds verified working (200 OK + items confirmed) — April 2026
+// All feeds verified working — April 2026
 const RSS_SOURCES = [
+  // ── 🇺🇸 Trump / US Leadership (Truth Social via trumpstruth.org) ──
+  { url: "https://trumpstruth.org/feed",                            source: "Trump · Truth Social",  leader: "trump" },
+  // ── 🇮🇷 Iran Official Sources ──
+  { url: "https://ifpnews.com/feed",                                source: "Iran Front Page",        leader: "iran" },
+  { url: "https://ifpnews.com/category/news/politics/feed/",        source: "IFP Politics",           leader: "iran" },
+  { url: "https://en.mehrnews.com/rss",                             source: "Mehr News (IR)",         leader: "iran" },
+  { url: "https://tasnimnews.com/en/rss/feed/0/5",                  source: "Tasnim News (IR)",       leader: "iran" },
+  { url: "https://tehrantimes.com/rss",                             source: "Tehran Times (IR)",      leader: "iran" },
+  { url: "https://english.khamenei.ir/rss",                         source: "Khamenei Office (IR)",   leader: "iran" },
+  { url: "https://en.irna.ir/rss",                                  source: "IRNA (IR)",              leader: "iran" },
   // ── Global Wire Services ──
   { url: "https://feeds.bbci.co.uk/news/world/middle_east/rss.xml", source: "BBC Middle East" },
   { url: "https://feeds.bbci.co.uk/news/world/rss.xml",             source: "BBC World" },
@@ -1055,7 +1064,6 @@ const RSS_SOURCES = [
   { url: "https://feeds.npr.org/1004/rss.xml",                      source: "NPR World" },
   // ── Middle East Specialist ──
   { url: "https://www.middleeastmonitor.com/feed/",                 source: "MEMO" },
-  { url: "https://www.middleeastmonitor.com/category/region/middle-east/feed/", source: "MEMO Middle East" },
   { url: "https://www.al-monitor.com/rss.xml",                      source: "Al-Monitor" },
   { url: "https://dohanews.co/feed/",                               source: "Doha News" },
   { url: "https://www.crisisgroup.org/rss.xml",                     source: "Crisis Group" },
@@ -1144,22 +1152,28 @@ async function fetchViaRss2Json(rssUrl: string): Promise<any[]> {
   return data.items || [];
 }
 
-async function fetchRssFeed(source: { url: string; source: string }): Promise<any[]> {
+async function fetchRssFeed(source: { url: string; source: string; leader?: string }): Promise<any[]> {
   let rawItems: any[] = [];
-  // allorigins/raw first → rss2json fallback. Each attempt has 7s timeout.
   try { rawItems = await fetchViaAlloriginsRaw(source.url); }
   catch { try { rawItems = await fetchViaRss2Json(source.url); }
   catch { return []; } }
 
-  return rawItems.map((item: any) => ({
-    title: item.title || "",
-    summary: (item.description || item.content || "").replace(/<[^>]*>/g, "").slice(0, 500),
-    link: item.link || item.url || "",
-    pubDate: item.pubDate || item.published || item.isoDate || "",
-    source: source.source,
-    category: categorizeItem(item.title || "", item.description || ""),
-    impact: impactFromText(item.title || "", item.description || ""),
-  }));
+  return rawItems.map((item: any) => {
+    const title   = item.title || "";
+    const desc    = (item.description || item.content || "").replace(/<[^>]*>/g, "").slice(0, 500);
+    // Leader posts always get the "leaders" category regardless of content
+    const category = source.leader ? "leaders" : categorizeItem(title, desc);
+    return {
+      title,
+      summary: desc,
+      link: item.link || item.url || "",
+      pubDate: item.pubDate || item.published || item.isoDate || "",
+      source: source.source,
+      leader: source.leader || null,   // "trump" | "iran" | null
+      category,
+      impact: impactFromText(title, desc),
+    };
+  });
 }
 
 // ─── MyMemory free translation API (500 chars/req, no key needed) ────────
@@ -1194,8 +1208,12 @@ function NewsTab({ lang }: { lang: Lang }) {
   const [rssError, setRssError] = useState(false);
   const [lastFetched, setLastFetched] = useState<Date | null>(null);
 
-  const cats = ["all","military","energy","economy","diplomacy","humanitarian"] as const;
-  const catIcon: Record<string, string> = { military:"⚔️", energy:"⚡", economy:"📈", diplomacy:"🕊️", humanitarian:"🤝" };
+  const cats = ["all","leaders","military","energy","economy","diplomacy","humanitarian"] as const;
+  const catIcon: Record<string, string> = { leaders:"👤", military:"⚔️", energy:"⚡", economy:"📈", diplomacy:"🕊️", humanitarian:"🤝" };
+  const leaderMeta: Record<string, { flag: string; name: string; color: string }> = {
+    trump: { flag: "🇺🇸", name: "Trump",   color: "#3b82f6" },
+    iran:  { flag: "🇮🇷", name: "Iran",    color: "#22c55e" },
+  };
 
   // Tracks article titles already shown — never cleared, survives re-renders
   const seenTitlesRef = useRef<Set<string>>(new Set());
@@ -1420,17 +1438,28 @@ function NewsTab({ lang }: { lang: Lang }) {
             const bmEntry = lang === "bm" ? bmNews.get(item.title.slice(0, 60)) : undefined;
             const headline = bmEntry ? bmEntry.title : item.title;
             const summary  = bmEntry ? bmEntry.summary : item.summary;
+            const ldr = item.leader ? leaderMeta[item.leader] : null;
+            const borderCol = ldr ? ldr.color : item.isNew ? "#f0a500" : (catColor[cat] || "#ffffff10");
+            const glowClass = ldr
+              ? item.leader === "trump" ? "shadow-[0_0_16px_rgba(59,130,246,0.15)]" : "shadow-[0_0_16px_rgba(34,197,94,0.15)]"
+              : item.isNew ? "shadow-[0_0_12px_rgba(240,165,0,0.12)]" : "";
             return (
               <div key={itemId}
-                className={`news-card bg-[#0d1117] border rounded-xl overflow-hidden transition-all ${
-                  item.isNew ? "border-amber-400/40 shadow-[0_0_12px_rgba(240,165,0,0.12)]" : "border-white/6"
-                }`}
-                style={{ borderLeft: `2px solid ${item.isNew ? "#f0a500" : (catColor[cat] || "#ffffff10")}` }}
+                className={`news-card bg-[#0d1117] border rounded-xl overflow-hidden transition-all ${ldr || item.isNew ? glowClass : ""} ${ldr ? "border-white/10" : item.isNew ? "border-amber-400/40" : "border-white/6"}`}
+                style={{ borderLeft: `3px solid ${borderCol}` }}
               >
-                <div className="p-5">
+                {/* Leader banner */}
+                {ldr && (
+                  <div className="px-5 pt-3 pb-0 flex items-center gap-2">
+                    <span className="text-lg">{ldr.flag}</span>
+                    <span className="text-[10px] font-black tracking-widest uppercase" style={{ color: ldr.color }}>{ldr.name} · OFFICIAL</span>
+                    {item.isNew && <span className="text-[9px] px-1.5 py-0.5 rounded font-bold uppercase bg-amber-400/20 text-amber-400 animate-pulse ml-auto">NEW</span>}
+                  </div>
+                )}
+                <div className="p-5" style={{ paddingTop: ldr ? "8px" : undefined }}>
                   <div className="flex items-start gap-4">
-                    <div className="shrink-0 w-8 h-8 rounded-lg flex items-center justify-center text-base" style={{ background: (catColor[cat] || "#ffffff") + "15" }}>
-                      {catIcon[cat] || "📰"}
+                    <div className="shrink-0 w-8 h-8 rounded-lg flex items-center justify-center text-base" style={{ background: (ldr ? ldr.color : catColor[cat] || "#ffffff") + "20" }}>
+                      {ldr ? (item.leader === "trump" ? "🇺🇸" : "🇮🇷") : (catIcon[cat] || "📰")}
                     </div>
                     <div className="flex-1 min-w-0">
                       {/* Timestamps + badges row */}
@@ -1438,19 +1467,25 @@ function NewsTab({ lang }: { lang: Lang }) {
                         {uae && <span className="text-[10px] font-bold font-mono text-amber-400/60">🇦🇪 {uae}</span>}
                         {my  && <span className="text-[10px] font-bold font-mono text-blue-400/60">🇲🇾 {my}</span>}
                         {date && <span className="text-[9px] text-white/20 font-mono">{date}</span>}
-                        <span className="text-[9px] px-1.5 py-0.5 rounded font-bold uppercase" style={{ background: (catColor[cat] || "#ffffff") + "15", color: catColor[cat] || "#ffffff60" }}>{cat}</span>
-                        <span className="text-[9px] px-1.5 py-0.5 rounded font-bold uppercase" style={{ background: (impactColor[item.impact] || "#ffffff") + "15", color: impactColor[item.impact] || "#ffffff60" }}>{item.impact}</span>
-                        {item.isNew && <span className="text-[9px] px-1.5 py-0.5 rounded font-bold uppercase bg-amber-400/20 text-amber-400 animate-pulse">NEW</span>}
+                        {!ldr && <><span className="text-[9px] px-1.5 py-0.5 rounded font-bold uppercase" style={{ background: (catColor[cat] || "#ffffff") + "15", color: catColor[cat] || "#ffffff60" }}>{cat}</span>
+                        <span className="text-[9px] px-1.5 py-0.5 rounded font-bold uppercase" style={{ background: (impactColor[item.impact] || "#ffffff") + "15", color: impactColor[item.impact] || "#ffffff60" }}>{item.impact}</span></>}
+                        {!ldr && item.isNew && <span className="text-[9px] px-1.5 py-0.5 rounded font-bold uppercase bg-amber-400/20 text-amber-400 animate-pulse">NEW</span>}
                         {item.source && <span className="text-[9px] text-white/25 font-mono">{item.source}</span>}
                       </div>
-                      {/* Headline — plain <a> tag, iOS Safari safe */}
-                      <h3 className="text-sm font-bold leading-tight">
+                      {/* Headline */}
+                      <h3 className={`font-bold leading-tight ${ldr ? "text-base" : "text-sm"}`}>
                         {item.link
                           ? <a href={item.link} className="text-white hover:text-amber-400 transition-colors">{headline}</a>
                           : <span className="text-white">{headline}</span>
                         }
                       </h3>
-                      {/* Summary + Read More — toggled by arrow button only */}
+                      {/* Market impact note for leader posts */}
+                      {ldr && (
+                        <p className="text-[10px] mt-1 font-mono" style={{ color: ldr.color + "99" }}>
+                          ⚡ {item.leader === "trump" ? "Market-moving statement · US policy signal" : "Official Iranian position · Geopolitical signal"}
+                        </p>
+                      )}
+                      {/* Summary + Read More */}
                       {expanded === itemId && (
                         <div className="mt-3 space-y-2">
                           {summary && <p className="text-xs text-white/55 leading-relaxed">{summary}</p>}
@@ -1465,7 +1500,6 @@ function NewsTab({ lang }: { lang: Lang }) {
                         </div>
                       )}
                     </div>
-                    {/* Expand toggle — only this button expands/collapses */}
                     <button
                       onClick={() => setExpanded(expanded === itemId ? null : itemId)}
                       className="text-white/30 hover:text-white/60 text-xs shrink-0 mt-1 p-1"
