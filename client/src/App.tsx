@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { LIVE, KARATS, OIL_TIMELINE, GOLD_TIMELINE, COUNTRIES, STRIKE_EVENTS, WAR_STATS, NEWS, FX_RATES, type Country, type StrikeEvent, type NewsItem } from "./lib/data";
+import { LIVE, KARATS, OIL_TIMELINE, GOLD_TIMELINE, COUNTRIES, STRIKE_EVENTS, WAR_STATS, CASUALTIES_BY_COUNTRY, NEWS, FX_RATES, type Country, type StrikeEvent, type NewsItem, type CasualtyEntry } from "./lib/data";
 import { ComposableMap, Geographies, Geography, ZoomableGroup } from "react-simple-maps";
 import { AreaChart, Area, LineChart, Line, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, ReferenceLine } from "recharts";
 import { scaleLinear } from "d3-scale";
@@ -772,6 +772,59 @@ function WarTab() {
               </tr>
             </tfoot>
           </table>
+        </div>
+      </div>
+
+      {/* ── HUMAN CASUALTIES BY COUNTRY — OFFICIAL SOURCES ── */}
+      <div className="bg-[#0d1117] border border-white/6 rounded-xl p-5">
+        <div className="flex items-start justify-between flex-wrap gap-2 mb-1">
+          <div className="text-[10px] font-bold tracking-widest text-red-400/60">☠️ HUMAN CASUALTIES BY COUNTRY — VERIFIED OFFICIAL DATA</div>
+          <div className="text-[9px] text-white/20 font-mono">As of Apr 7, 2026</div>
+        </div>
+        <div className="text-[9px] text-white/20 mb-4">
+          Source: Wikipedia • Al Jazeera live tracker • Iran Health Ministry • Lebanon Health Ministry • US CENTCOM • IDF • Gulf state media
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full text-xs">
+            <thead>
+              <tr className="border-b border-white/5">
+                <th className="text-left text-[9px] font-bold tracking-wider text-white/20 pb-2 pr-4">COUNTRY</th>
+                <th className="text-right text-[9px] font-bold tracking-wider text-red-400/60 pb-2 px-3">KILLED</th>
+                <th className="text-right text-[9px] font-bold tracking-wider text-orange-400/60 pb-2 px-3">INJURED</th>
+                <th className="text-left text-[9px] font-bold tracking-wider text-white/15 pb-2 pl-4">SOURCE</th>
+              </tr>
+            </thead>
+            <tbody>
+              {CASUALTIES_BY_COUNTRY.map((c: CasualtyEntry) => (
+                <tr key={c.country} className="border-b border-white/3 hover:bg-white/2 transition-colors">
+                  <td className="py-2.5 pr-4 font-bold text-white">{c.flag} {c.country}</td>
+                  <td className="text-right px-3 font-mono font-bold text-red-400">
+                    {c.killedLow === 0 && c.killedHigh === 0
+                      ? <span className="text-white/15">—</span>
+                      : c.killedLow === c.killedHigh
+                        ? c.killedLow.toLocaleString()
+                        : <>{c.killedLow.toLocaleString()}<span className="text-white/30">–</span>{c.killedHigh.toLocaleString()}+</>}
+                  </td>
+                  <td className="text-right px-3 font-mono text-orange-400">
+                    {c.injured === 0 ? <span className="text-white/15">—</span> : c.injured.toLocaleString()}
+                  </td>
+                  <td className="pl-4 text-[9px] text-white/20 truncate max-w-[200px]">{c.source}</td>
+                </tr>
+              ))}
+            </tbody>
+            <tfoot>
+              <tr className="border-t border-white/10">
+                <td className="pt-3 text-[9px] font-bold tracking-wider text-white/40">TOTAL</td>
+                <td className="text-right pt-3 px-3 font-mono font-bold text-red-400">5,681–9,956+</td>
+                <td className="text-right pt-3 px-3 font-mono font-bold text-orange-400">42,017+</td>
+                <td className="pl-4 pt-3 text-[9px] text-white/20">Wikipedia — Casualties of the 2026 Iran war</td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+        <div className="mt-3 text-[9px] text-white/15 leading-relaxed">
+          ⚠️ All figures are officially reported and publicly sourced. Ranges indicate lower–upper confirmed estimates where reporting differs between sources.
+          Data does not include unreported civilian casualties in conflict zones with restricted press access.
         </div>
       </div>
 

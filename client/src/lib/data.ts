@@ -628,6 +628,41 @@ export const WAR_STATS = {
 };
 
 // ═══════════════════════════════════════════════════
+// CASUALTIES BY COUNTRY — OFFICIAL SOURCES
+// Source: Wikipedia "Casualties of the 2026 Iran war"
+// https://en.wikipedia.org/wiki/Casualties_of_the_2026_Iran_war
+// As of: Apr 7, 2026 (latest confirmed data)
+// Cross-referenced: Al Jazeera live tracker, NPR, US CENTCOM,
+//   Iran Health Ministry, Lebanon Health Ministry, IDF
+// ═══════════════════════════════════════════════════
+export type CasualtyEntry = {
+  country: string; flag: string;
+  killedLow: number; killedHigh: number;
+  injured: number;
+  source: string;
+};
+
+export const CASUALTIES_BY_COUNTRY: CasualtyEntry[] = [
+  { country:"Iran",            flag:"🇮🇷", killedLow:3375, killedHigh:7650, injured:26500, source:"Iran Health Ministry / Wikipedia" },
+  { country:"Lebanon",         flag:"🇱🇧", killedLow:2089, killedHigh:2089, injured:6762,  source:"Lebanon Health Ministry / Wikipedia" },
+  { country:"Iraq",            flag:"🇮🇶", killedLow:112,  killedHigh:112,  injured:224,   source:"Iraqi Health Authorities / Wikipedia" },
+  { country:"Israel",          flag:"🇮🇱", killedLow:40,   killedHigh:40,   injured:7453,  source:"IDF + Israeli MoH / Wikipedia" },
+  { country:"United States",   flag:"🇺🇸", killedLow:15,   killedHigh:15,   injured:538,   source:"US CENTCOM / Wikipedia" },
+  { country:"Palestine (W.B)", flag:"🇵🇸", killedLow:14,   killedHigh:14,   injured:15,    source:"Palestinian Authority / Wikipedia" },
+  { country:"UAE",             flag:"🇦🇪", killedLow:13,   killedHigh:13,   injured:224,   source:"UAE State Media / Wikipedia" },
+  { country:"Kuwait",          flag:"🇰🇼", killedLow:10,   killedHigh:10,   injured:115,   source:"Kuwait State Media / Wikipedia" },
+  { country:"Bahrain",         flag:"🇧🇭", killedLow:3,    killedHigh:3,    injured:42,    source:"Bahrain State Media / Wikipedia" },
+  { country:"Saudi Arabia",    flag:"🇸🇦", killedLow:3,    killedHigh:3,    injured:29,    source:"Saudi State Media / Wikipedia" },
+  { country:"Oman",            flag:"🇴🇲", killedLow:3,    killedHigh:3,    injured:15,    source:"Oman State Media / Wikipedia" },
+  { country:"Philippines",     flag:"🇵🇭", killedLow:2,    killedHigh:2,    injured:0,     source:"DFA Philippines / Wikipedia" },
+  { country:"France",          flag:"🇫🇷", killedLow:1,    killedHigh:1,    injured:7,     source:"French MoD / Wikipedia" },
+  { country:"Syria",           flag:"🇸🇾", killedLow:1,    killedHigh:1,    injured:0,     source:"Wikipedia" },
+  { country:"Jordan",          flag:"🇯🇴", killedLow:0,    killedHigh:0,    injured:29,    source:"Jordan State Media / Wikipedia" },
+  { country:"Qatar",           flag:"🇶🇦", killedLow:0,    killedHigh:0,    injured:20,    source:"Qatar MoI / Wikipedia" },
+  { country:"Azerbaijan",      flag:"🇦🇿", killedLow:0,    killedHigh:0,    injured:4,     source:"Wikipedia" },
+];
+
+// ═══════════════════════════════════════════════════
 // NEWS DATA  — Apr 14, 2026
 // ═══════════════════════════════════════════════════
 export type NewsItem = {
