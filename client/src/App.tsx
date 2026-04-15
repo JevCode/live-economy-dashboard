@@ -1127,7 +1127,7 @@ function parseRssXml(xml: string): any[] {
 // ─── Proxy 1: allorigins /raw — returns XML directly, free & reliable ───
 async function fetchViaAlloriginsRaw(rssUrl: string): Promise<any[]> {
   const proxy = `https://api.allorigins.win/raw?url=${encodeURIComponent(rssUrl)}`;
-  const res = await fetch(proxy, { signal: AbortSignal.timeout(12000) });
+  const res = await fetch(proxy, { signal: AbortSignal.timeout(7000) });
   if (!res.ok) throw new Error(`allorigins/raw ${res.status}`);
   const xml = await res.text();
   const items = parseRssXml(xml);
@@ -1135,22 +1135,10 @@ async function fetchViaAlloriginsRaw(rssUrl: string): Promise<any[]> {
   return items;
 }
 
-// ─── Proxy 2: allorigins /get — JSON wrapper fallback ────────────────────
-async function fetchViaAlloriginsGet(rssUrl: string): Promise<any[]> {
-  const proxy = `https://api.allorigins.win/get?url=${encodeURIComponent(rssUrl)}`;
-  const res = await fetch(proxy, { signal: AbortSignal.timeout(12000) });
-  const data = await res.json();
-  const xml = data.contents || "";
-  if (!xml) throw new Error("allorigins/get empty");
-  const items = parseRssXml(xml);
-  if (!items.length) throw new Error("allorigins/get no items");
-  return items;
-}
-
-// ─── Proxy 3: rss2json — last resort ─────────────────────────────────────
+// ─── Proxy 2: rss2json — fallback ──────────────────────────────────────────────
 async function fetchViaRss2Json(rssUrl: string): Promise<any[]> {
   const url = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(rssUrl)}&count=20`;
-  const res = await fetch(url, { signal: AbortSignal.timeout(10000) });
+  const res = await fetch(url, { signal: AbortSignal.timeout(7000) });
   const data = await res.json();
   if (data.status !== "ok") throw new Error("rss2json failed");
   return data.items || [];
@@ -1158,11 +1146,10 @@ async function fetchViaRss2Json(rssUrl: string): Promise<any[]> {
 
 async function fetchRssFeed(source: { url: string; source: string }): Promise<any[]> {
   let rawItems: any[] = [];
-  // allorigins/raw (most reliable) → allorigins/get → rss2json
+  // allorigins/raw first → rss2json fallback. Each attempt has 7s timeout.
   try { rawItems = await fetchViaAlloriginsRaw(source.url); }
-  catch { try { rawItems = await fetchViaAlloriginsGet(source.url); }
   catch { try { rawItems = await fetchViaRss2Json(source.url); }
-  catch { return []; } } }
+  catch { return []; } }
 
   return rawItems.map((item: any) => ({
     title: item.title || "",
@@ -1213,17 +1200,13 @@ function NewsTab({ lang }: { lang: Lang }) {
   async function doFetch() {
     setLoading(true);
     try {
-      // Batch feeds into groups of 7 to avoid rate limiting rss2json free tier
-      const BATCH = 7;
+      // Fire all feeds in parallel with a hard 15s global cap
+      const timeout = new Promise<never>((_, rej) => setTimeout(() => rej(new Error("global timeout")), 15000));
+      const fetchAll = Promise.allSettled(RSS_SOURCES.map(fetchRssFeed));
+      const results = await Promise.race([fetchAll, timeout]) as PromiseSettledResult<any[]>[];
       const all: any[] = [];
-      for (let i = 0; i < RSS_SOURCES.length; i += BATCH) {
-        const batch = RSS_SOURCES.slice(i, i + BATCH);
-        const results = await Promise.allSettled(batch.map(fetchRssFeed));
-        for (const r of results) {
-          if (r.status === "fulfilled") all.push(...r.value);
-        }
-        // Small pause between batches to avoid hammering the proxy
-        if (i + BATCH < RSS_SOURCES.length) await new Promise(res => setTimeout(res, 400));
+      for (const r of results) {
+        if (r.status === "fulfilled") all.push(...r.value);
       }
       // Filter to war/crisis/energy relevant
       const filtered = all.filter(item => {
