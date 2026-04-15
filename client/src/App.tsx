@@ -1446,7 +1446,7 @@ function NewsTab({ lang }: { lang: Lang }) {
                       {/* Headline — plain <a> tag, iOS Safari safe */}
                       <h3 className="text-sm font-bold leading-tight">
                         {item.link
-                          ? <a href={item.link} target="_blank" rel="noopener noreferrer" className="text-white hover:text-amber-400 transition-colors">{headline}</a>
+                          ? <a href={item.link} className="text-white hover:text-amber-400 transition-colors">{headline}</a>
                           : <span className="text-white">{headline}</span>
                         }
                       </h3>
@@ -1457,8 +1457,6 @@ function NewsTab({ lang }: { lang: Lang }) {
                           {item.link && (
                             <a
                               href={item.link}
-                              target="_blank"
-                              rel="noopener noreferrer"
                               className="inline-flex items-center gap-1.5 text-[11px] font-bold text-amber-400 hover:text-amber-300 transition-colors mt-2 px-3 py-1.5 rounded-full border border-amber-400/30 hover:border-amber-400/60 bg-amber-400/5"
                             >
                               ↗ {t("news.readMore", lang)}
