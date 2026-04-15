@@ -1114,16 +1114,55 @@ function fmtDual(isoOrRfc: string): { uae: string; my: string; date: string } {
   }
 }
 
-async function fetchRssFeed(source: { url: string; source: string }): Promise<any[]> {
-  const apiUrl = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(source.url)}&count=20`;
-  const res = await fetch(apiUrl, { signal: AbortSignal.timeout(8000) });
+// Multiple CORS-friendly RSS proxy services as fallback chain
+async function fetchViaRss2Json(rssUrl: string): Promise<any[]> {
+  const apiUrl = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(rssUrl)}&count=20&api_key=`;
+  const res = await fetch(apiUrl, { signal: AbortSignal.timeout(10000) });
   const data = await res.json();
-  if (data.status !== "ok") return [];
-  return (data.items || []).map((item: any) => ({
+  if (data.status !== "ok") throw new Error("rss2json failed");
+  return data.items || [];
+}
+
+async function fetchViaAllorigins(rssUrl: string): Promise<any[]> {
+  const proxy = `https://api.allorigins.win/get?url=${encodeURIComponent(rssUrl)}`;
+  const res = await fetch(proxy, { signal: AbortSignal.timeout(10000) });
+  const data = await res.json();
+  const xml = data.contents || "";
+  if (!xml) throw new Error("allorigins empty");
+  // Parse XML items
+  const items: any[] = [];
+  const itemMatches = xml.matchAll(/<item[^>]*>([\s\S]*?)<\/item>/gi);
+  for (const m of itemMatches) {
+    const block = m[1];
+    const title = block.match(/<title[^>]*>(?:<\!\[CDATA\[)?([\s\S]*?)(?:\]\]>)?<\/title>/i)?.[1]?.trim() || "";
+    const link = block.match(/<link[^>]*>([\s\S]*?)<\/link>/i)?.[1]?.trim() ||
+                 block.match(/<link[^>]*\/>/i)?.[0]?.match(/href="([^"]+)"/)?.[1] || "";
+    const desc = block.match(/<description[^>]*>(?:<\!\[CDATA\[)?([\s\S]*?)(?:\]\]>)?<\/description>/i)?.[1]?.trim() || "";
+    const pubDate = block.match(/<pubDate[^>]*>([\s\S]*?)<\/pubDate>/i)?.[1]?.trim() ||
+                    block.match(/<published[^>]*>([\s\S]*?)<\/published>/i)?.[1]?.trim() || "";
+    if (title) items.push({ title, link, description: desc, pubDate });
+  }
+  if (!items.length) throw new Error("allorigins no items");
+  return items;
+}
+
+async function fetchRssFeed(source: { url: string; source: string }): Promise<any[]> {
+  let rawItems: any[] = [];
+  // Try rss2json first, fall back to allorigins XML parsing
+  try {
+    rawItems = await fetchViaRss2Json(source.url);
+  } catch {
+    try {
+      rawItems = await fetchViaAllorigins(source.url);
+    } catch {
+      return []; // Both failed — skip this feed silently
+    }
+  }
+  return rawItems.map((item: any) => ({
     title: item.title || "",
-    summary: item.description?.replace(/<[^>]*>/g, "").slice(0, 500) || "",
-    link: item.link || "",
-    pubDate: item.pubDate || "",
+    summary: (item.description || item.content || "").replace(/<[^>]*>/g, "").slice(0, 500),
+    link: item.link || item.url || "",
+    pubDate: item.pubDate || item.published || item.isoDate || "",
     source: source.source,
     category: categorizeItem(item.title || "", item.description || ""),
     impact: impactFromText(item.title || "", item.description || ""),
@@ -1144,10 +1183,17 @@ function NewsTab({ lang }: { lang: Lang }) {
   async function doFetch() {
     setLoading(true);
     try {
-      const results = await Promise.allSettled(RSS_SOURCES.map(fetchRssFeed));
+      // Batch feeds into groups of 7 to avoid rate limiting rss2json free tier
+      const BATCH = 7;
       const all: any[] = [];
-      for (const r of results) {
-        if (r.status === "fulfilled") all.push(...r.value);
+      for (let i = 0; i < RSS_SOURCES.length; i += BATCH) {
+        const batch = RSS_SOURCES.slice(i, i + BATCH);
+        const results = await Promise.allSettled(batch.map(fetchRssFeed));
+        for (const r of results) {
+          if (r.status === "fulfilled") all.push(...r.value);
+        }
+        // Small pause between batches to avoid hammering the proxy
+        if (i + BATCH < RSS_SOURCES.length) await new Promise(res => setTimeout(res, 400));
       }
       // Filter to war/crisis/energy relevant
       const filtered = all.filter(item => {
@@ -1165,10 +1211,19 @@ function NewsTab({ lang }: { lang: Lang }) {
         return true;
       });
       if (unique.length > 0) {
-        setRssNews(unique.slice(0, 60));
+        setRssNews(unique.slice(0, 80));
         setRssError(false);
       } else {
-        setRssError(true);
+        // If keyword filter catches nothing, show all articles unfiltered (better than error)
+        const deduped = all.filter((item, i, arr) =>
+          item.title && arr.findIndex(x => x.title.slice(0,60) === item.title.slice(0,60)) === i
+        ).slice(0, 80);
+        if (deduped.length > 0) {
+          setRssNews(deduped);
+          setRssError(false);
+        } else {
+          setRssError(true);
+        }
       }
     } catch {
       setRssError(true);
