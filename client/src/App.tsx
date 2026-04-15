@@ -1248,7 +1248,7 @@ function NewsTab({ lang }: { lang: Lang }) {
 
   useEffect(() => {
     doFetch();
-    const interval = setInterval(doFetch, 60 * 1000); // refresh every 60 seconds
+    const interval = setInterval(doFetch, 5 * 1000); // refresh every 5 seconds
     return () => clearInterval(interval);
   }, []);
 
@@ -1415,7 +1415,17 @@ function NewsTab({ lang }: { lang: Lang }) {
                           <span className="text-[9px] text-white/25 font-mono">{item.source}</span>
                         )}
                       </div>
-                      <h3 className="text-sm font-bold text-white leading-tight">{headline}</h3>
+                      <h3 className="text-sm font-bold text-white leading-tight">
+                        {item.link ? (
+                          <a
+                            href={item.link}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="hover:text-amber-400 transition-colors"
+                            onClick={e => e.stopPropagation()}
+                          >{headline}</a>
+                        ) : headline}
+                      </h3>
                       {expanded === itemId && (
                         <div className="mt-3 space-y-2">
                           {summary && (
@@ -1426,10 +1436,10 @@ function NewsTab({ lang }: { lang: Lang }) {
                               href={item.link}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="inline-flex items-center gap-1 text-[10px] text-amber-400/70 hover:text-amber-400 transition-colors mt-1"
-                              onClick={e => e.stopPropagation()}
+                              className="inline-flex items-center gap-1.5 text-[11px] font-bold text-amber-400 hover:text-amber-300 transition-colors mt-2 px-3 py-1.5 rounded-full border border-amber-400/30 hover:border-amber-400/60 bg-amber-400/5"
+                              onClick={e => { e.stopPropagation(); e.nativeEvent.stopImmediatePropagation(); window.open(item.link, '_blank', 'noopener,noreferrer'); }}
                             >
-                              {t("news.readMore", lang)}
+                              ↗ {t("news.readMore", lang)}
                             </a>
                           )}
                         </div>
