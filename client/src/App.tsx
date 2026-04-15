@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { LIVE, KARATS, OIL_TIMELINE, GOLD_TIMELINE, COUNTRIES, STRIKE_EVENTS, WAR_STATS, CASUALTIES_BY_COUNTRY, NEWS, FX_RATES, type Country, type StrikeEvent, type NewsItem, type CasualtyEntry } from "./lib/data";
+import { LIVE, KARATS, OIL_TIMELINE, GOLD_TIMELINE, COUNTRIES, STRIKE_EVENTS, WAR_STATS, CASUALTIES_BY_COUNTRY, NEWS, FX_RATES, HORMUZ, MARKETS_DATA, type Country, type StrikeEvent, type NewsItem, type CasualtyEntry } from "./lib/data";
 import { ComposableMap, Geographies, Geography, ZoomableGroup } from "react-simple-maps";
 import { AreaChart, Area, LineChart, Line, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, ReferenceLine } from "recharts";
 import { scaleLinear } from "d3-scale";
@@ -163,6 +163,43 @@ function OilTab({ cur, lang }: { cur: string; lang: Lang }) {
         <StatPill label="Qatar LNG Capacity Lost" value="−17%" color="text-red-400" />
         <StatPill label="IEA Barrels Released" value="400M" color="text-emerald-400" />
         <StatPill label="Saudi Bypass bbl/day" value="7M" color="text-emerald-400" />
+      </div>
+
+      {/* Compact Hormuz Status Strip */}
+      <div className="bg-[#0d1117] border border-amber-500/20 rounded-xl px-5 py-3 flex flex-wrap items-center gap-4">
+        <div className="flex items-center gap-2">
+          <span className="text-[10px] font-bold tracking-widest text-white/30">⚓ HORMUZ STATUS</span>
+          <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full ${
+            HORMUZ.status === "OPEN" ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30" :
+            HORMUZ.status === "RESTRICTED" ? "bg-amber-500/20 text-amber-400 border border-amber-500/30" :
+            "bg-red-500/20 text-red-400 border border-red-500/30"
+          }`}>{HORMUZ.status}</span>
+        </div>
+        <div className="flex items-center gap-5 flex-wrap">
+          <div className="text-center">
+            <div className="text-[9px] text-white/30 font-mono uppercase tracking-wider">Transits Today</div>
+            <div className="text-sm font-bold font-mono text-white">{HORMUZ.transitToday} <span className="text-white/20 text-[10px]">/ {HORMUZ.transitAvgPreWar} norm</span></div>
+          </div>
+          <div className="text-center">
+            <div className="text-[9px] text-white/30 font-mono uppercase tracking-wider">Throughput</div>
+            <div className="text-sm font-bold font-mono text-red-400">{HORMUZ.throughputPct}% of normal</div>
+          </div>
+          <div className="text-center">
+            <div className="text-[9px] text-white/30 font-mono uppercase tracking-wider">Stranded</div>
+            <div className="text-sm font-bold font-mono text-amber-400">{HORMUZ.strandedVessels}+ vessels</div>
+          </div>
+          <div className="text-center">
+            <div className="text-[9px] text-white/30 font-mono uppercase tracking-wider">Daily Cost</div>
+            <div className="text-sm font-bold font-mono text-orange-400">${HORMUZ.dailyCostBn}B / day</div>
+          </div>
+          <div className="text-center">
+            <div className="text-[9px] text-white/30 font-mono uppercase tracking-wider">Insurance</div>
+            <div className="text-sm font-bold font-mono text-red-400">{HORMUZ.insuranceMult}× normal</div>
+          </div>
+        </div>
+        <button onClick={() => {}} className="ml-auto text-[10px] font-bold text-amber-400/60 hover:text-amber-400 transition-colors tracking-wider">
+          VIEW HORMUZ TAB →
+        </button>
       </div>
 
       {/* Oil Prices in all currencies */}
@@ -1198,6 +1235,483 @@ async function translateToMalay(text: string): Promise<string> {
   return swapped;
 }
 
+// ── HORMUZ TAB ──────────────────────────────────────────────────────────────
+function HormuzTab({ lang }: { lang: Lang }) {
+  const statusColor = HORMUZ.status === "OPEN" ? "#22c55e" : HORMUZ.status === "RESTRICTED" ? "#f0a500" : "#ef4444";
+  const statusBg = HORMUZ.status === "OPEN" ? "bg-emerald-500/10 border-emerald-500/20" : HORMUZ.status === "RESTRICTED" ? "bg-amber-500/10 border-amber-500/20" : "bg-red-500/10 border-red-500/20";
+
+  return (
+    <div className="space-y-6 p-6">
+
+      {/* Status Banner */}
+      <div className={`rounded-2xl border p-5 flex flex-col md:flex-row md:items-center gap-4 ${statusBg}`}>
+        <div className="flex items-center gap-4">
+          <div className="text-4xl">⚓</div>
+          <div>
+            <div className="flex items-center gap-3 mb-1">
+              <span className="text-xl font-black tracking-wider" style={{ color: statusColor }}>STRAIT OF HORMUZ — {HORMUZ.status}</span>
+              <span className="text-[10px] font-bold tracking-widest bg-red-500/20 text-red-400 px-2 py-0.5 rounded-full border border-red-500/30">DAY {HORMUZ.disruptionDay}</span>
+            </div>
+            <div className="text-xs text-white/50 max-w-2xl">{HORMUZ.statusNote}</div>
+            <div className="text-[10px] text-white/30 font-mono mt-1">Since {HORMUZ.sinceDate} · Updated {HORMUZ.lastUpdated} · Sources: {HORMUZ.sources.join(" · ")}</div>
+          </div>
+        </div>
+        <div className="md:ml-auto text-right">
+          <div className="text-[10px] text-white/30 font-mono">TOTAL TRANSITS SINCE FEB 28</div>
+          <div className="text-2xl font-black font-mono text-white">{HORMUZ.transitSince.toLocaleString()}</div>
+          <div className="text-[10px] text-white/30 font-mono">vs {(HORMUZ.transitAvgPreWar * HORMUZ.disruptionDay).toLocaleString()} expected</div>
+        </div>
+      </div>
+
+      {/* KPI Cards */}
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+        <KpiCard label="Transits Today" value={`${HORMUZ.transitToday}`} sub={`Pre-war avg: ${HORMUZ.transitAvgPreWar}/day`} change={`${((HORMUZ.transitToday/HORMUZ.transitAvgPreWar)*100).toFixed(1)}% of normal`} changeUp={false} accent="#ef4444" />
+        <KpiCard label="Throughput" value={`${HORMUZ.throughputPct}%`} sub="of normal deadweight" change="98% flow blocked" changeUp={false} accent="#ef4444" />
+        <KpiCard label="Stranded Vessels" value={`${HORMUZ.strandedVessels}+`} sub="in or near strait" change={`${HORMUZ.attackedVessels} attacked`} changeUp={false} accent="#f97316" />
+        <KpiCard label="Daily Econ. Cost" value={`$${HORMUZ.dailyCostBn}B`} sub="global economic loss" change="per day" changeUp={false} accent="#8b5cf6" />
+        <KpiCard label="Insurance" value={`${HORMUZ.insuranceMult}×`} sub="war risk multiplier" change="0.125% → 10% hull" changeUp={false} accent="#f97316" />
+        <KpiCard label="VLCC Voyage Cost" value="$2.5M" sub="per single passage" change="was $125K pre-war" changeUp={false} accent="#ef4444" />
+      </div>
+
+      {/* Stats pills row */}
+      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
+        <StatPill label="Normal Flow" value="20M bbl/day" />
+        <StatPill label="Bypassed (Pipelines)" value="7M bbl/day" color="text-emerald-400" />
+        <StatPill label="Still Blocked" value="13M bbl/day" color="text-red-400" />
+        <StatPill label="Pipeline Coverage" value="35%" color="text-amber-400" />
+        <StatPill label="Tanker Rate Increase" value="3×" color="text-red-400" />
+        <StatPill label="Extra Reroute Days" value="+14 days" color="text-orange-400" />
+      </div>
+
+      {/* Transit Timeline + Bypass Pipelines */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+
+        {/* Transit Timeline Chart */}
+        <div className="bg-[#0d1117] border border-white/6 rounded-xl p-6">
+          <div className="text-[10px] font-bold tracking-widest text-white/30 mb-1">WEEKLY TRANSIT COUNT</div>
+          <div className="text-xs text-white/20 mb-5">Vessels through Hormuz since Feb 28 (pre-war avg: {HORMUZ.transitAvgPreWar}/week ≈ 966/day×7)</div>
+          <ResponsiveContainer width="100%" height={220}>
+            <BarChart data={HORMUZ.transitTimeline} margin={{ top: 5, right: 5, left: -20, bottom: 5 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
+              <XAxis dataKey="week" tick={{ fill: "#ffffff30", fontSize: 9, fontFamily: "Space Mono" }} axisLine={false} tickLine={false} />
+              <YAxis tick={{ fill: "#ffffff30", fontSize: 9, fontFamily: "Space Mono" }} axisLine={false} tickLine={false} />
+              <Tooltip
+                contentStyle={{ background: "#0d1117", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "8px", fontSize: "11px" }}
+                labelStyle={{ color: "#f0a500", fontWeight: "bold" }}
+                formatter={(val: any, name: any, props: any) => [
+                  <span style={{ color: "#f0a500", fontFamily: "Space Mono" }}>{val} vessels</span>,
+                  <span style={{ color: "rgba(255,255,255,0.5)", fontSize: "9px" }}>{HORMUZ.transitTimeline.find(t => t.transits === val)?.note}</span>
+                ]}
+              />
+              <Bar dataKey="transits" fill="#f0a500" fillOpacity={0.8} radius={[3, 3, 0, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+
+        {/* Bypass Pipelines */}
+        <div className="bg-[#0d1117] border border-white/6 rounded-xl p-6">
+          <div className="text-[10px] font-bold tracking-widest text-white/30 mb-4">BYPASS PIPELINES — STATUS</div>
+          <div className="mb-4">
+            <div className="flex justify-between text-xs text-white/40 mb-2">
+              <span>Pipeline capacity covering {HORMUZ.bypassPct}% of normal Hormuz flow</span>
+              <span className="font-mono">{HORMUZ.bypassTotal}M / {HORMUZ.normalFlow}M bbl/day</span>
+            </div>
+            <div className="bg-white/5 rounded-full h-2">
+              <div className="h-2 rounded-full bg-amber-500" style={{ width: `${HORMUZ.bypassPct}%` }} />
+            </div>
+          </div>
+          <div className="space-y-3">
+            {HORMUZ.pipelines.map((p, i) => {
+              const statusCol = p.status === "ACTIVE" ? "text-emerald-400 bg-emerald-500/10 border-emerald-500/20" : p.status === "PARTIAL" ? "text-amber-400 bg-amber-500/10 border-amber-500/20" : "text-orange-400 bg-orange-500/10 border-orange-500/20";
+              const fillPct = (p.effective / p.capacity) * 100;
+              return (
+                <div key={i} className="border border-white/6 rounded-xl p-4">
+                  <div className="flex items-start justify-between mb-2">
+                    <div>
+                      <div className="text-sm font-bold text-white">{p.name}</div>
+                      <div className="text-[10px] text-white/30 font-mono">{p.operator} · → {p.to}</div>
+                    </div>
+                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${statusCol}`}>{p.status}</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="flex-1 bg-white/5 rounded-full h-1.5">
+                      <div className="h-1.5 rounded-full bg-emerald-500" style={{ width: `${fillPct}%` }} />
+                    </div>
+                    <span className="text-[10px] font-mono text-white/40">{p.effective}M / {p.capacity}M bbl/d</span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+          <div className="mt-4 border border-red-500/10 bg-red-500/5 rounded-xl p-3">
+            <div className="text-[10px] font-bold text-red-400 mb-1">⚠ UNBYPASSABLE GAP</div>
+            <div className="text-xs text-white/40">{HORMUZ.bypassGap}M bbl/day ({100 - HORMUZ.bypassPct}% of flow) cannot be rerouted via any existing pipeline. No infrastructure exists to replace this volume.</div>
+          </div>
+        </div>
+      </div>
+
+      {/* Carrier Suspension Table */}
+      <div className="bg-[#0d1117] border border-white/6 rounded-xl p-6">
+        <div className="text-[10px] font-bold tracking-widest text-white/30 mb-1">CARRIER SUSPENSION STATUS</div>
+        <div className="text-xs text-white/20 mb-4">All 9 major global carriers have suspended Hormuz transits — {HORMUZ.carriers.filter(c => c.status === "SUSPENDED").length}/9 suspended · 192 vessels trapped</div>
+        <div className="overflow-x-auto">
+          <table className="w-full text-xs">
+            <thead>
+              <tr className="text-white/30 font-mono text-[10px] tracking-widest border-b border-white/6">
+                <th className="text-left pb-3 pr-4">CARRIER</th>
+                <th className="text-left pb-3 pr-4">STATUS</th>
+                <th className="text-right pb-3 pr-4">TRAPPED</th>
+                <th className="text-right pb-3 pr-4">TEU AT RISK</th>
+                <th className="text-right pb-3">UPDATED</th>
+              </tr>
+            </thead>
+            <tbody>
+              {HORMUZ.carriers.map((c, i) => (
+                <tr key={i} className="border-b border-white/3 hover:bg-white/2 transition-colors">
+                  <td className="py-3 pr-4 font-bold text-white">{c.name}</td>
+                  <td className="py-3 pr-4">
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-red-500/15 text-red-400 border border-red-500/20">{c.status}</span>
+                  </td>
+                  <td className="py-3 pr-4 text-right font-mono text-amber-400">{c.trapped > 0 ? `${c.trapped} vessels` : "—"}</td>
+                  <td className="py-3 pr-4 text-right font-mono text-white/50">{c.teu ? `${(c.teu/1000).toFixed(0)}K TEU` : "—"}</td>
+                  <td className="py-3 text-right font-mono text-white/30 text-[10px]">{c.updated}</td>
+                </tr>
+              ))}
+            </tbody>
+            <tfoot>
+              <tr className="border-t border-white/10">
+                <td className="pt-3 pr-4 font-bold text-white/50">TOTAL</td>
+                <td className="pt-3 pr-4"><span className="text-[10px] font-bold text-red-400">9/9 SUSPENDED</span></td>
+                <td className="pt-3 pr-4 text-right font-mono font-bold text-amber-400">192+ vessels</td>
+                <td className="pt-3 pr-4 text-right font-mono text-white/50">579K+ TEU</td>
+                <td className="pt-3"></td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+        <div className="mt-4 text-[10px] text-white/20">Emergency surcharges: $1,500–$4,000/TEU · Reroute adds 14 days via Cape of Good Hope</div>
+      </div>
+
+      {/* Company Impact — Winners vs Losers */}
+      <div className="bg-[#0d1117] border border-white/6 rounded-xl p-6">
+        <div className="text-[10px] font-bold tracking-widest text-white/30 mb-4">COMPANY IMPACT — HORMUZ CRISIS WINNERS &amp; LOSERS</div>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+          {/* Winners */}
+          <div>
+            <div className="flex items-center gap-2 mb-3">
+              <div className="w-2 h-2 rounded-full bg-emerald-500" />
+              <span className="text-[10px] font-bold text-emerald-400 tracking-widest">WINNERS — WAR PREMIUM</span>
+            </div>
+            <div className="space-y-2">
+              {[
+                { name: "Frontline (FRO)",   ticker: "NYSE: FRO",  change: +62.6, note: "VLCC rates tripled; record dividends" },
+                { name: "Nordic Am. Tankers",ticker: "NYSE: NAT",  change: +63.2, note: "Pure war-premium spot exposure" },
+                { name: "DHT Holdings",      ticker: "NYSE: DHT",  change: +59.1, note: "VLCC focus; double-digit yield" },
+                { name: "Lockheed Martin",   ticker: "NYSE: LMT",  change: +31.2, note: "F-35 + PAC-3 missile orders" },
+                { name: "Elbit Systems",     ticker: "NASDAQ: ESLT",change:+39.4, note: "Israeli defense; drone surge" },
+                { name: "Saudi Aramco",      ticker: "Tadawul: 2222",change:+22.1,note: "Petroline at max; extraordinary div." },
+                { name: "ExxonMobil",        ticker: "NYSE: XOM",  change: +18.4, note: "+$1.3B Q1 uplift from oil prices" },
+                { name: "Halliburton",       ticker: "NYSE: HAL",  change: +27.3, note: "Emergency well activation services" },
+              ].map((co, i) => (
+                <div key={i} className="flex items-center gap-3 bg-emerald-500/5 border border-emerald-500/10 rounded-xl px-4 py-2.5">
+                  <div className="flex-1">
+                    <div className="text-sm font-bold text-white">{co.name}</div>
+                    <div className="text-[10px] text-white/30 font-mono">{co.ticker}</div>
+                    <div className="text-[10px] text-white/40 mt-0.5">{co.note}</div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-base font-bold font-mono text-emerald-400">+{co.change}%</div>
+                    <div className="text-[9px] text-white/20">YTD</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Losers */}
+          <div>
+            <div className="flex items-center gap-2 mb-3">
+              <div className="w-2 h-2 rounded-full bg-red-500" />
+              <span className="text-[10px] font-bold text-red-400 tracking-widest">LOSERS — ROUTES SEVERED</span>
+            </div>
+            <div className="space-y-2">
+              {[
+                { name: "Maersk",           ticker: "CPH: MAERSK-B",change:-18.4, note: "All routes suspended; 14 vessels trapped" },
+                { name: "Hapag-Lloyd",      ticker: "XETRA: HLAG",  change:-22.1, note: "+$40-50M/week extra costs" },
+                { name: "Korean Air",       ticker: "KOSPI: 003490",change:-34.2, note: "Jet fuel +95%; ME routes gone" },
+                { name: "Samsung SDI",      ticker: "KOSPI: 006400",change:-28.4, note: "Battery demand collapse; supply chain" },
+                { name: "Evergreen Marine", ticker: "TWSE: 2603",   change:-19.6, note: "Asia-ME-Europe routes severed" },
+                { name: "Boeing",           ticker: "NYSE: BA",     change:-12.8, note: "Gulf order freeze; supply chain" },
+                { name: "TSMC",             ticker: "NYSE: TSM",    change:-14.3, note: "Energy cost + Taiwan risk premium" },
+                { name: "Emirates (parent)",ticker: "Private",      change:-15.0, note: "Dubai hub disrupted; Asia routes" },
+              ].map((co, i) => (
+                <div key={i} className="flex items-center gap-3 bg-red-500/5 border border-red-500/10 rounded-xl px-4 py-2.5">
+                  <div className="flex-1">
+                    <div className="text-sm font-bold text-white">{co.name}</div>
+                    <div className="text-[10px] text-white/30 font-mono">{co.ticker}</div>
+                    <div className="text-[10px] text-white/40 mt-0.5">{co.note}</div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-base font-bold font-mono text-red-400">{co.change}%</div>
+                    <div className="text-[9px] text-white/20">YTD</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Historical Comparison */}
+      <div className="bg-[#0d1117] border border-white/6 rounded-xl p-6">
+        <div className="text-[10px] font-bold tracking-widest text-white/30 mb-4">HISTORICAL COMPARISON — STRAIT DISRUPTIONS</div>
+        <div className="overflow-x-auto">
+          <table className="w-full text-xs">
+            <thead>
+              <tr className="text-white/30 font-mono text-[10px] tracking-widest border-b border-white/6">
+                <th className="text-left pb-3 pr-4">EVENT</th>
+                <th className="text-left pb-3 pr-4">YEAR</th>
+                <th className="text-left pb-3 pr-4">DURATION</th>
+                <th className="text-right pb-3 pr-4">OIL SPIKE</th>
+                <th className="text-left pb-3">IMPACT</th>
+              </tr>
+            </thead>
+            <tbody>
+              {HORMUZ.historical.map((h, i) => {
+                const isNow = h.year === "2026";
+                return (
+                  <tr key={i} className={`border-b border-white/3 hover:bg-white/2 transition-colors ${isNow ? "bg-amber-500/5" : ""}`}>
+                    <td className={`py-3 pr-4 font-bold ${isNow ? "text-amber-400" : "text-white"}`}>
+                      {isNow && <span className="text-[9px] bg-amber-500/20 border border-amber-500/30 text-amber-400 px-1.5 py-0.5 rounded mr-2 font-mono">NOW</span>}
+                      {h.event}
+                    </td>
+                    <td className="py-3 pr-4 font-mono text-white/50">{h.year}</td>
+                    <td className="py-3 pr-4 font-mono text-white/50">{h.duration}</td>
+                    <td className="py-3 pr-4 text-right font-mono font-bold" style={{ color: h.oilSpike.startsWith("+") ? "#ef4444" : "#22c55e" }}>{h.oilSpike}</td>
+                    <td className="py-3 text-white/40">{h.impact}</td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <p className="text-[10px] text-white/20">Sources: HormuzTracker.com · HormuzStraitMonitor.com · Kpler · Al Jazeera · LSEG · Lloyd's of London · Apr 15, 2026</p>
+    </div>
+  );
+}
+
+// ── MARKETS TAB ──────────────────────────────────────────────────────────────
+function MarketsTab({ lang }: { lang: Lang }) {
+  const [companyFilter, setCompanyFilter] = useState<"all" | "winner" | "loser">("all");
+  const [sectorSort, setSectorSort] = useState<"change" | "name">("change");
+
+  const filteredCompanies = companyFilter === "all"
+    ? MARKETS_DATA.companies
+    : MARKETS_DATA.companies.filter(c => c.side === companyFilter);
+
+  const sortedSectors = [...MARKETS_DATA.sectors].sort((a, b) =>
+    sectorSort === "change" ? b.change - a.change : a.name.localeCompare(b.name)
+  );
+
+  return (
+    <div className="space-y-6 p-6">
+
+      {/* Header KPIs */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <KpiCard label="Best Performing" value="Tadawul +8.4%" sub="Saudi Arabia · energy windfall" change="Record highs on oil revenue" changeUp={true} accent="#22c55e" />
+        <KpiCard label="Worst Performing" value="KOSPI −17%" sub="South Korea · 100% oil importer" change="War premium maximum" changeUp={false} accent="#ef4444" />
+        <KpiCard label="Tanker Sector" value="+62.5%" sub="YTD war premium" change="Best sector since Feb 28" changeUp={true} accent="#f0a500" />
+        <KpiCard label="Tech / Semicon" value="−15–20%" sub="Supply chain + Taiwan risk" change="Worst sector YTD" changeUp={false} accent="#8b5cf6" />
+      </div>
+
+      {/* Global Indices Table */}
+      <div className="bg-[#0d1117] border border-white/6 rounded-xl p-6">
+        <div className="text-[10px] font-bold tracking-widest text-white/30 mb-1">GLOBAL EQUITY INDICES</div>
+        <div className="text-xs text-white/20 mb-4">Performance since Feb 28, 2026 crisis onset · Apr 15, 2026</div>
+        <div className="overflow-x-auto">
+          <table className="w-full text-xs">
+            <thead>
+              <tr className="text-white/30 font-mono text-[10px] tracking-widest border-b border-white/6">
+                <th className="text-left pb-3 pr-4">INDEX</th>
+                <th className="text-left pb-3 pr-4">REGION</th>
+                <th className="text-right pb-3 pr-4">LEVEL</th>
+                <th className="text-right pb-3 pr-4">YTD CHANGE</th>
+                <th className="text-left pb-3">WAR NOTE</th>
+              </tr>
+            </thead>
+            <tbody>
+              {MARKETS_DATA.indices.map((idx, i) => {
+                const isUp = idx.change > 0;
+                return (
+                  <tr key={i} className="border-b border-white/3 hover:bg-white/2 transition-colors">
+                    <td className="py-2.5 pr-4">
+                      <div className="font-bold text-white">{idx.name}</div>
+                      <div className="text-[9px] font-mono text-white/30">{idx.ticker}</div>
+                    </td>
+                    <td className="py-2.5 pr-4 text-white/40">{idx.region}</td>
+                    <td className="py-2.5 pr-4 text-right font-mono text-white font-bold">{idx.value.toLocaleString()}</td>
+                    <td className="py-2.5 pr-4 text-right">
+                      <span className={`font-bold font-mono text-sm ${isUp ? "text-emerald-400" : "text-red-400"}`}>
+                        {isUp ? "+" : ""}{idx.change.toFixed(1)}%
+                      </span>
+                    </td>
+                    <td className="py-2.5 text-white/40 max-w-xs">{idx.note}</td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Sector Performance */}
+      <div className="bg-[#0d1117] border border-white/6 rounded-xl p-6">
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <div className="text-[10px] font-bold tracking-widest text-white/30 mb-1">SECTOR PERFORMANCE — WAR IMPACT</div>
+            <div className="text-xs text-white/20">YTD since Feb 28, 2026</div>
+          </div>
+          <div className="flex gap-2">
+            {(["change", "name"] as const).map(s => (
+              <button key={s} onClick={() => setSectorSort(s)}
+                className={`text-[10px] font-bold px-3 py-1 rounded-lg transition-all ${
+                  sectorSort === s ? "bg-amber-500 text-black" : "bg-white/5 text-white/40 hover:text-white/60"
+                }`}>{s === "change" ? "BY CHANGE" : "A–Z"}</button>
+            ))}
+          </div>
+        </div>
+        <div className="space-y-2">
+          {sortedSectors.map((s, i) => {
+            const isUp = s.direction === "up";
+            const barPct = Math.min(Math.abs(s.change), 80);
+            return (
+              <div key={i} className="flex items-center gap-3">
+                <div className="w-36 shrink-0 text-xs text-white/60 text-right pr-2">{s.name}</div>
+                <div className="flex-1 flex items-center gap-2">
+                  {isUp ? (
+                    <>
+                      <div className="w-1/2 flex justify-end">
+                        <div className="h-6 rounded-full flex items-center pr-2" style={{ width: `${barPct * 1.2}%`, background: "rgba(34,197,94,0.2)" }}>
+                          <span className="text-[10px] font-bold font-mono text-emerald-400 ml-auto">+{s.change}%</span>
+                        </div>
+                      </div>
+                      <div className="w-px h-6 bg-white/10" />
+                      <div className="w-1/2" />
+                    </>
+                  ) : (
+                    <>
+                      <div className="w-1/2" />
+                      <div className="w-px h-6 bg-white/10" />
+                      <div className="w-1/2">
+                        <div className="h-6 rounded-full flex items-center pl-2" style={{ width: `${barPct * 1.2}%`, background: "rgba(239,68,68,0.2)" }}>
+                          <span className="text-[10px] font-bold font-mono text-red-400">{s.change}%</span>
+                        </div>
+                      </div>
+                    </>
+                  )}
+                </div>
+                <div className="w-64 shrink-0 text-[9px] text-white/25 hidden xl:block">{s.driver}</div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* War-Impacted Companies */}
+      <div className="bg-[#0d1117] border border-white/6 rounded-xl p-6">
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <div className="text-[10px] font-bold tracking-widest text-white/30 mb-1">WAR-IMPACTED COMPANIES</div>
+            <div className="text-xs text-white/20">Stock performance since Feb 28, 2026 crisis onset</div>
+          </div>
+          <div className="flex gap-2">
+            {(["all", "winner", "loser"] as const).map(f => (
+              <button key={f} onClick={() => setCompanyFilter(f)}
+                className={`text-[10px] font-bold px-3 py-1 rounded-lg transition-all capitalize ${
+                  companyFilter === f
+                    ? f === "winner" ? "bg-emerald-500 text-black" : f === "loser" ? "bg-red-500 text-white" : "bg-amber-500 text-black"
+                    : "bg-white/5 text-white/40 hover:text-white/60"
+                }`}>{f === "all" ? "ALL" : f === "winner" ? "✓ WINNERS" : "✗ LOSERS"}</button>
+            ))}
+          </div>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
+          {filteredCompanies.map((co, i) => {
+            const isWinner = co.side === "winner";
+            return (
+              <div key={i} className={`border rounded-xl p-4 transition-all hover:scale-[1.01] ${
+                isWinner ? "border-emerald-500/15 bg-emerald-500/5 hover:border-emerald-500/25" : "border-red-500/15 bg-red-500/5 hover:border-red-500/25"
+              }`}>
+                <div className="flex items-start justify-between mb-2">
+                  <div>
+                    <div className="text-sm font-bold text-white">{co.name}</div>
+                    <div className="flex items-center gap-2 mt-0.5">
+                      <span className="text-[9px] font-mono text-white/30">{co.ticker}</span>
+                      <span className="text-[9px] text-white/20">{co.market}</span>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className={`text-lg font-black font-mono ${isWinner ? "text-emerald-400" : "text-red-400"}`}>
+                      {isWinner ? "+" : ""}{co.change}%
+                    </div>
+                    <div className="text-[9px] text-white/20">YTD</div>
+                  </div>
+                </div>
+                <div className="text-[10px] font-bold text-white/25 tracking-wider mb-1">{co.sector}</div>
+                <div className="text-[10px] text-white/40 leading-relaxed">{co.note}</div>
+                <div className="mt-2 flex items-center justify-between">
+                  <span className="text-[10px] font-mono text-white/30">{co.price}</span>
+                  <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full ${
+                    isWinner ? "bg-emerald-500/10 text-emerald-400" : "bg-red-500/10 text-red-400"
+                  }`}>{isWinner ? "WAR WINNER" : "WAR LOSER"}</span>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Currency Moves */}
+      <div className="bg-[#0d1117] border border-white/6 rounded-xl p-6">
+        <div className="text-[10px] font-bold tracking-widest text-white/30 mb-1">CURRENCY IMPACT — SINCE FEB 28</div>
+        <div className="text-xs text-white/20 mb-4">War-driven pressure on oil-importing nations' currencies</div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          {MARKETS_DATA.currencies.map((fx, i) => {
+            const isUp = fx.change > 0;
+            const isFlat = fx.change === 0;
+            return (
+              <div key={i} className={`border rounded-xl p-4 ${
+                isFlat ? "border-white/6 bg-white/2" :
+                isUp ? "border-red-500/15 bg-red-500/5" : "border-emerald-500/15 bg-emerald-500/5"
+              }`}>
+                <div className="flex items-center justify-between mb-1">
+                  <div className="font-bold text-white font-mono">{fx.pair}</div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-mono font-bold text-white">{fx.rate.toLocaleString()}</span>
+                    <span className={`text-xs font-bold font-mono ${
+                      isFlat ? "text-white/40" : isUp ? "text-red-400" : "text-emerald-400"
+                    }`}>{isFlat ? "PEGGED" : isUp ? `+${fx.change}%` : `${fx.change}%`}</span>
+                  </div>
+                </div>
+                <div className="text-[10px] text-white/40">{fx.note}</div>
+                {!isFlat && (
+                  <div className="mt-2 text-[9px] text-white/25 font-mono">Pre-war: {fx.preWar.toLocaleString()} · Change: {fx.change > 0 ? `+${fx.change}` : fx.change}%</div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      <p className="text-[10px] text-white/20">Sources: Yahoo Finance · Bloomberg · Reuters · Morningstar · Seeking Alpha · Korean Exchange · LSEG · Apr 15, 2026</p>
+    </div>
+  );
+}
+
+// ── NEWS TAB ──────────────────────────────────────────────────────────────────
 function NewsTab({ lang }: { lang: Lang }) {
   const [catFilter, setCatFilter] = useState("all");
   const [expanded, setExpanded] = useState<number | string | null>(null);
@@ -1719,6 +2233,8 @@ export default function App() {
     { id:"gold",       label: lang === "en" ? "🥇  GOLD"          : "🥇  EMAS" },
     { id:"map",        label: lang === "en" ? "🌍  WORLD MAP"     : "🌍  PETA DUNIA" },
     { id:"war",        label: lang === "en" ? "💥  WAR DAMAGE"    : "💥  KEROSAKAN PERANG" },
+    { id:"hormuz",     label: lang === "en" ? "⚓  HORMUZ"        : "⚓  HORMUZ" },
+    { id:"markets",    label: lang === "en" ? "📈  MARKETS"       : "📈  PASARAN" },
     { id:"news",       label: lang === "en" ? "📰  NEWS FEED"     : "📰  SUAPAN BERITA" },
     { id:"currencies", label: lang === "en" ? "💱  CURRENCIES"    : "💱  MATA WANG" },
   ];
@@ -1788,6 +2304,8 @@ export default function App() {
         {tab === "gold"       && <GoldTab cur={cur} lang={lang} />}
         {tab === "map"        && <WorldMapTab lang={lang} />}
         {tab === "war"        && <WarTab lang={lang} />}
+        {tab === "hormuz"     && <HormuzTab lang={lang} />}
+        {tab === "markets"    && <MarketsTab lang={lang} />}
         {tab === "news"       && <NewsTab lang={lang} />}
         {tab === "currencies" && <CurrenciesTab cur={cur} lang={lang} />}
       </main>

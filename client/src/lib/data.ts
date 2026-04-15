@@ -708,3 +708,156 @@ export const FX_RATES = [
   { pair:"USD/IDR", rate:16420,   prev:15800,  note:"Partial buffer from Pertamina domestic production",     trend:"up",   pegged:false },
   { pair:"USD/BDT", rate:119.50,  prev:108.00, note:"Garment export revenue threatened; IMF talks",          trend:"up",   pegged:false },
 ];
+
+// ─── HORMUZ DATA ─────────────────────────────────────────────────────────────
+export const HORMUZ = {
+  status: "RESTRICTED" as "OPEN" | "RESTRICTED" | "CLOSED",
+  statusNote: "Selective passage via approved US Navy escort corridor. Commercially unviable for most carriers.",
+  disruptionDay: 47,
+  sinceDate: "Feb 28, 2026",
+  // Transit counts
+  transitToday: 3,         // Al Jazeera Apr 15
+  transitAvgPreWar: 138,   // vessels/day
+  transitSince: 279,       // total since Feb 28 (Kpler)
+  throughputPct: 2,        // % of normal deadweight tonnage
+  // Vessels
+  strandedVessels: 150,
+  attackedVessels: 27,     // Kpler data
+  // Economic
+  dailyCostBn: 4,          // $4B/day estimated
+  insuranceMult: 16,       // 16x normal war risk premium
+  vllcCostNormal: 125000,  // USD per passage
+  vllcCostNow: 2500000,    // USD per passage (avg of range)
+  emergencySurchargeTEU: 2750, // avg $1500-$4000
+  tankerRateIncrease: 3,   // 3x tripled
+  rerouteDaysAdded: 14,
+  // Pipelines
+  pipelines: [
+    { name: "Saudi Petroline (East-West)", capacity: 5.0, effective: 3.0, status: "ACTIVE", to: "Yanbu, Red Sea", operator: "Saudi Aramco" },
+    { name: "UAE ADCOP Pipeline",          capacity: 1.5, effective: 1.2, status: "PARTIAL", to: "Fujairah (disrupted)", operator: "ADNOC" },
+    { name: "Iraq-Turkey (Kirkuk-Ceyhan)", capacity: 0.5, effective: 0.3, status: "INTERMITTENT", to: "Ceyhan, Mediterranean", operator: "SOMO" },
+  ],
+  normalFlow: 20,    // M bbl/day
+  bypassTotal: 7,    // M bbl/day
+  bypassGap: 13,     // M bbl/day cannot be rerouted
+  bypassPct: 35,     // % of normal flow covered by pipelines
+  // Carriers (9/9 suspended)
+  carriers: [
+    { name: "Maersk",      status: "SUSPENDED", trapped: 14,  teu: 70000,  updated: "Mar 19" },
+    { name: "MSC",         status: "SUSPENDED", trapped: 15,  teu: 109000, updated: "Mar 18" },
+    { name: "CMA CGM",     status: "SUSPENDED", trapped: 1,   teu: null,   updated: "Mar 18" },
+    { name: "Hapag-Lloyd", status: "SUSPENDED", trapped: 6,   teu: 25000,  updated: "Mar 28" },
+    { name: "COSCO",       status: "SUSPENDED", trapped: 5,   teu: null,   updated: "Mar 30" },
+    { name: "ONE",         status: "SUSPENDED", trapped: 147, teu: 470000, updated: "Mar 18" },
+    { name: "HMM",         status: "SUSPENDED", trapped: 0,   teu: null,   updated: "Mar 18" },
+    { name: "Evergreen",   status: "SUSPENDED", trapped: 0,   teu: null,   updated: "Mar 18" },
+    { name: "PIL",         status: "SUSPENDED", trapped: 4,   teu: null,   updated: "Mar 18" },
+  ],
+  // Historical comparison
+  historical: [
+    { event: "Hormuz 2026",          year: "2026",    duration: "Ongoing",  oilSpike: "+52%",  impact: "~20% global oil blocked" },
+    { event: "Kuwait Crisis",        year: "1990–91", duration: "7 months", oilSpike: "+130%", impact: "4.6M bbl/day offline" },
+    { event: "OPEC Embargo",         year: "1973–74", duration: "5 months", oilSpike: "+300%", impact: "7.5% supply cut" },
+    { event: "Tanker War",           year: "1984–88", duration: "4 years",  oilSpike: "+25%",  impact: "~2% tankers damaged" },
+    { event: "Red Sea (Houthis)",    year: "2024–25", duration: "14 months",oilSpike: "+8%",   impact: "15% shipping rerouted" },
+    { event: "Suez Blockage",        year: "2021",    duration: "6 days",   oilSpike: "+4%",   impact: "12% global trade delayed" },
+  ],
+  // Transit timeline (weekly since Feb 28)
+  transitTimeline: [
+    { week: "Mar 1–7",   transits: 8,  note: "War outbreak, near-total closure" },
+    { week: "Mar 8–14",  transits: 22, note: "China-flagged vessels attempt crossing" },
+    { week: "Mar 15–21", transits: 31, note: "US Navy escort corridor announced" },
+    { week: "Mar 22–28", transits: 47, note: "Partial reopening discussions" },
+    { week: "Mar 29–Apr 4", transits: 68, note: "Ceasefire Apr 8 in effect" },
+    { week: "Apr 5–11",  transits: 58, note: "US blockade on Iranian ports Apr 14" },
+    { week: "Apr 12–15", transits: 45, note: "Current week (partial)" },
+  ],
+  lastUpdated: "Apr 15, 2026",
+  sources: ["HormuzTracker.com", "Al Jazeera", "Kpler", "LSEG", "HormuzStraitMonitor.com"],
+};
+
+// ═══════════════════════════════════════════════════
+// MARKETS DATA — Apr 15, 2026
+// ═══════════════════════════════════════════════════
+export const MARKETS_DATA = {
+  lastUpdated: "Apr 15, 2026",
+  // Global Indices
+  indices: [
+    { name: "S&P 500",        ticker: "SPX",       region: "🇺🇸 USA",        value: 4892,    change: -5.0,  ytd: -5.0,  note: "Tech drag; energy offset" },
+    { name: "Dow Jones",      ticker: "DJIA",      region: "🇺🇸 USA",        value: 38420,   change: -4.2,  ytd: -4.2,  note: "Boeing + XOM drag" },
+    { name: "Nasdaq",         ticker: "COMP",      region: "🇺🇸 USA",        value: 15310,   change: -7.8,  ytd: -7.8,  note: "Tech selloff; supply chain" },
+    { name: "KOSPI",          ticker: "KOSPI",     region: "🇰🇷 Korea",      value: 2284,    change: -17.0, ytd: -17.0, note: "Worst hit; 100% oil import" },
+    { name: "Nikkei 225",     ticker: "N225",      region: "🇯🇵 Japan",      value: 34210,   change: -9.0,  ytd: -9.0,  note: "BOJ +0.5% rate; yen hedge" },
+    { name: "TOPIX",          ticker: "TOPIX",     region: "🇯🇵 Japan",      value: 2380,    change: -10.0, ytd: -10.0, note: "Broader Japanese equity" },
+    { name: "Nifty 50",       ticker: "NIFTY",     region: "🇮🇳 India",      value: 21580,   change: -9.0,  ytd: -9.0,  note: "Russia oil lifeline helping" },
+    { name: "CSI 300",        ticker: "CSI300",    region: "🇨🇳 China",      value: 3842,    change: 0.21,  ytd: 0.21,  note: "Russian oil pivot; resilient" },
+    { name: "FTSE 100",       ticker: "UKX",       region: "🇬🇧 UK",         value: 7820,    change: -3.1,  ytd: -3.1,  note: "Shell/BP offset losses" },
+    { name: "DAX",            ticker: "DAX",       region: "🇩🇪 Germany",    value: 17240,   change: -6.2,  ytd: -6.2,  note: "Manufacturing drag; energy" },
+    { name: "CAC 40",         ticker: "CAC",       region: "🇫🇷 France",     region2: "🇫🇷", value: 7310,  change: -5.8,  ytd: -5.8,  note: "TotalEnergies gains partial" },
+    { name: "MSCI ACWI ex US",ticker: "ACWX",      region: "🌍 Global",      value: 98.2,    change: -10.0, ytd: -10.0, note: "Broad EM pain" },
+    { name: "MSCI EM",        ticker: "EEM",       region: "🌍 EM",          value: 37.4,    change: -12.5, ytd: -12.5, note: "Oil importers hammered" },
+    { name: "Tadawul (SAR)",  ticker: "TASI",      region: "🇸🇦 Saudi",      value: 11850,   change: +8.4,  ytd: +8.4,  note: "Energy windfall; record high" },
+    { name: "ADX (UAE)",      ticker: "ADX",       region: "🇦🇪 UAE",        value: 10240,   change: +6.1,  ytd: +6.1,  note: "ADNOC dividends; safe haven" },
+    { name: "QSE (Qatar)",    ticker: "DSM",       region: "🇶🇦 Qatar",      value: 9870,    change: -2.1,  ytd: -2.1,  note: "LNG disruption offset by price" },
+    { name: "Bursa Malaysia", ticker: "FBMKLCI",   region: "🇲🇾 Malaysia",   value: 1498,    change: -4.7,  ytd: -4.7,  note: "Petronas gains; ringgit drag" },
+  ],
+  // Sectors
+  sectors: [
+    { name: "Tanker Shipping",    change: +62.5, direction: "up",   driver: "War premium; VLCC rates tripled; day rates at record" },
+    { name: "Crude Oil Producers",change: +38.2, direction: "up",   driver: "Brent $99; windfall profits; OPEC+ discipline" },
+    { name: "Defense & Aerospace",change: +22.4, direction: "up",   driver: "US/Israel defense spending surge; missile demand" },
+    { name: "Gold Mining",        change: +18.6, direction: "up",   driver: "Gold $4,825/oz; cost leverage amplified returns" },
+    { name: "LNG / Gas",          change: +14.3, direction: "up",   driver: "Spot LNG premium; Algeria/Australia emergency deals" },
+    { name: "Pipeline Operators", change: +11.8, direction: "up",   driver: "Saudi Petroline at max; rerouted flows" },
+    { name: "Chemicals",          change: -4.2,  direction: "down", driver: "Feedstock cost spike; margin compression" },
+    { name: "Airlines",           change: -18.5, direction: "down", driver: "Jet fuel +95%; demand collapse; route cancellations" },
+    { name: "Container Shipping", change: -24.3, direction: "down", driver: "Hormuz closure; 9/9 majors suspended; TEU surcharges" },
+    { name: "Automotive",         change: -14.7, direction: "down", driver: "Parts shortage; EV demand drop; semiconductor risk" },
+    { name: "Technology",         change: -15.2, direction: "down", driver: "Supply chain; Taiwan risk; data center power cost" },
+    { name: "Consumer Staples",   change: -8.1,  direction: "down", driver: "Logistics costs; inflation pass-through limited" },
+    { name: "Semiconductors",     change: -19.8, direction: "down", driver: "TSMC Taiwan risk; shipping disruption; demand cut" },
+    { name: "Fertilizers / Agri", change: +9.2,  direction: "up",   driver: "Food security panic; demand surge for domestic food" },
+  ],
+  // War-impacted companies
+  companies: [
+    // Winners — Tankers
+    { name: "Frontline (FRO)",     ticker: "FRO",   sector: "Tanker",    change: +62.6,  price: "$42.18",   market: "NYSE",    side: "winner", note: "VLCC day rates tripled; record dividend yield" },
+    { name: "Nordic American Tankers",ticker:"NAT",  sector: "Tanker",    change: +63.2,  price: "$7.84",    market: "NYSE",    side: "winner", note: "Spot market exposure; pure war-premium play" },
+    { name: "DHT Holdings",        ticker: "DHT",   sector: "Tanker",    change: +59.1,  price: "$19.47",   market: "NYSE",    side: "winner", note: "VLCC focus; double-digit dividend" },
+    { name: "International Seaways",ticker:"INSW",  sector: "Tanker",    change: +48.3,  price: "$68.20",   market: "NYSE",    side: "winner", note: "Diversified fleet; suezmax gains" },
+    { name: "Tsakos Energy Nav.",  ticker: "TEN",   sector: "Tanker",    change: +44.7,  price: "$24.15",   market: "NYSE",    side: "winner", note: "Greek tanker giant; Middle East routes" },
+    // Winners — Energy
+    { name: "ExxonMobil",          ticker: "XOM",   sector: "Oil Major",  change: +18.4,  price: "$124.80",  market: "NYSE",    side: "winner", note: "+$1.3B Q1 uplift; strong upstream" },
+    { name: "Chevron",             ticker: "CVX",   sector: "Oil Major",  change: +14.2,  price: "$166.40",  market: "NYSE",    side: "winner", note: "Kazakhstan + Tengiz production cushion" },
+    { name: "Saudi Aramco",        ticker: "2222",  sector: "Oil Major",  change: +22.1,  price: "SAR 34.10",market: "Tadawul", side: "winner", note: "Petroline at max; extraordinary dividend" },
+    { name: "Halliburton",         ticker: "HAL",   sector: "OilField Services", change: +27.3, price: "$48.20", market: "NYSE", side: "winner", note: "Emergency well activation services surge" },
+    { name: "TotalEnergies",       ticker: "TTE",   sector: "Oil Major",  change: +11.6,  price: "€62.40",   market: "EPA",     side: "winner", note: "LNG + ME upstream; partial Hormuz exposure" },
+    // Winners — Defense
+    { name: "Lockheed Martin",     ticker: "LMT",   sector: "Defense",   change: +31.2,  price: "$560.40",  market: "NYSE",    side: "winner", note: "F-35 + missile orders; $48B backlog surge" },
+    { name: "Raytheon (RTX)",      ticker: "RTX",   sector: "Defense",   change: +28.8,  price: "$148.60",  market: "NYSE",    side: "winner", note: "Patriot PAC-3 + THAAD demand; GCC contracts" },
+    { name: "Elbit Systems",       ticker: "ESLT",  sector: "Defense",   change: +39.4,  price: "$248.70",  market: "Nasdaq",  side: "winner", note: "Israeli defense; drone + counter-drone surge" },
+    { name: "Newmont",             ticker: "NEM",   sector: "Gold Mining",change: +22.8,  price: "$64.30",   market: "NYSE",    side: "winner", note: "Gold $4,825; massive operating leverage" },
+    // Losers — Shippers
+    { name: "Maersk",              ticker: "MAERSK-B", sector: "Shipping", change: -18.4, price: "DKK 13,865", market: "CPH",  side: "loser",  note: "All routes suspended; 14 vessels trapped" },
+    { name: "Hapag-Lloyd",         ticker: "HLAG",  sector: "Shipping",  change: -22.1,  price: "€102.40",  market: "XETRA", side: "loser",  note: "+$40-50M/week extra costs; routes gone" },
+    { name: "Evergreen Marine",    ticker: "2603",  sector: "Shipping",  change: -19.6,  price: "TWD 94.50", market: "TWSE",  side: "loser",  note: "Asia-ME-Europe routes severed" },
+    { name: "Samsung SDI",         ticker: "006400",sector: "Battery/EV", change: -28.4, price: "KRW 308,500",market:"KOSPI", side: "loser",  note: "Battery demand collapse; supply chain" },
+    { name: "Korean Air",          ticker: "003490",sector: "Airline",   change: -34.2,  price: "KRW 19,400",market: "KOSPI", side: "loser",  note: "Jet fuel +95%; ME routes suspended" },
+    { name: "Emirates (parent)",   ticker: "N/A",   sector: "Airline",   change: -15.0,  price: "Private",  market: "–",       side: "loser",  note: "Dubai hub disrupted; Asia routes impacted" },
+    { name: "Boeing",              ticker: "BA",    sector: "Aerospace", change: -12.8,  price: "$158.20",  market: "NYSE",    side: "loser",  note: "Gulf airline order freeze; supply chain" },
+    { name: "TSMC",                ticker: "TSM",   sector: "Semicon",   change: -14.3,  price: "$152.40",  market: "NYSE",    side: "loser",  note: "Energy cost; Taiwan risk premium rising" },
+  ],
+  // Currency moves (war impact)
+  currencies: [
+    { pair: "USD/MYR", rate: 3.9514, preWar: 3.8200, change: +3.4,  note: "BNM $2.8B intervention; intraday 4.05" },
+    { pair: "USD/KRW", rate: 1385,   preWar: 1315,   change: +5.3,  note: "BOK holding; 100% import dependency" },
+    { pair: "USD/JPY", rate: 152.3,  preWar: 149.0,  change: +2.2,  note: "BOJ intervention; ¥1.7T energy subsidies" },
+    { pair: "USD/PHP", rate: 58.92,  preWar: 54.3,   change: +8.5,  note: "Historic low; BSP $4B deployed" },
+    { pair: "USD/INR", rate: 87.45,  preWar: 85.2,   change: +2.6,  note: "Russia oil lifeline buffering pressure" },
+    { pair: "USD/PKR", rate: 281.0,  preWar: 260.0,  change: +8.1,  note: "IMF emergency talks; import crisis" },
+    { pair: "USD/TWD", rate: 33.20,  preWar: 31.8,   change: +4.4,  note: "CBC intervention; TSMC risk premium" },
+    { pair: "EUR/USD", rate: 0.9250, preWar: 0.9180, change: -0.8,  note: "ECB stagflation warning; energy crisis" },
+    { pair: "USD/AED", rate: 3.6725, preWar: 3.6725, change: 0.0,   note: "Fixed peg — UAE Central Bank since 1997" },
+    { pair: "USD/SAR", rate: 3.7500, preWar: 3.7500, change: 0.0,   note: "Fixed peg — Saudi SAMA" },
+  ],
+};
