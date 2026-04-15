@@ -1114,50 +1114,68 @@ function fmtDual(isoOrRfc: string): { uae: string; my: string; date: string } {
   }
 }
 
-// Multiple CORS-friendly RSS proxy services as fallback chain
+// ─── RSS XML parser (shared by all proxies) ───────────────────────────────
+function parseRssXml(xml: string): any[] {
+  const items: any[] = [];
+  const blocks = [...xml.matchAll(/<item[^>]*>([\s\S]*?)<\/item>/gi),
+                  ...xml.matchAll(/<entry[^>]*>([\s\S]*?)<\/entry>/gi)];
+  for (const m of blocks) {
+    const b = m[1];
+    const strip = (s: string) => s.replace(/<[^>]*>/g, "").replace(/&amp;/g,"&").replace(/&lt;/g,"<").replace(/&gt;/g,">").replace(/&quot;/g,'"').replace(/&#39;/g,"'").replace(/&nbsp;/g," ").trim();
+    const get = (tag: string) => {
+      const m2 = b.match(new RegExp(`<${tag}[^>]*>(?:<!\\[CDATA\\[)?([\\s\\S]*?)(?:\\]\\]>)?<\/${tag}>`, "i"));
+      return m2 ? strip(m2[1]) : "";
+    };
+    const title = get("title");
+    const desc  = get("description") || get("summary") || get("content");
+    const link  = b.match(/<link[^>]+href=["']([^"']+)["']/i)?.[1] ||
+                  b.match(/<link[^>]*>([^<]+)<\/link>/i)?.[1]?.trim() || "";
+    const pubDate = get("pubDate") || get("published") || get("updated") || get("dc:date") || "";
+    if (title) items.push({ title, description: desc, link, pubDate });
+  }
+  return items;
+}
+
+// ─── Proxy 1: corsproxy.io — free, unlimited, no API key ─────────────────
+async function fetchViaCorsProxy(rssUrl: string): Promise<any[]> {
+  const proxy = `https://corsproxy.io/?${encodeURIComponent(rssUrl)}`;
+  const res = await fetch(proxy, { signal: AbortSignal.timeout(12000) });
+  if (!res.ok) throw new Error(`corsproxy ${res.status}`);
+  const xml = await res.text();
+  const items = parseRssXml(xml);
+  if (!items.length) throw new Error("corsproxy no items");
+  return items;
+}
+
+// ─── Proxy 2: allorigins — free fallback ─────────────────────────────────
+async function fetchViaAllorigins(rssUrl: string): Promise<any[]> {
+  const proxy = `https://api.allorigins.win/get?url=${encodeURIComponent(rssUrl)}`;
+  const res = await fetch(proxy, { signal: AbortSignal.timeout(12000) });
+  const data = await res.json();
+  const xml = data.contents || "";
+  if (!xml) throw new Error("allorigins empty");
+  const items = parseRssXml(xml);
+  if (!items.length) throw new Error("allorigins no items");
+  return items;
+}
+
+// ─── Proxy 3: rss2json — last resort (rate-limited but works sometimes) ──
 async function fetchViaRss2Json(rssUrl: string): Promise<any[]> {
-  const apiUrl = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(rssUrl)}&count=20&api_key=`;
-  const res = await fetch(apiUrl, { signal: AbortSignal.timeout(10000) });
+  const url = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(rssUrl)}&count=20`;
+  const res = await fetch(url, { signal: AbortSignal.timeout(10000) });
   const data = await res.json();
   if (data.status !== "ok") throw new Error("rss2json failed");
   return data.items || [];
 }
 
-async function fetchViaAllorigins(rssUrl: string): Promise<any[]> {
-  const proxy = `https://api.allorigins.win/get?url=${encodeURIComponent(rssUrl)}`;
-  const res = await fetch(proxy, { signal: AbortSignal.timeout(10000) });
-  const data = await res.json();
-  const xml = data.contents || "";
-  if (!xml) throw new Error("allorigins empty");
-  // Parse XML items
-  const items: any[] = [];
-  const itemMatches = xml.matchAll(/<item[^>]*>([\s\S]*?)<\/item>/gi);
-  for (const m of itemMatches) {
-    const block = m[1];
-    const title = block.match(/<title[^>]*>(?:<\!\[CDATA\[)?([\s\S]*?)(?:\]\]>)?<\/title>/i)?.[1]?.trim() || "";
-    const link = block.match(/<link[^>]*>([\s\S]*?)<\/link>/i)?.[1]?.trim() ||
-                 block.match(/<link[^>]*\/>/i)?.[0]?.match(/href="([^"]+)"/)?.[1] || "";
-    const desc = block.match(/<description[^>]*>(?:<\!\[CDATA\[)?([\s\S]*?)(?:\]\]>)?<\/description>/i)?.[1]?.trim() || "";
-    const pubDate = block.match(/<pubDate[^>]*>([\s\S]*?)<\/pubDate>/i)?.[1]?.trim() ||
-                    block.match(/<published[^>]*>([\s\S]*?)<\/published>/i)?.[1]?.trim() || "";
-    if (title) items.push({ title, link, description: desc, pubDate });
-  }
-  if (!items.length) throw new Error("allorigins no items");
-  return items;
-}
-
 async function fetchRssFeed(source: { url: string; source: string }): Promise<any[]> {
   let rawItems: any[] = [];
-  // Try rss2json first, fall back to allorigins XML parsing
-  try {
-    rawItems = await fetchViaRss2Json(source.url);
-  } catch {
-    try {
-      rawItems = await fetchViaAllorigins(source.url);
-    } catch {
-      return []; // Both failed — skip this feed silently
-    }
-  }
+  // Try corsproxy first (free/unlimited) → allorigins → rss2json
+  try { rawItems = await fetchViaCorsProxy(source.url); }
+  catch { try { rawItems = await fetchViaAllorigins(source.url); }
+  catch { try { rawItems = await fetchViaRss2Json(source.url); }
+  catch { return []; } } }
+
   return rawItems.map((item: any) => ({
     title: item.title || "",
     summary: (item.description || item.content || "").replace(/<[^>]*>/g, "").slice(0, 500),
@@ -1169,10 +1187,34 @@ async function fetchRssFeed(source: { url: string; source: string }): Promise<an
   }));
 }
 
+// ─── MyMemory free translation API (500 chars/req, no key needed) ────────
+const bmCache = new Map<string, string>();
+async function translateToMalay(text: string): Promise<string> {
+  if (!text || text.length < 4) return text;
+  const key = text.slice(0, 120);
+  if (bmCache.has(key)) return bmCache.get(key)!;
+  // Apply word-swap first (instant, no network)
+  const swapped = translateToBM(text);
+  try {
+    const q = encodeURIComponent(text.slice(0, 480));
+    const res = await fetch(`https://api.mymemory.translated.net/get?q=${q}&langpair=en|ms`, { signal: AbortSignal.timeout(5000) });
+    const data = await res.json();
+    const translated = data?.responseData?.translatedText;
+    if (translated && data?.responseStatus === 200 && translated !== text) {
+      bmCache.set(key, translated);
+      return translated;
+    }
+  } catch { /* fall through to word-swap */ }
+  bmCache.set(key, swapped);
+  return swapped;
+}
+
 function NewsTab({ lang }: { lang: Lang }) {
   const [catFilter, setCatFilter] = useState("all");
   const [expanded, setExpanded] = useState<number | string | null>(null);
   const [rssNews, setRssNews] = useState<any[]>([]);
+  const [bmNews, setBmNews] = useState<Map<string, { title: string; summary: string }>>(new Map());
+  const [bmLoading, setBmLoading] = useState(false);
   const [loading, setLoading] = useState(true);
   const [rssError, setRssError] = useState(false);
   const [lastFetched, setLastFetched] = useState<Date | null>(null);
@@ -1238,6 +1280,33 @@ function NewsTab({ lang }: { lang: Lang }) {
     const interval = setInterval(doFetch, 60 * 1000); // refresh every 60 seconds
     return () => clearInterval(interval);
   }, []);
+
+  // Translate all titles/summaries via MyMemory when BM is selected
+  useEffect(() => {
+    if (lang !== "bm" || rssNews.length === 0) return;
+    let cancelled = false;
+    setBmLoading(true);
+    (async () => {
+      const map = new Map<string, { title: string; summary: string }>();
+      // Translate in batches of 5 (respect MyMemory rate limit)
+      for (let i = 0; i < rssNews.length; i += 5) {
+        if (cancelled) break;
+        const batch = rssNews.slice(i, i + 5);
+        await Promise.all(batch.map(async item => {
+          const key = item.title.slice(0, 60);
+          const [title, summary] = await Promise.all([
+            translateToMalay(item.title),
+            translateToMalay(item.summary?.slice(0, 300) || ""),
+          ]);
+          map.set(key, { title, summary });
+        }));
+        if (!cancelled) setBmNews(new Map(map));
+        await new Promise(r => setTimeout(r, 300));
+      }
+      if (!cancelled) setBmLoading(false);
+    })();
+    return () => { cancelled = true; };
+  }, [lang, rssNews]);
 
   const usingRss = rssNews.length > 0;
   const staticFiltered = catFilter === "all" ? NEWS : NEWS.filter(n => n.category === catFilter);
@@ -1308,8 +1377,14 @@ function NewsTab({ lang }: { lang: Lang }) {
 
       {/* RSS powered label */}
       {!loading && usingRss && (
-        <div className="text-[10px] text-white/20 font-mono">
+        <div className="text-[10px] text-white/20 font-mono flex items-center gap-2">
           {t("news.powered", lang)} · {rssNews.length} articles
+          {lang === "bm" && bmLoading && (
+            <span className="text-amber-400/50 animate-pulse">· Menterjemah ke BM...</span>
+          )}
+          {lang === "bm" && !bmLoading && bmNews.size > 0 && (
+            <span className="text-emerald-400/40">· Terjemahan BM aktif ✓</span>
+          )}
         </div>
       )}
 
@@ -1333,8 +1408,9 @@ function NewsTab({ lang }: { lang: Lang }) {
             const itemId = `rss-${idx}`;
             const cat = item.category as string;
             const { uae, my, date } = fmtDual(item.pubDate);
-            const headline = lang === "bm" ? translateToBM(item.title) : item.title;
-            const summary  = lang === "bm" ? translateToBM(item.summary) : item.summary;
+            const bmEntry = lang === "bm" ? bmNews.get(item.title.slice(0, 60)) : undefined;
+            const headline = bmEntry ? bmEntry.title : item.title;
+            const summary  = bmEntry ? bmEntry.summary : item.summary;
             return (
               <div key={itemId}
                 className="news-card bg-[#0d1117] border border-white/6 rounded-xl overflow-hidden cursor-pointer hover:border-white/10"
