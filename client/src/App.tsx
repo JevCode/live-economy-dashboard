@@ -1422,11 +1422,10 @@ function NewsTab({ lang }: { lang: Lang }) {
             const summary  = bmEntry ? bmEntry.summary : item.summary;
             return (
               <div key={itemId}
-                className={`news-card bg-[#0d1117] border rounded-xl overflow-hidden cursor-pointer transition-all ${
-                  item.isNew ? "border-amber-400/40 shadow-[0_0_12px_rgba(240,165,0,0.12)]" : "border-white/6 hover:border-white/10"
+                className={`news-card bg-[#0d1117] border rounded-xl overflow-hidden transition-all ${
+                  item.isNew ? "border-amber-400/40 shadow-[0_0_12px_rgba(240,165,0,0.12)]" : "border-white/6"
                 }`}
                 style={{ borderLeft: `2px solid ${item.isNew ? "#f0a500" : (catColor[cat] || "#ffffff10")}` }}
-                onClick={() => setExpanded(expanded === itemId ? null : itemId)}
               >
                 <div className="p-5">
                   <div className="flex items-start gap-4">
@@ -1434,53 +1433,33 @@ function NewsTab({ lang }: { lang: Lang }) {
                       {catIcon[cat] || "📰"}
                     </div>
                     <div className="flex-1 min-w-0">
-                      {/* Timestamps row */}
+                      {/* Timestamps + badges row */}
                       <div className="flex items-center gap-2 flex-wrap mb-1.5">
-                        {uae && (
-                          <span className="text-[10px] font-bold font-mono text-amber-400/60">
-                            🇦🇪 {uae}
-                          </span>
-                        )}
-                        {my && (
-                          <span className="text-[10px] font-bold font-mono text-blue-400/60">
-                            🇲🇾 {my}
-                          </span>
-                        )}
-                        {date && (
-                          <span className="text-[9px] text-white/20 font-mono">{date}</span>
-                        )}
+                        {uae && <span className="text-[10px] font-bold font-mono text-amber-400/60">🇦🇪 {uae}</span>}
+                        {my  && <span className="text-[10px] font-bold font-mono text-blue-400/60">🇲🇾 {my}</span>}
+                        {date && <span className="text-[9px] text-white/20 font-mono">{date}</span>}
                         <span className="text-[9px] px-1.5 py-0.5 rounded font-bold uppercase" style={{ background: (catColor[cat] || "#ffffff") + "15", color: catColor[cat] || "#ffffff60" }}>{cat}</span>
                         <span className="text-[9px] px-1.5 py-0.5 rounded font-bold uppercase" style={{ background: (impactColor[item.impact] || "#ffffff") + "15", color: impactColor[item.impact] || "#ffffff60" }}>{item.impact}</span>
-                        {item.isNew && (
-                          <span className="text-[9px] px-1.5 py-0.5 rounded font-bold uppercase bg-amber-400/20 text-amber-400 animate-pulse">NEW</span>
-                        )}
-                        {item.source && (
-                          <span className="text-[9px] text-white/25 font-mono">{item.source}</span>
-                        )}
+                        {item.isNew && <span className="text-[9px] px-1.5 py-0.5 rounded font-bold uppercase bg-amber-400/20 text-amber-400 animate-pulse">NEW</span>}
+                        {item.source && <span className="text-[9px] text-white/25 font-mono">{item.source}</span>}
                       </div>
-                      <h3 className="text-sm font-bold text-white leading-tight">
-                        {item.link ? (
-                          <a
-                            href={item.link}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="hover:text-amber-400 transition-colors"
-                            onClick={e => e.stopPropagation()}
-                          >{headline}</a>
-                        ) : headline}
+                      {/* Headline — plain <a> tag, iOS Safari safe */}
+                      <h3 className="text-sm font-bold leading-tight">
+                        {item.link
+                          ? <a href={item.link} target="_blank" rel="noopener noreferrer" className="text-white hover:text-amber-400 transition-colors">{headline}</a>
+                          : <span className="text-white">{headline}</span>
+                        }
                       </h3>
+                      {/* Summary + Read More — toggled by arrow button only */}
                       {expanded === itemId && (
                         <div className="mt-3 space-y-2">
-                          {summary && (
-                            <p className="text-xs text-white/55 leading-relaxed">{summary}</p>
-                          )}
+                          {summary && <p className="text-xs text-white/55 leading-relaxed">{summary}</p>}
                           {item.link && (
                             <a
                               href={item.link}
                               target="_blank"
                               rel="noopener noreferrer"
                               className="inline-flex items-center gap-1.5 text-[11px] font-bold text-amber-400 hover:text-amber-300 transition-colors mt-2 px-3 py-1.5 rounded-full border border-amber-400/30 hover:border-amber-400/60 bg-amber-400/5"
-                              onClick={e => { e.stopPropagation(); e.nativeEvent.stopImmediatePropagation(); window.open(item.link, '_blank', 'noopener,noreferrer'); }}
                             >
                               ↗ {t("news.readMore", lang)}
                             </a>
@@ -1488,7 +1467,13 @@ function NewsTab({ lang }: { lang: Lang }) {
                         </div>
                       )}
                     </div>
-                    <div className="text-white/20 text-xs shrink-0 mt-1">{expanded === itemId ? "▲" : "▼"}</div>
+                    {/* Expand toggle — only this button expands/collapses */}
+                    <button
+                      onClick={() => setExpanded(expanded === itemId ? null : itemId)}
+                      className="text-white/30 hover:text-white/60 text-xs shrink-0 mt-1 p-1"
+                    >
+                      {expanded === itemId ? "▲" : "▼"}
+                    </button>
                   </div>
                 </div>
               </div>
