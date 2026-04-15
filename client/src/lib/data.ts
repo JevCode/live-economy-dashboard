@@ -6,13 +6,13 @@
 // ═══════════════════════════════════════════════════
 
 export const LIVE = {
-  brentUSD: 94.82,
-  wtiUSD: 92.31,
-  goldOzUSD: 4810.50,
-  goldGramUSD: 154.66,
-  usdMyr: 3.9626,
+  brentUSD: 99.04,
+  wtiUSD: 97.45,
+  goldOzUSD: 4836.16,
+  goldGramUSD: 155.49,
+  usdMyr: 3.9600,
   usdAed: 3.6725,
-  dxy: 98.37,
+  dxy: 98.31,
   crisisDay: 46,
   crisisStart: "2026-02-28",
   asOf: "Apr 15, 2026",
@@ -44,7 +44,7 @@ export const OIL_TIMELINE = [
   { date: "Apr 7",  label: "D+38",    brent: 112,   wti: 109,   event: "Trump 8PM ultimatum to Iran. US strikes IRGC HQ Tehran with GBU-57 bunker busters.",type: "alert",    day: 38 },
   { date: "Apr 10", label: "D+41",    brent: 104,   wti: 100,   event: "US-UK navy destroys Iranian southern fleet. Hormuz partially reopens.",             type: "positive", day: 41 },
   { date: "Apr 14", label: "D+45",    brent: 95.51, wti: 93.31, event: "US–Iran peace talks Day 1 in Muscat. Brent −0.4%, WTI −4.7%.",                   type: "positive", day: 45 },
-  { date: "Apr 15", label: "TODAY",   brent: 94.82, wti: 92.31, event: "US–Iran peace talks Day 2. Markets cautiously optimistic. DXY 98.37.",              type: "today",    day: 46 },
+  { date: "Apr 15", label: "TODAY",   brent: 99.04, wti: 97.45, event: "US–Iran peace talks Day 2. Brent rebounds to $99. Gold hits $4,836 (+1.9%). DXY 98.31.", type: "today",    day: 46 },
 ];
 
 export const GOLD_TIMELINE = [
@@ -57,7 +57,7 @@ export const GOLD_TIMELINE = [
   { date: "Mar 31", price: 4680,    note: "IEA release pullback" },
   { date: "Apr 7",  price: 4810,    note: "Trump deadline spike" },
   { date: "Apr 14", price: 4786.69, note: "Peace talks Day 1" },
-  { date: "Apr 15", price: 4810.50, note: "Day 2 cautious optimism" },
+  { date: "Apr 15", price: 4836.16, note: "Day 2 talks: Gold +1.9% to $4,836" },
 ];
 
 export type Country = {
