@@ -616,13 +616,14 @@ export const STRIKE_EVENTS: StrikeEvent[] = [
   { id:12, date:"Apr 3, 2026",  day:34, target:"Dimona Nuclear Reactor (attempt)",  country:"Israel",       flag:"🇮🇱", type:"missile",   attacker:"IRGC",                   droneCount:0,   missileCount:22,  casualties:{killed:0,   wounded:4},     damageUSD:50,    severity:"minor",         description:"Attempted strike on Dimona Nuclear Research Center. ALL 22 ballistic missiles intercepted by Arrow-3. UN Security Council emergency session called.", infrastructure:"No significant damage — all intercepted. Minor perimeter fence damage." },
   { id:13, date:"Apr 7, 2026",  day:38, target:"IRGC HQ Tehran + Qom Bunkers",     country:"Iran",         flag:"🇮🇷", type:"airstrike", attacker:"USA",                     droneCount:0,   missileCount:240, casualties:{killed:520, wounded:1200},  damageUSD:7800,  severity:"catastrophic", description:"Trump 8PM deadline expires. Largest single-day strike: B-52H, B-2A, F-22 hit 40 targets across Tehran + Qom. GBU-57 Massive Ordnance Penetrators used for first time in combat.", infrastructure:"IRGC HQ destroyed, Qom underground bunkers, 18 missile sites, 6 radar installations" },
   { id:14, date:"Apr 10, 2026", day:41, target:"Iranian Navy Southern Fleet",       country:"Iran",         flag:"🇮🇷", type:"naval",     attacker:"US Navy + UK Royal Navy", droneCount:60,  missileCount:30,  casualties:{killed:234, wounded:560},   damageUSD:3100,  severity:"severe",        description:"Combined US-UK operation destroys Iran's southern fleet at Bandar Abbas. Hormuz partial navigation reopened under US Navy escort. Tanker traffic resuming.", infrastructure:"Iranian frigate fleet (4 ships sunk), Bandar Abbas naval base, 2 submarines" },
+  { id:15, date:"Feb 28 – Apr 9, 2026", day:1, target:"UAE Cities, Airports & Energy Infrastructure", country:"UAE", flag:"🇦🇪", type:"missile", attacker:"IRGC (Iran)", droneCount:2256, missileCount:537, casualties:{killed:13, wounded:224}, damageUSD:4800, severity:"severe", description:"Sustained 40-day Iranian missile and drone campaign on UAE. 537 ballistic missiles, 2,256 drones and 26 cruise missiles fired. Targets: Al Dhafra Air Base, Dubai International Airport (3 strikes), Jebel Ali Port, Fujairah Oil Zone, Habshan gas plant, Palm Jumeirah hotels, AWS data centre Dubai. Most intercepted by THAAD/Patriot — debris caused civilian deaths across Abu Dhabi, Dubai, Fujairah and Sharjah.", infrastructure:"Dubai Int'l Airport (3 strikes), Habshan gas plant, Fujairah Oil Industry Zone, Jebel Ali Port, EGA Al Taweelah aluminium plant, Camp de la Paix (French base), Oracle/AWS data centres" },
 ];
 
 export const WAR_STATS = {
-  totalStrikes: 14, totalDrones: 624, totalMissiles: 786,
-  totalKilled: 1556, totalWounded: 4710,
-  totalDamageUSD: 51380,
-  countriesStruck: 8,
+  totalStrikes: 15, totalDrones: 2880, totalMissiles: 1323,
+  totalKilled: 1569, totalWounded: 4934,
+  totalDamageUSD: 56180,
+  countriesStruck: 9,
   largestStrike: "Ras Laffan LNG ($18.7B damage, Mar 18)",
   hormuzStatus: "PARTIAL REOPEN (Apr 10, under US escort)",
 };
