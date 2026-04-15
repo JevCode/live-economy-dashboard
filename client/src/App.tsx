@@ -1044,41 +1044,29 @@ function translateToBM(text: string): string {
 }
 
 // RSS feeds via rss2json.com — full coverage: wire services + regional + energy + Gulf + Israel
+// All feeds verified working (200 OK + items confirmed) — April 2026
 const RSS_SOURCES = [
   // ── Global Wire Services ──
-  { url: "https://feeds.bbci.co.uk/news/world/middle_east/rss.xml",          source: "BBC Middle East" },
-  { url: "https://feeds.bbci.co.uk/news/world/rss.xml",                       source: "BBC World" },
-  { url: "https://www.aljazeera.com/xml/rss/all.xml",                         source: "Al Jazeera" },
-  { url: "https://feeds.reuters.com/reuters/worldNews",                        source: "Reuters World" },
-  { url: "https://feeds.skynews.com/feeds/rss/world.xml",                     source: "Sky News" },
-  { url: "https://www.theguardian.com/world/middleeast/rss",                  source: "The Guardian ME" },
-  { url: "https://rss.nytimes.com/services/xml/rss/nyt/MiddleEast.xml",       source: "NY Times ME" },
-  { url: "https://feeds.npr.org/1004/rss.xml",                                source: "NPR World" },
-  { url: "https://rss.dw.com/rdf/rss-en-world",                               source: "DW World" },
-  { url: "https://www.france24.com/en/rss",                                   source: "France 24" },
-  { url: "https://apnews.com/rss/worldnews",                                  source: "AP News" },
+  { url: "https://feeds.bbci.co.uk/news/world/middle_east/rss.xml", source: "BBC Middle East" },
+  { url: "https://feeds.bbci.co.uk/news/world/rss.xml",             source: "BBC World" },
+  { url: "https://feeds.skynews.com/feeds/rss/world.xml",           source: "Sky News" },
+  { url: "https://www.theguardian.com/world/middleeast/rss",        source: "The Guardian" },
+  { url: "https://rss.nytimes.com/services/xml/rss/nyt/MiddleEast.xml", source: "NY Times ME" },
+  { url: "https://feeds.npr.org/1004/rss.xml",                      source: "NPR World" },
   // ── Middle East Specialist ──
-  { url: "https://middleeasteye.net/rss",                                     source: "Middle East Eye" },
-  { url: "https://al-monitor.com/rss",                                        source: "Al-Monitor" },
-  { url: "https://www.middleeastmonitor.com/feed/",                           source: "MEMO" },
-  { url: "https://www.mei.edu/rss.xml",                                       source: "Middle East Institute" },
-  { url: "https://menews247.com/feed",                                        source: "ME News 247" },
-  // ── Gulf / UAE / Qatar ──
-  { url: "https://www.thenationalnews.com/rss",                               source: "The National (UAE)" },
-  { url: "https://gulfnews.com/rss/uae.xml",                                  source: "Gulf News" },
-  { url: "https://www.khaleejtimes.com/rss",                                  source: "Khaleej Times" },
-  { url: "https://dohanews.co/feed/",                                         source: "Doha News" },
-  { url: "https://www.arabnews.com/rss.xml",                                  source: "Arab News" },
-  // ── Israel ──
-  { url: "https://www.timesofisrael.com/feed/",                               source: "Times of Israel" },
-  { url: "https://rss.jpost.com/rss/rssfeedsfrontpage.aspx",                  source: "Jerusalem Post" },
-  { url: "https://www.haaretz.com/cmlink/1.4595544",                          source: "Haaretz" },
+  { url: "https://www.middleeastmonitor.com/feed/",                 source: "MEMO" },
+  { url: "https://www.middleeastmonitor.com/category/region/middle-east/feed/", source: "MEMO Middle East" },
+  { url: "https://www.al-monitor.com/rss.xml",                      source: "Al-Monitor" },
+  { url: "https://dohanews.co/feed/",                               source: "Doha News" },
+  { url: "https://www.crisisgroup.org/rss.xml",                     source: "Crisis Group" },
+  { url: "https://reliefweb.int/updates/rss.xml",                   source: "ReliefWeb" },
+  // ── Israel / ME ──
+  { url: "https://www.jpost.com/rss/rssfeedsfrontpage.aspx",        source: "Jerusalem Post" },
+  { url: "https://www.jewishpress.com/feed/",                       source: "Jewish Press" },
   // ── Energy / Oil ──
-  { url: "https://oilprice.com/rss/main",                                     source: "OilPrice.com" },
-  { url: "https://www.energymonitor.ai/feed",                                 source: "Energy Monitor" },
+  { url: "https://oilprice.com/rss/main",                           source: "OilPrice.com" },
   // ── Finance / Economy ──
-  { url: "https://feeds.marketwatch.com/marketwatch/topstories/",             source: "MarketWatch" },
-  { url: "https://feeds.bloomberg.com/markets/news.rss",                      source: "Bloomberg Markets" },
+  { url: "https://feeds.bloomberg.com/markets/news.rss",            source: "Bloomberg Markets" },
 ];
 
 const WAR_KW = ["iran","hormuz","tehran","brent","oil","crude","opec","gold","energy","crisis","war","strike","missile","drone","ceasefire","peace","sanction","gulf","qatar","uae","saudi","kuwait","bahrain","oman","iraq","israel","hezbollah","houthi","irgc","lng","refinery","nuclear","fuel","barrel","humanitarian","un ","imf","recession","inflation","dollar","ringgit"];
@@ -1136,30 +1124,30 @@ function parseRssXml(xml: string): any[] {
   return items;
 }
 
-// ─── Proxy 1: corsproxy.io — free, unlimited, no API key ─────────────────
-async function fetchViaCorsProxy(rssUrl: string): Promise<any[]> {
-  const proxy = `https://corsproxy.io/?${encodeURIComponent(rssUrl)}`;
+// ─── Proxy 1: allorigins /raw — returns XML directly, free & reliable ───
+async function fetchViaAlloriginsRaw(rssUrl: string): Promise<any[]> {
+  const proxy = `https://api.allorigins.win/raw?url=${encodeURIComponent(rssUrl)}`;
   const res = await fetch(proxy, { signal: AbortSignal.timeout(12000) });
-  if (!res.ok) throw new Error(`corsproxy ${res.status}`);
+  if (!res.ok) throw new Error(`allorigins/raw ${res.status}`);
   const xml = await res.text();
   const items = parseRssXml(xml);
-  if (!items.length) throw new Error("corsproxy no items");
+  if (!items.length) throw new Error("allorigins/raw no items");
   return items;
 }
 
-// ─── Proxy 2: allorigins — free fallback ─────────────────────────────────
-async function fetchViaAllorigins(rssUrl: string): Promise<any[]> {
+// ─── Proxy 2: allorigins /get — JSON wrapper fallback ────────────────────
+async function fetchViaAlloriginsGet(rssUrl: string): Promise<any[]> {
   const proxy = `https://api.allorigins.win/get?url=${encodeURIComponent(rssUrl)}`;
   const res = await fetch(proxy, { signal: AbortSignal.timeout(12000) });
   const data = await res.json();
   const xml = data.contents || "";
-  if (!xml) throw new Error("allorigins empty");
+  if (!xml) throw new Error("allorigins/get empty");
   const items = parseRssXml(xml);
-  if (!items.length) throw new Error("allorigins no items");
+  if (!items.length) throw new Error("allorigins/get no items");
   return items;
 }
 
-// ─── Proxy 3: rss2json — last resort (rate-limited but works sometimes) ──
+// ─── Proxy 3: rss2json — last resort ─────────────────────────────────────
 async function fetchViaRss2Json(rssUrl: string): Promise<any[]> {
   const url = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(rssUrl)}&count=20`;
   const res = await fetch(url, { signal: AbortSignal.timeout(10000) });
@@ -1170,9 +1158,9 @@ async function fetchViaRss2Json(rssUrl: string): Promise<any[]> {
 
 async function fetchRssFeed(source: { url: string; source: string }): Promise<any[]> {
   let rawItems: any[] = [];
-  // Try corsproxy first (free/unlimited) → allorigins → rss2json
-  try { rawItems = await fetchViaCorsProxy(source.url); }
-  catch { try { rawItems = await fetchViaAllorigins(source.url); }
+  // allorigins/raw (most reliable) → allorigins/get → rss2json
+  try { rawItems = await fetchViaAlloriginsRaw(source.url); }
+  catch { try { rawItems = await fetchViaAlloriginsGet(source.url); }
   catch { try { rawItems = await fetchViaRss2Json(source.url); }
   catch { return []; } } }
 
