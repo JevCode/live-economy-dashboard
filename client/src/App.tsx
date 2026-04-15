@@ -1197,84 +1197,88 @@ function NewsTab({ lang }: { lang: Lang }) {
   const cats = ["all","military","energy","economy","diplomacy","humanitarian"] as const;
   const catIcon: Record<string, string> = { military:"⚔️", energy:"⚡", economy:"📈", diplomacy:"🕊️", humanitarian:"🤝" };
 
-  // seenTitles tracks all titles we've shown — persists across refreshes
+  // Tracks article titles already shown — never cleared, survives re-renders
   const seenTitlesRef = React.useRef<Set<string>>(new Set());
   const [newCount, setNewCount] = useState(0);
+  const isFetchingRef = React.useRef(false); // prevent overlapping fetches
+  const isFirstLoadRef = React.useRef(true);
 
-  function processItems(all: any[], isFirstLoad: boolean) {
-    // Filter to war/crisis keywords
-    let filtered = all.filter(item => {
-      const text = (item.title + " " + item.summary).toLowerCase();
-      return WAR_KW.some(kw => text.includes(kw));
-    });
-    // Fall back to all items if keyword filter catches nothing
-    if (filtered.length === 0) filtered = all;
+  function dedupeAndSort(items: any[]): any[] {
     // Sort newest first
-    filtered.sort((a, b) => new Date(b.pubDate).getTime() - new Date(a.pubDate).getTime());
-    // Deduplicate
+    items.sort((a, b) => new Date(b.pubDate).getTime() - new Date(a.pubDate).getTime());
+    // Deduplicate by title
     const seen = new Set<string>();
-    const unique = filtered.filter(item => {
+    return items.filter(item => {
+      if (!item.title) return false;
       const key = item.title.slice(0, 60).toLowerCase();
       if (seen.has(key)) return false;
       seen.add(key);
       return true;
     });
-    if (unique.length === 0) return;
-
-    if (isFirstLoad) {
-      // First load: show everything, mark all as seen
-      unique.forEach(item => seenTitlesRef.current.add(item.title.slice(0, 60).toLowerCase()));
-      setRssNews(unique.slice(0, 80));
-      setRssError(false);
-      setNewCount(0);
-    } else {
-      // Subsequent polls: find genuinely new articles not seen before
-      const brandNew = unique.filter(item => !seenTitlesRef.current.has(item.title.slice(0, 60).toLowerCase()));
-      if (brandNew.length > 0) {
-        brandNew.forEach(item => seenTitlesRef.current.add(item.title.slice(0, 60).toLowerCase()));
-        // Prepend new articles with isNew flag, keep existing, cap at 120
-        setRssNews(prev => {
-          const tagged = brandNew.map(item => ({ ...item, isNew: true }));
-          const combined = [...tagged, ...prev].slice(0, 120);
-          return combined;
-        });
-        setNewCount(prev => prev + brandNew.length);
-        setRssError(false);
-      }
-    }
   }
 
-  const isFirstLoadRef = React.useRef(true);
-
   async function doFetch() {
+    // Skip if a fetch is already running
+    if (isFetchingRef.current) return;
+    isFetchingRef.current = true;
     const isFirst = isFirstLoadRef.current;
     if (isFirst) setLoading(true);
+
     try {
-      const timeout = new Promise<never>((_, rej) => setTimeout(() => rej(new Error("global timeout")), 15000));
+      // All feeds fire in parallel, hard 20s global cap
+      const timeout = new Promise<never>((_, rej) => setTimeout(() => rej(new Error("timeout")), 20000));
       const fetchAll = Promise.allSettled(RSS_SOURCES.map(fetchRssFeed));
       const results = await Promise.race([fetchAll, timeout]) as PromiseSettledResult<any[]>[];
+
       const all: any[] = [];
       for (const r of results) {
         if (r.status === "fulfilled") all.push(...r.value);
       }
-      if (all.length > 0) {
-        processItems(all, isFirst);
+
+      if (all.length === 0) {
+        if (isFirst) setRssError(true);
+        return;
+      }
+
+      // Show ALL articles — no keyword filter blocking anything
+      const unique = dedupeAndSort(all);
+
+      if (isFirst) {
+        // First load: show everything
+        unique.forEach(item => seenTitlesRef.current.add(item.title.slice(0, 60).toLowerCase()));
+        setRssNews(unique);
+        setRssError(false);
         isFirstLoadRef.current = false;
-      } else if (isFirst) {
-        setRssError(true);
+      } else {
+        // Subsequent refresh: only prepend brand-new articles not seen before
+        const brandNew = unique.filter(
+          item => !seenTitlesRef.current.has(item.title.slice(0, 60).toLowerCase())
+        );
+        if (brandNew.length > 0) {
+          brandNew.forEach(item => seenTitlesRef.current.add(item.title.slice(0, 60).toLowerCase()));
+          setRssNews(prev => [
+            ...brandNew.map(item => ({ ...item, isNew: true })),
+            ...prev,
+          ]);
+          setNewCount(prev => prev + brandNew.length);
+        }
+        // If nothing new, existing articles stay exactly as-is — no change
+        setRssError(false);
       }
     } catch {
+      // On error, keep whatever is already showing — never clear the feed
       if (isFirst) setRssError(true);
     } finally {
       setLastFetched(new Date());
       if (isFirst) setLoading(false);
+      isFetchingRef.current = false;
     }
   }
 
   useEffect(() => {
     doFetch();
-    // Poll every 5s — only prepends genuinely new articles, no flicker
-    const interval = setInterval(doFetch, 5000);
+    // Refresh every 5 minutes — only NEW articles get prepended, existing stay
+    const interval = setInterval(doFetch, 5 * 60 * 1000);
     return () => clearInterval(interval);
   }, []);
 

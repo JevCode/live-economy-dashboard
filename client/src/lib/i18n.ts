@@ -165,7 +165,7 @@ const translations = {
   "news.readMore": { en: "Read full article →", bm: "Baca artikel penuh →" },
   "news.fetchFail": { en: "Live feed unavailable. Showing daily briefing.", bm: "Suapan langsung tidak tersedia. Menunjukkan taklimat harian." },
   "news.articlesLive": { en: "articles from live sources", bm: "artikel dari sumber langsung" },
-  "news.autoRefresh": { en: "Refreshes every 60s", bm: "Muat semula setiap 60 saat" },
+  "news.autoRefresh": { en: "New articles checked every 5 min", bm: "Artikel baharu disemak setiap 5 minit" },
 
   // ── CURRENCIES TAB ──
   "cur.converter": { en: "CURRENCY CONVERTER", bm: "PENUKAR MATA WANG" },
