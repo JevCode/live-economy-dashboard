@@ -43,7 +43,7 @@ const statusBg: Record<string, string> = {
   critical: "rgba(239,68,68,0.12)", high: "rgba(249,115,22,0.12)", moderate: "rgba(240,165,0,0.12)", low: "rgba(59,130,246,0.12)", benefiting: "rgba(34,197,94,0.12)",
 };
 const catColor: Record<string, string> = {
-  military: "#ef4444", energy: "#f97316", economy: "#3b82f6", diplomacy: "#a855f7", humanitarian: "#ec4899",
+  military: "#ef4444", energy: "#f97316", economy: "#3b82f6", diplomacy: "#a855f7", humanitarian: "#ec4899", leaders: "#f0a500",
 };
 const impactColor: Record<string, string> = {
   critical: "#ef4444", major: "#f97316", moderate: "#f0a500", positive: "#22c55e",
@@ -1718,11 +1718,12 @@ function NewsTab({ lang }: { lang: Lang }) {
   const [rssNews, setRssNews] = useState<any[]>([]);
   const [bmNews, setBmNews] = useState<Map<string, { title: string; summary: string }>>(new Map());
   const [bmLoading, setBmLoading] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false); // show static content immediately; RSS loads on top
   const [rssError, setRssError] = useState(false);
   const [lastFetched, setLastFetched] = useState<Date | null>(null);
 
-  const cats = ["all","leaders","military","energy","economy","diplomacy","humanitarian"] as const;
+  const allCats = ["all","leaders","military","energy","economy","diplomacy","humanitarian"] as const;
+  const staticCats = ["all","military","energy","economy","diplomacy","humanitarian"] as const;
   const catIcon: Record<string, string> = { leaders:"👤", military:"⚔️", energy:"⚡", economy:"📈", diplomacy:"🕊️", humanitarian:"🤝" };
   const leaderMeta: Record<string, { flag: string; name: string; color: string }> = {
     trump: { flag: "🇺🇸", name: "Trump",   color: "#3b82f6" },
@@ -1754,7 +1755,6 @@ function NewsTab({ lang }: { lang: Lang }) {
     if (isFetchingRef.current) return;
     isFetchingRef.current = true;
     const isFirst = isFirstLoadRef.current;
-    if (isFirst) setLoading(true);
 
     try {
       // All feeds fire in parallel, hard 20s global cap
@@ -1799,10 +1799,12 @@ function NewsTab({ lang }: { lang: Lang }) {
       }
     } catch {
       // On error, keep whatever is already showing — never clear the feed
-      if (isFirst) setRssError(true);
+      if (isFirst) {
+        setRssError(true);
+        setCatFilter("all"); // reset to all so static fallback always shows content
+      }
     } finally {
       setLastFetched(new Date());
-      if (isFirst) setLoading(false);
       isFetchingRef.current = false;
     }
   }
@@ -1842,8 +1844,10 @@ function NewsTab({ lang }: { lang: Lang }) {
   }, [lang, rssNews]);
 
   const usingRss = rssNews.length > 0;
-  const staticFiltered = catFilter === "all" ? NEWS : NEWS.filter(n => n.category === catFilter);
-  const rssFiltered = catFilter === "all" ? rssNews : rssNews.filter(item => item.category === catFilter);
+  // If RSS isn't available and a leaders filter was selected, fall back to 'all'
+  const effectiveCatFilter = (!usingRss && catFilter === "leaders") ? "all" : catFilter;
+  const staticFiltered = effectiveCatFilter === "all" ? NEWS : NEWS.filter(n => n.category === effectiveCatFilter);
+  const rssFiltered = effectiveCatFilter === "all" ? rssNews : rssNews.filter(item => item.category === effectiveCatFilter);
   const displayItems = usingRss ? rssFiltered : staticFiltered;
 
   function formatLastFetched(d: Date): string {
@@ -1932,10 +1936,10 @@ function NewsTab({ lang }: { lang: Lang }) {
       {/* Category filter */}
       {!loading && (
         <div className="flex flex-wrap gap-2">
-          {cats.map(c => (
+          {(usingRss ? allCats : staticCats).map(c => (
             <button key={c} onClick={() => setCatFilter(c)}
-              className={`px-3 py-1.5 rounded-full text-[10px] font-bold tracking-wider uppercase transition-all border ${catFilter === c ? "border-white/20 text-white bg-white/8" : "bg-transparent border-white/5 text-white/30 hover:border-white/10"}`}
-              style={catFilter === c && c !== "all" ? { borderColor: catColor[c] + "60", color: catColor[c], background: catColor[c] + "12" } : {}}>
+              className={`px-3 py-1.5 rounded-full text-[10px] font-bold tracking-wider uppercase transition-all border ${effectiveCatFilter === c ? "border-white/20 text-white bg-white/8" : "bg-transparent border-white/5 text-white/30 hover:border-white/10"}`}
+              style={effectiveCatFilter === c && c !== "all" ? { borderColor: catColor[c] + "60", color: catColor[c], background: catColor[c] + "12" } : {}}>
               {c !== "all" ? catIcon[c] : ""} {t(`news.${c}` as any, lang)}
             </button>
           ))}
