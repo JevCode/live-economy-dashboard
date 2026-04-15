@@ -66,9 +66,9 @@ function Ticker({ cur }: { cur: string }) {
   }, []);
 
   const items = [
-    { l: "BRENT CRUDE", v: `$${vals.brent.toFixed(2)}`, c: "▲ +3.7% today", dn: false },
-    { l: "WTI CRUDE",   v: `$${vals.wti.toFixed(2)}`,   c: "▲ +4.4% today", dn: false },
-    { l: "GOLD XAU",    v: `$${vals.gold.toFixed(2)}/oz`, c: "▲ +1.91% today", dn: false },
+    { l: "BRENT CRUDE", v: `$${vals.brent.toFixed(2)}`, c: "▼ −0.32% today", dn: true },
+    { l: "WTI CRUDE",   v: `$${vals.wti.toFixed(2)}`,   c: "▼ −1.65% today", dn: true },
+    { l: "GOLD XAU",    v: `$${vals.gold.toFixed(2)}/oz`, c: "▼ −0.34% today", dn: true },
     { l: "USD/MYR",     v: `${LIVE.usdMyr}`,             c: "Ringgit pressure", dn: true },
     { l: "USD/AED",     v: `${LIVE.usdAed}`,             c: "Pegged stable", dn: false },
     { l: "DXY INDEX",   v: `${LIVE.dxy}`,                c: "▼ −0.35%", dn: true },
@@ -147,8 +147,8 @@ function OilTab({ cur }: { cur: string }) {
       {/* KPI row */}
       <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3">
         <KpiCard label="Iran Crisis — Day" value={`Day ${LIVE.crisisDay}`} sub="Since Feb 28, 2026" change={`${pctPreWar} from $65 baseline`} changeUp={false} accent="#ef4444" />
-        <KpiCard label="Brent Crude" value={fmt(LIVE.brentUSD, cur)} sub="per barrel · Apr 15 close" change="▲ +3.7% today" changeUp={true} accent="#f97316" />
-        <KpiCard label="WTI Crude" value={fmt(LIVE.wtiUSD, cur)} sub="per barrel" change="▲ +4.4% today" changeUp={true} accent="#f97316" />
+        <KpiCard label="Brent Crude" value={fmt(LIVE.brentUSD, cur)} sub="per barrel · Apr 15 close" change="▼ −0.32% today" changeUp={false} accent="#f97316" />
+        <KpiCard label="WTI Crude" value={fmt(LIVE.wtiUSD, cur)} sub="per barrel" change="▼ −1.65% today" changeUp={false} accent="#f97316" />
         <KpiCard label="Peak (Mar 18)" value={fmt(LIVE.brentPeak, cur)} sub="Iran hit Qatar Ras Laffan" change={`${pctFromPeak} from peak`} changeUp={false} accent="#8b5cf6" />
         <KpiCard label="DXY USD Index" value={`${LIVE.dxy}`} sub="Dollar basket" change="▼ −0.35% today" changeUp={false} accent="#3b82f6" />
         <KpiCard label="USD / MYR" value={LIVE.usdMyr.toString()} sub="Mid-market rate" change="↑ Ringgit under pressure" changeUp={false} accent="#06b6d4" />
@@ -235,7 +235,7 @@ function OilTab({ cur }: { cur: string }) {
         </div>
       </div>
 
-      <p className="text-[10px] text-white/20">Sources: Brent/WTI — Barchart / Pound Sterling Live / WSJ (Apr 15, 2026 — OilPrice.com, TradingEconomics, Investing.com) · DXY — Investing.com · USD/MYR — Pound Sterling Live</p>
+      <p className="text-[10px] text-white/20">Sources: Brent/WTI — OilPrice.com · Gold — TradingEconomics · DXY — Yahoo Finance · USD/MYR — open.er-api.com (Apr 15, 2026)</p>
     </div>
   );
 }
@@ -260,7 +260,7 @@ function GoldTab({ cur }: { cur: string }) {
     <div className="space-y-6 p-6">
       {/* KPIs */}
       <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3">
-        <KpiCard label="Gold Spot (24K/oz)" value={fmt(LIVE.goldOzUSD, cur)} sub="per troy ounce (31.1g)" change="▲ +1.91% today" changeUp={true} accent="#f0a500" />
+        <KpiCard label="Gold Spot (24K/oz)" value={fmt(LIVE.goldOzUSD, cur)} sub="per troy ounce (31.1g)" change="▼ −0.34% today" changeUp={false} accent="#f0a500" />
         <KpiCard label="Gold Per Gram (24K)" value={fmt(LIVE.goldGramUSD, cur)} sub="per gram" change="▲ +48% year-on-year" changeUp={true} accent="#f0a500" />
         <KpiCard label="All-Time High" value={`$${LIVE.goldATH.toLocaleString()}`} sub={`${LIVE.goldATHDate} (per oz)`} change="▼ −14.6% from ATH" changeUp={false} accent="#8b5cf6" />
         <KpiCard label="Gold in MYR (oz)" value={`RM ${(LIVE.goldOzUSD * LIVE.usdMyr).toLocaleString("en-MY", { maximumFractionDigits:0 })}`} sub="per troy ounce" change="▲ Safe-haven demand" changeUp={true} accent="#f0a500" />
@@ -672,7 +672,7 @@ function WarTab() {
       <div className="bg-[#0d1117] border-l-2 border-amber-500/60 border border-white/5 rounded-xl px-5 py-4 text-xs text-white/50 space-y-1">
         <div><span className="text-white/60 font-bold">Largest single strike: </span>{WAR_STATS.largestStrike}</div>
         <div><span className="text-white/60 font-bold">Hormuz status: </span><span className="text-emerald-400 font-bold">{WAR_STATS.hormuzStatus}</span></div>
-        <div><span className="text-white/60 font-bold">As of: </span>Apr 15, 2026 · US-Iran peace talks Day 2 in Muscat</div>
+        <div><span className="text-white/60 font-bold">As of: </span>Apr 15, 2026 · US-Iran peace talks Day 2 · Brent $99.04 · Gold $4,825</div>
       </div>
 
       {/* ── LEADERBOARDS ── */}
