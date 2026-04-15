@@ -970,73 +970,200 @@ function WarTab({ lang }: { lang: Lang }) {
 }
 
 // ── NEWS TAB ──
+// ── BM word-swap dictionary for news translation ──
+const BM_DICT: [RegExp, string][] = [
+  [/\bUnited States\b/gi, "Amerika Syarikat"],
+  [/\bIran(ian)?\b/gi, (m) => m.toLowerCase().includes("ian") ? "Iran" : "Iran"],
+  [/\bIsrael(i)?\b/gi, "Israel"],
+  [/\bceasefire\b/gi, "gencatan senjata"],
+  [/\bpeace talks?\b/gi, "rundingan damai"],
+  [/\bsanctions?\b/gi, "sekatan"],
+  [/\bstrike[sd]?\b/gi, "serangan"],
+  [/\bmissile[sd]?\b/gi, "peluru berpandu"],
+  [/\bdrone[sd]?\b/gi, "dron"],
+  [/\bcrude oil\b/gi, "minyak mentah"],
+  [/\bnatural gas\b/gi, "gas asli"],
+  [/\bfuel\b/gi, "bahan api"],
+  [/\benergy\b/gi, "tenaga"],
+  [/\beconomy\b/gi, "ekonomi"],
+  [/\beconomic\b/gi, "ekonomi"],
+  [/\bgold\b/gi, "emas"],
+  [/\binflation\b/gi, "inflasi"],
+  [/\brecession\b/gi, "kemelesetan"],
+  [/\brefinery\b/gi, "kilang penapisan"],
+  [/\bpipeline\b/gi, "saluran paip"],
+  [/\bHormuz\b/gi, "Hormuz"],
+  [/\bhumanitarian\b/gi, "kemanusiaan"],
+  [/\brefugees?\b/gi, "pelarian"],
+  [/\bdiplomacy\b/gi, "diplomasi"],
+  [/\bnegotiations?\b/gi, "rundingan"],
+  [/\bmilitary\b/gi, "ketenteraan"],
+  [/\battack[sd]?\b/gi, "serangan"],
+  [/\bwarship[sd]?\b/gi, "kapal perang"],
+  [/\bnavy\b/gi, "tentera laut"],
+  [/\bairstrike[sd]?\b/gi, "serangan udara"],
+  [/\bnuclear\b/gi, "nuklear"],
+  [/\bsanctioned\b/gi, "dikenakan sekatan"],
+  [/\bbarrel[sd]?\b/gi, "tong"],
+  [/\bexports?\b/gi, "eksport"],
+  [/\bimports?\b/gi, "import"],
+  [/\bcrisis\b/gi, "krisis"],
+  [/\bwar\b/gi, "perang"],
+  [/\bkilled\b/gi, "terbunuh"],
+  [/\bwounded\b/gi, "cedera"],
+  [/\bcasualties\b/gi, "korban"],
+  [/\bhospital\b/gi, "hospital"],
+  [/\baid\b/gi, "bantuan"],
+  [/\bUN\b/g, "PBB"],
+  [/\bUnited Nations\b/gi, "Pertubuhan Bangsa-Bangsa Bersatu"],
+  [/\bIMF\b/g, "IMF"],
+  [/\bWorld Bank\b/gi, "Bank Dunia"],
+  [/\bdollar\b/gi, "dolar"],
+  [/\bringgit\b/gi, "ringgit"],
+  [/\bsurge[sd]?\b/gi, "lonjakan"],
+  [/\bfalls?\b/gi, "jatuh"],
+  [/\brises?\b/gi, "naik"],
+  [/\bplunges?\b/gi, "merosot"],
+  [/\bsoars?\b/gi, "melambung"],
+  [/\breport[sd]?\b/gi, "laporan"],
+  [/\bpresident\b/gi, "presiden"],
+  [/\bminister\b/gi, "menteri"],
+  [/\bgovernment\b/gi, "kerajaan"],
+  [/\bsecurity council\b/gi, "majlis keselamatan"],
+  [/\bveto\b/gi, "veto"],
+  [/\bemergency\b/gi, "kecemasan"],
+];
+
+function translateToBM(text: string): string {
+  if (!text) return text;
+  let result = text;
+  for (const [pattern, replacement] of BM_DICT) {
+    result = result.replace(pattern, replacement as string);
+  }
+  return result;
+}
+
+// RSS feeds via rss2json.com (free, CORS-friendly, no API key for basic use)
+const RSS_SOURCES = [
+  { url: "https://feeds.bbci.co.uk/news/world/middle_east/rss.xml", source: "BBC News" },
+  { url: "https://www.aljazeera.com/xml/rss/all.xml", source: "Al Jazeera" },
+  { url: "https://feeds.reuters.com/reuters/worldNews", source: "Reuters" },
+  { url: "https://feeds.skynews.com/feeds/rss/world.xml", source: "Sky News" },
+  { url: "https://www.theguardian.com/world/middleeast/rss", source: "The Guardian" },
+  { url: "https://rss.nytimes.com/services/xml/rss/nyt/MiddleEast.xml", source: "NY Times" },
+];
+
+const WAR_KW = ["iran","hormuz","tehran","brent","oil","crude","opec","gold","energy","crisis","war","strike","missile","drone","ceasefire","peace","sanction","gulf","qatar","uae","saudi","kuwait","bahrain","oman","iraq","israel","hezbollah","houthi","irgc","lng","refinery","nuclear","fuel","barrel","humanitarian","un ","imf","recession","inflation","dollar","ringgit"];
+
+function categorizeItem(title: string, desc: string): string {
+  const text = (title + " " + desc).toLowerCase();
+  if (/missile|strike|drone|military|attack|bomb|navy|pentagon|centcom|irgc|weapon|soldier|airstrike/.test(text)) return "military";
+  if (/oil|crude|brent|wti|lng|opec|energy|fuel|power|refinery|pipeline|barrel/.test(text)) return "energy";
+  if (/gold|dollar|gdp|inflation|economy|recession|trade|market|stock|imf|bank|currency|ringgit|dirham|peso/.test(text)) return "economy";
+  if (/ceasefire|diplomacy|peace|talks|negotiat|sanction|un |treaty|resolution|summit/.test(text)) return "diplomacy";
+  if (/humanitarian|refugee|aid|hunger|famine|medical|hospital|civilian|casualt|death|killed|wounded/.test(text)) return "humanitarian";
+  return "economy";
+}
+
+function impactFromText(title: string, desc: string): string {
+  const text = (title + " " + desc).toLowerCase();
+  if (/ceasefire|peace deal|agreement|reopen|positive|recovery|stabilise|stabilize/.test(text)) return "positive";
+  if (/catastroph|emergency|famine|historic|record|surge|worst|collapse/.test(text)) return "critical";
+  if (/major|significant|escalat|intensif|veto|deadline|ultimatum/.test(text)) return "major";
+  return "moderate";
+}
+
+function fmtDual(isoOrRfc: string): { uae: string; my: string; date: string } {
+  try {
+    const d = new Date(isoOrRfc);
+    if (isNaN(d.getTime())) return { uae: "", my: "", date: "" };
+    const uae = d.toLocaleString("en-GB", { timeZone: "Asia/Dubai",   hour: "2-digit", minute: "2-digit", hour12: false });
+    const my  = d.toLocaleString("en-GB", { timeZone: "Asia/Kuala_Lumpur", hour: "2-digit", minute: "2-digit", hour12: false });
+    const date = d.toLocaleString("en-GB", { timeZone: "Asia/Dubai", day: "2-digit", month: "short" });
+    return { uae, my, date };
+  } catch {
+    return { uae: "", my: "", date: "" };
+  }
+}
+
+async function fetchRssFeed(source: { url: string; source: string }): Promise<any[]> {
+  const apiUrl = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(source.url)}&count=20`;
+  const res = await fetch(apiUrl, { signal: AbortSignal.timeout(8000) });
+  const data = await res.json();
+  if (data.status !== "ok") return [];
+  return (data.items || []).map((item: any) => ({
+    title: item.title || "",
+    summary: item.description?.replace(/<[^>]*>/g, "").slice(0, 500) || "",
+    link: item.link || "",
+    pubDate: item.pubDate || "",
+    source: source.source,
+    category: categorizeItem(item.title || "", item.description || ""),
+    impact: impactFromText(item.title || "", item.description || ""),
+  }));
+}
+
 function NewsTab({ lang }: { lang: Lang }) {
   const [catFilter, setCatFilter] = useState("all");
   const [expanded, setExpanded] = useState<number | string | null>(null);
   const [rssNews, setRssNews] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [rssError, setRssError] = useState(false);
-  const [lastFetched, setLastFetched] = useState<string | null>(null);
+  const [lastFetched, setLastFetched] = useState<Date | null>(null);
 
   const cats = ["all","military","energy","economy","diplomacy","humanitarian"] as const;
   const catIcon: Record<string, string> = { military:"⚔️", energy:"⚡", economy:"📈", diplomacy:"🕊️", humanitarian:"🤝" };
 
-  function doFetch() {
+  async function doFetch() {
     setLoading(true);
-    fetch("/api/news")
-      .then(r => r.json())
-      .then(data => {
-        if (data.ok && data.items?.length > 0) {
-          setRssNews(data.items);
-          setLastFetched(data.fetchedAt ?? new Date().toISOString());
-        }
-        setLoading(false);
-      })
-      .catch(() => { setRssError(true); setLoading(false); });
+    try {
+      const results = await Promise.allSettled(RSS_SOURCES.map(fetchRssFeed));
+      const all: any[] = [];
+      for (const r of results) {
+        if (r.status === "fulfilled") all.push(...r.value);
+      }
+      // Filter to war/crisis/energy relevant
+      const filtered = all.filter(item => {
+        const text = (item.title + " " + item.summary).toLowerCase();
+        return WAR_KW.some(kw => text.includes(kw));
+      });
+      // Sort newest first
+      filtered.sort((a, b) => new Date(b.pubDate).getTime() - new Date(a.pubDate).getTime());
+      // Deduplicate by title
+      const seen = new Set<string>();
+      const unique = filtered.filter(item => {
+        const key = item.title.slice(0, 60).toLowerCase();
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      });
+      if (unique.length > 0) {
+        setRssNews(unique.slice(0, 60));
+        setRssError(false);
+      } else {
+        setRssError(true);
+      }
+    } catch {
+      setRssError(true);
+    } finally {
+      setLastFetched(new Date());
+      setLoading(false);
+    }
   }
 
   useEffect(() => {
     doFetch();
-    const interval = setInterval(doFetch, 15 * 60 * 1000); // auto-refresh every 15 minutes
+    const interval = setInterval(doFetch, 60 * 1000); // refresh every 60 seconds
     return () => clearInterval(interval);
   }, []);
 
   const usingRss = rssNews.length > 0;
-
-  // For RSS items, we map category from data or default to "energy"
-  function getRssCategory(item: any): string {
-    if (item.category) return item.category;
-    const title = (item.title || "").toLowerCase();
-    if (title.includes("oil") || title.includes("gas") || title.includes("energy") || title.includes("fuel")) return "energy";
-    if (title.includes("war") || title.includes("strike") || title.includes("missile") || title.includes("attack") || title.includes("drone")) return "military";
-    if (title.includes("sanction") || title.includes("economy") || title.includes("market") || title.includes("price") || title.includes("gdp")) return "economy";
-    if (title.includes("peace") || title.includes("talk") || title.includes("diplomat") || title.includes("treaty") || title.includes("un ")) return "diplomacy";
-    if (title.includes("civilian") || title.includes("refugee") || title.includes("aid") || title.includes("humanitarian") || title.includes("hospital")) return "humanitarian";
-    return "energy";
-  }
-
   const staticFiltered = catFilter === "all" ? NEWS : NEWS.filter(n => n.category === catFilter);
-  const rssFiltered = catFilter === "all" ? rssNews : rssNews.filter(item => getRssCategory(item) === catFilter);
+  const rssFiltered = catFilter === "all" ? rssNews : rssNews.filter(item => item.category === catFilter);
   const displayItems = usingRss ? rssFiltered : staticFiltered;
 
-  function formatRssTime(pubDate: string | undefined): string {
-    if (!pubDate) return "";
-    try {
-      const d = new Date(pubDate);
-      return d.toLocaleTimeString("en-US", { hour:"2-digit", minute:"2-digit", hour12: false }) + " UTC";
-    } catch {
-      return pubDate;
-    }
-  }
-
-  function formatLastFetched(iso: string | null): string {
-    if (!iso) return "";
-    try {
-      const d = new Date(iso);
-      return d.toLocaleTimeString("en-US", { hour:"2-digit", minute:"2-digit", hour12: false });
-    } catch {
-      return iso;
-    }
+  function formatLastFetched(d: Date): string {
+    const { uae, my } = fmtDual(d.toISOString());
+    return `${uae} UAE · ${my} MY`;
   }
 
   return (
@@ -1048,7 +1175,7 @@ function NewsTab({ lang }: { lang: Lang }) {
           <div className="text-xs text-white/30 mt-0.5">
             Apr 15, 2026 · Crisis Day 46 · {usingRss ? rssNews.length : NEWS.length} {t("news.reports", lang)}
             {lastFetched && (
-              <span className="ml-2 text-white/20">· {t("news.refreshed", lang)} {formatLastFetched(lastFetched)}</span>
+              <span className="ml-2 text-white/20">· {t("news.refreshed", lang)}: {formatLastFetched(lastFetched)} · {t("news.autoRefresh", lang)}</span>
             )}
           </div>
         </div>
@@ -1116,51 +1243,69 @@ function NewsTab({ lang }: { lang: Lang }) {
         </div>
       )}
 
-      {/* News cards — RSS */}
+      {/* News cards — RSS live */}
       {!loading && usingRss && (
         <div className="space-y-3">
           {(displayItems as any[]).map((item, idx) => {
             const itemId = `rss-${idx}`;
-            const cat = getRssCategory(item);
+            const cat = item.category as string;
+            const { uae, my, date } = fmtDual(item.pubDate);
+            const headline = lang === "bm" ? translateToBM(item.title) : item.title;
+            const summary  = lang === "bm" ? translateToBM(item.summary) : item.summary;
             return (
               <div key={itemId}
                 className="news-card bg-[#0d1117] border border-white/6 rounded-xl overflow-hidden cursor-pointer hover:border-white/10"
+                style={{ borderLeft: `2px solid ${catColor[cat] || "#ffffff10"}` }}
                 onClick={() => setExpanded(expanded === itemId ? null : itemId)}
               >
                 <div className="p-5">
                   <div className="flex items-start gap-4">
-                    <div className="shrink-0 w-8 h-8 rounded-lg flex items-center justify-center text-base" style={{ background: catColor[cat] + "15" }}>
-                      {catIcon[cat]}
+                    <div className="shrink-0 w-8 h-8 rounded-lg flex items-center justify-center text-base" style={{ background: (catColor[cat] || "#ffffff") + "15" }}>
+                      {catIcon[cat] || "📰"}
                     </div>
                     <div className="flex-1 min-w-0">
+                      {/* Timestamps row */}
                       <div className="flex items-center gap-2 flex-wrap mb-1.5">
-                        <span className="text-[10px] font-bold font-mono text-white/25">{formatRssTime(item.pubDate)}</span>
-                        <span className="text-[9px] px-1.5 py-0.5 rounded font-bold uppercase" style={{ background: catColor[cat] + "15", color: catColor[cat] }}>{cat}</span>
+                        {uae && (
+                          <span className="text-[10px] font-bold font-mono text-amber-400/60">
+                            🇦🇪 {uae}
+                          </span>
+                        )}
+                        {my && (
+                          <span className="text-[10px] font-bold font-mono text-blue-400/60">
+                            🇲🇾 {my}
+                          </span>
+                        )}
+                        {date && (
+                          <span className="text-[9px] text-white/20 font-mono">{date}</span>
+                        )}
+                        <span className="text-[9px] px-1.5 py-0.5 rounded font-bold uppercase" style={{ background: (catColor[cat] || "#ffffff") + "15", color: catColor[cat] || "#ffffff60" }}>{cat}</span>
+                        <span className="text-[9px] px-1.5 py-0.5 rounded font-bold uppercase" style={{ background: (impactColor[item.impact] || "#ffffff") + "15", color: impactColor[item.impact] || "#ffffff60" }}>{item.impact}</span>
                         {item.source && (
-                          <span className="text-[9px] text-white/20 font-mono">{item.source}</span>
+                          <span className="text-[9px] text-white/25 font-mono">{item.source}</span>
                         )}
                       </div>
-                      <h3 className="text-sm font-bold text-white leading-tight">{item.title}</h3>
+                      <h3 className="text-sm font-bold text-white leading-tight">{headline}</h3>
                       {expanded === itemId && (
                         <div className="mt-3 space-y-2">
-                          {item.summary && (
-                            <p className="text-xs text-white/55 leading-relaxed">{item.summary}</p>
+                          {summary && (
+                            <p className="text-xs text-white/55 leading-relaxed">{summary}</p>
                           )}
                           {item.link && (
                             <a
                               href={item.link}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="text-[10px] text-amber-400/70 hover:text-amber-400 transition-colors underline-offset-2 underline"
+                              className="inline-flex items-center gap-1 text-[10px] text-amber-400/70 hover:text-amber-400 transition-colors mt-1"
                               onClick={e => e.stopPropagation()}
                             >
-                              {t("news.source", lang)}: {item.source || item.link}
+                              {t("news.readMore", lang)}
                             </a>
                           )}
                         </div>
                       )}
                     </div>
-                    <div className="text-white/20 text-xs shrink-0">{expanded === itemId ? "▲" : "▼"}</div>
+                    <div className="text-white/20 text-xs shrink-0 mt-1">{expanded === itemId ? "▲" : "▼"}</div>
                   </div>
                 </div>
               </div>
@@ -1172,9 +1317,14 @@ function NewsTab({ lang }: { lang: Lang }) {
       {/* News cards — Static fallback */}
       {!loading && !usingRss && (
         <div className="space-y-3">
-          {(staticFiltered as NewsItem[]).map(n => (
+          {(staticFiltered as NewsItem[]).map(n => {
+            const { uae, my } = fmtDual(new Date(`2026-04-15T${n.time.replace(" UTC","")}:00Z`).toISOString());
+            const headline = lang === "bm" ? translateToBM(n.headline) : n.headline;
+            const summary  = lang === "bm" ? translateToBM(n.summary) : n.summary;
+            return (
             <div key={n.id}
               className="news-card bg-[#0d1117] border border-white/6 rounded-xl overflow-hidden cursor-pointer hover:border-white/10"
+              style={{ borderLeft: `2px solid ${catColor[n.category]}` }}
               onClick={() => setExpanded(expanded === n.id ? null : n.id)}
             >
               <div className="p-5">
@@ -1184,24 +1334,26 @@ function NewsTab({ lang }: { lang: Lang }) {
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap mb-1.5">
-                      <span className="text-[10px] font-bold font-mono text-white/25">{n.time}</span>
+                      {uae && <span className="text-[10px] font-bold font-mono text-amber-400/60">🇦🇪 {uae}</span>}
+                      {my  && <span className="text-[10px] font-bold font-mono text-blue-400/60">🇲🇾 {my}</span>}
                       <span className="text-[9px] px-1.5 py-0.5 rounded font-bold uppercase" style={{ background: catColor[n.category] + "15", color: catColor[n.category] }}>{n.category}</span>
                       <span className="text-[9px] px-1.5 py-0.5 rounded font-bold uppercase" style={{ background: impactColor[n.impact] + "15", color: impactColor[n.impact] }}>{n.impact}</span>
                       <span className="text-[9px] text-white/20 font-mono">{n.region}</span>
                     </div>
-                    <h3 className="text-sm font-bold text-white leading-tight">{n.headline}</h3>
+                    <h3 className="text-sm font-bold text-white leading-tight">{headline}</h3>
                     {expanded === n.id && (
                       <div className="mt-3 space-y-2">
-                        <p className="text-xs text-white/55 leading-relaxed">{n.summary}</p>
+                        <p className="text-xs text-white/55 leading-relaxed">{summary}</p>
                         <div className="text-[10px] text-white/25">{t("news.source", lang)}: {n.source}</div>
                       </div>
                     )}
                   </div>
-                  <div className="text-white/20 text-xs shrink-0">{expanded === n.id ? "▲" : "▼"}</div>
+                  <div className="text-white/20 text-xs shrink-0 mt-1">{expanded === n.id ? "▲" : "▼"}</div>
                 </div>
               </div>
             </div>
-          ))}
+          );
+          })}
         </div>
       )}
     </div>

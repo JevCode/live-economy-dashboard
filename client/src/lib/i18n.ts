@@ -160,6 +160,12 @@ const translations = {
   "news.powered": { en: "Live feed powered by RSS", bm: "Suapan langsung dikuasakan oleh RSS" },
   "news.refreshed": { en: "Last refreshed", bm: "Kemas kini terakhir" },
   "news.cached": { en: "Showing cached daily briefing", bm: "Menunjukkan taklimat harian cache" },
+  "news.uaeTime": { en: "UAE", bm: "UAE" },
+  "news.myTime": { en: "MY", bm: "MY" },
+  "news.readMore": { en: "Read full article →", bm: "Baca artikel penuh →" },
+  "news.fetchFail": { en: "Live feed unavailable. Showing daily briefing.", bm: "Suapan langsung tidak tersedia. Menunjukkan taklimat harian." },
+  "news.articlesLive": { en: "articles from live sources", bm: "artikel dari sumber langsung" },
+  "news.autoRefresh": { en: "Refreshes every 60s", bm: "Muat semula setiap 60 saat" },
 
   // ── CURRENCIES TAB ──
   "cur.converter": { en: "CURRENCY CONVERTER", bm: "PENUKAR MATA WANG" },
