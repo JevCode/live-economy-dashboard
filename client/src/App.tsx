@@ -1198,10 +1198,10 @@ function NewsTab({ lang }: { lang: Lang }) {
   const catIcon: Record<string, string> = { military:"⚔️", energy:"⚡", economy:"📈", diplomacy:"🕊️", humanitarian:"🤝" };
 
   // Tracks article titles already shown — never cleared, survives re-renders
-  const seenTitlesRef = React.useRef<Set<string>>(new Set());
+  const seenTitlesRef = useRef<Set<string>>(new Set());
   const [newCount, setNewCount] = useState(0);
-  const isFetchingRef = React.useRef(false); // prevent overlapping fetches
-  const isFirstLoadRef = React.useRef(true);
+  const isFetchingRef = useRef(false); // prevent overlapping fetches
+  const isFirstLoadRef = useRef(true);
 
   function dedupeAndSort(items: any[]): any[] {
     // Sort newest first
