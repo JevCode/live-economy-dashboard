@@ -1197,10 +1197,59 @@ function NewsTab({ lang }: { lang: Lang }) {
   const cats = ["all","military","energy","economy","diplomacy","humanitarian"] as const;
   const catIcon: Record<string, string> = { military:"⚔️", energy:"⚡", economy:"📈", diplomacy:"🕊️", humanitarian:"🤝" };
 
+  // seenTitles tracks all titles we've shown — persists across refreshes
+  const seenTitlesRef = React.useRef<Set<string>>(new Set());
+  const [newCount, setNewCount] = useState(0);
+
+  function processItems(all: any[], isFirstLoad: boolean) {
+    // Filter to war/crisis keywords
+    let filtered = all.filter(item => {
+      const text = (item.title + " " + item.summary).toLowerCase();
+      return WAR_KW.some(kw => text.includes(kw));
+    });
+    // Fall back to all items if keyword filter catches nothing
+    if (filtered.length === 0) filtered = all;
+    // Sort newest first
+    filtered.sort((a, b) => new Date(b.pubDate).getTime() - new Date(a.pubDate).getTime());
+    // Deduplicate
+    const seen = new Set<string>();
+    const unique = filtered.filter(item => {
+      const key = item.title.slice(0, 60).toLowerCase();
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+    if (unique.length === 0) return;
+
+    if (isFirstLoad) {
+      // First load: show everything, mark all as seen
+      unique.forEach(item => seenTitlesRef.current.add(item.title.slice(0, 60).toLowerCase()));
+      setRssNews(unique.slice(0, 80));
+      setRssError(false);
+      setNewCount(0);
+    } else {
+      // Subsequent polls: find genuinely new articles not seen before
+      const brandNew = unique.filter(item => !seenTitlesRef.current.has(item.title.slice(0, 60).toLowerCase()));
+      if (brandNew.length > 0) {
+        brandNew.forEach(item => seenTitlesRef.current.add(item.title.slice(0, 60).toLowerCase()));
+        // Prepend new articles with isNew flag, keep existing, cap at 120
+        setRssNews(prev => {
+          const tagged = brandNew.map(item => ({ ...item, isNew: true }));
+          const combined = [...tagged, ...prev].slice(0, 120);
+          return combined;
+        });
+        setNewCount(prev => prev + brandNew.length);
+        setRssError(false);
+      }
+    }
+  }
+
+  const isFirstLoadRef = React.useRef(true);
+
   async function doFetch() {
-    setLoading(true);
+    const isFirst = isFirstLoadRef.current;
+    if (isFirst) setLoading(true);
     try {
-      // Fire all feeds in parallel with a hard 15s global cap
       const timeout = new Promise<never>((_, rej) => setTimeout(() => rej(new Error("global timeout")), 15000));
       const fetchAll = Promise.allSettled(RSS_SOURCES.map(fetchRssFeed));
       const results = await Promise.race([fetchAll, timeout]) as PromiseSettledResult<any[]>[];
@@ -1208,47 +1257,24 @@ function NewsTab({ lang }: { lang: Lang }) {
       for (const r of results) {
         if (r.status === "fulfilled") all.push(...r.value);
       }
-      // Filter to war/crisis/energy relevant
-      const filtered = all.filter(item => {
-        const text = (item.title + " " + item.summary).toLowerCase();
-        return WAR_KW.some(kw => text.includes(kw));
-      });
-      // Sort newest first
-      filtered.sort((a, b) => new Date(b.pubDate).getTime() - new Date(a.pubDate).getTime());
-      // Deduplicate by title
-      const seen = new Set<string>();
-      const unique = filtered.filter(item => {
-        const key = item.title.slice(0, 60).toLowerCase();
-        if (seen.has(key)) return false;
-        seen.add(key);
-        return true;
-      });
-      if (unique.length > 0) {
-        setRssNews(unique.slice(0, 80));
-        setRssError(false);
-      } else {
-        // If keyword filter catches nothing, show all articles unfiltered (better than error)
-        const deduped = all.filter((item, i, arr) =>
-          item.title && arr.findIndex(x => x.title.slice(0,60) === item.title.slice(0,60)) === i
-        ).slice(0, 80);
-        if (deduped.length > 0) {
-          setRssNews(deduped);
-          setRssError(false);
-        } else {
-          setRssError(true);
-        }
+      if (all.length > 0) {
+        processItems(all, isFirst);
+        isFirstLoadRef.current = false;
+      } else if (isFirst) {
+        setRssError(true);
       }
     } catch {
-      setRssError(true);
+      if (isFirst) setRssError(true);
     } finally {
       setLastFetched(new Date());
-      setLoading(false);
+      if (isFirst) setLoading(false);
     }
   }
 
   useEffect(() => {
     doFetch();
-    const interval = setInterval(doFetch, 5 * 1000); // refresh every 5 seconds
+    // Poll every 5s — only prepends genuinely new articles, no flicker
+    const interval = setInterval(doFetch, 5000);
     return () => clearInterval(interval);
   }, []);
 
@@ -1308,6 +1334,14 @@ function NewsTab({ lang }: { lang: Lang }) {
               <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 pulse-dot" />
               {t("news.liveRss", lang)}
             </div>
+          )}
+          {newCount > 0 && (
+            <button
+              onClick={() => { setNewCount(0); }}
+              className="flex items-center gap-1.5 bg-amber-400/15 border border-amber-400/40 text-amber-400 text-[10px] font-bold tracking-widest px-3 py-1.5 rounded-full animate-pulse"
+            >
+              +{newCount} NEW ↑
+            </button>
           )}
           <div className="flex items-center gap-2 bg-[#0d1117] border border-white/6 rounded-full px-4 py-2">
             <div className="w-2 h-2 rounded-full bg-red-500 pulse-dot" />
@@ -1384,8 +1418,10 @@ function NewsTab({ lang }: { lang: Lang }) {
             const summary  = bmEntry ? bmEntry.summary : item.summary;
             return (
               <div key={itemId}
-                className="news-card bg-[#0d1117] border border-white/6 rounded-xl overflow-hidden cursor-pointer hover:border-white/10"
-                style={{ borderLeft: `2px solid ${catColor[cat] || "#ffffff10"}` }}
+                className={`news-card bg-[#0d1117] border rounded-xl overflow-hidden cursor-pointer transition-all ${
+                  item.isNew ? "border-amber-400/40 shadow-[0_0_12px_rgba(240,165,0,0.12)]" : "border-white/6 hover:border-white/10"
+                }`}
+                style={{ borderLeft: `2px solid ${item.isNew ? "#f0a500" : (catColor[cat] || "#ffffff10")}` }}
                 onClick={() => setExpanded(expanded === itemId ? null : itemId)}
               >
                 <div className="p-5">
@@ -1411,6 +1447,9 @@ function NewsTab({ lang }: { lang: Lang }) {
                         )}
                         <span className="text-[9px] px-1.5 py-0.5 rounded font-bold uppercase" style={{ background: (catColor[cat] || "#ffffff") + "15", color: catColor[cat] || "#ffffff60" }}>{cat}</span>
                         <span className="text-[9px] px-1.5 py-0.5 rounded font-bold uppercase" style={{ background: (impactColor[item.impact] || "#ffffff") + "15", color: impactColor[item.impact] || "#ffffff60" }}>{item.impact}</span>
+                        {item.isNew && (
+                          <span className="text-[9px] px-1.5 py-0.5 rounded font-bold uppercase bg-amber-400/20 text-amber-400 animate-pulse">NEW</span>
+                        )}
                         {item.source && (
                           <span className="text-[9px] text-white/25 font-mono">{item.source}</span>
                         )}
