@@ -622,6 +622,21 @@ function WorldMapTab() {
 }
 
 // ── WAR DAMAGE TAB ──
+// per-country aggregation helper
+const COUNTRY_STATS = (() => {
+  const m: Record<string, { flag:string; strikes:number; drones:number; missiles:number; killed:number; wounded:number; damageUSD:number }> = {};
+  STRIKE_EVENTS.forEach(s => {
+    if (!m[s.country]) m[s.country] = { flag:s.flag, strikes:0, drones:0, missiles:0, killed:0, wounded:0, damageUSD:0 };
+    m[s.country].strikes++;
+    m[s.country].drones    += s.droneCount;
+    m[s.country].missiles  += s.missileCount;
+    m[s.country].killed    += s.casualties.killed;
+    m[s.country].wounded   += s.casualties.wounded;
+    m[s.country].damageUSD += s.damageUSD;
+  });
+  return Object.entries(m).sort((a,b) => b[1].damageUSD - a[1].damageUSD);
+})();
+
 function WarTab() {
   const [selectedStrike, setSelectedStrike] = useState<StrikeEvent | null>(null);
   const [typeFilter, setTypeFilter] = useState("all");
@@ -630,20 +645,27 @@ function WarTab() {
   const severityColor: Record<string, string> = { catastrophic:"#ef4444", severe:"#f97316", moderate:"#f0a500", minor:"#3b82f6" };
 
   const filtered = typeFilter === "all" ? STRIKE_EVENTS : STRIKE_EVENTS.filter(s => s.type === typeFilter);
-
   const barData = STRIKE_EVENTS.map(s => ({ date:s.date.replace(", 2026",""), damage:s.damageUSD, killed:s.casualties.killed }));
+
+  // leaderboards
+  const topByDrones   = [...STRIKE_EVENTS].sort((a,b) => b.droneCount - a.droneCount).slice(0,5);
+  const topByMissiles = [...STRIKE_EVENTS].sort((a,b) => b.missileCount - a.missileCount).slice(0,5);
 
   return (
     <div className="space-y-6 p-6">
-      {/* War stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
-        <KpiCard label="Total Strikes" value={WAR_STATS.totalStrikes.toString()} sub="Documented events" accent="#ef4444" />
-        <KpiCard label="Drones Launched" value={WAR_STATS.totalDrones.toLocaleString()} sub="All parties" accent="#f97316" />
-        <KpiCard label="Missiles Fired" value={WAR_STATS.totalMissiles.toLocaleString()} sub="All parties" accent="#f97316" />
-        <KpiCard label="Confirmed Killed" value={WAR_STATS.totalKilled.toLocaleString()} sub="All sides" accent="#ef4444" />
-        <KpiCard label="Confirmed Wounded" value={WAR_STATS.totalWounded.toLocaleString()} sub="All sides" accent="#ef4444" />
-        <KpiCard label="Economic Damage" value={`$${(WAR_STATS.totalDamageUSD / 1000).toFixed(1)}B`} sub="Estimated USD" accent="#8b5cf6" />
-        <KpiCard label="Countries Struck" value={WAR_STATS.countriesStruck.toString()} sub="Confirmed attacks" accent="#3b82f6" />
+
+      {/* ── GLOBAL DAMAGE COUNTER ── */}
+      <div>
+        <div className="text-[10px] font-bold tracking-widest text-white/25 mb-3">CUMULATIVE WAR DAMAGE — APR 15, 2026 · CRISIS DAY 46</div>
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
+          <KpiCard label="Total Strikes" value={WAR_STATS.totalStrikes.toString()} sub="Documented events" accent="#ef4444" />
+          <KpiCard label="Drones Launched" value={WAR_STATS.totalDrones.toLocaleString()} sub="All parties" accent="#f97316" />
+          <KpiCard label="Missiles Fired" value={WAR_STATS.totalMissiles.toLocaleString()} sub="All parties" accent="#f97316" />
+          <KpiCard label="Confirmed Killed" value={WAR_STATS.totalKilled.toLocaleString()} sub="All sides" accent="#ef4444" />
+          <KpiCard label="Confirmed Wounded" value={WAR_STATS.totalWounded.toLocaleString()} sub="All sides" accent="#ef4444" />
+          <KpiCard label="Economic Damage" value={`$${(WAR_STATS.totalDamageUSD / 1000).toFixed(2)}B`} sub="Estimated USD" accent="#8b5cf6" />
+          <KpiCard label="Countries Struck" value={WAR_STATS.countriesStruck.toString()} sub="Confirmed attacks" accent="#3b82f6" />
+        </div>
       </div>
 
       {/* Status bar */}
@@ -651,6 +673,106 @@ function WarTab() {
         <div><span className="text-white/60 font-bold">Largest single strike: </span>{WAR_STATS.largestStrike}</div>
         <div><span className="text-white/60 font-bold">Hormuz status: </span><span className="text-emerald-400 font-bold">{WAR_STATS.hormuzStatus}</span></div>
         <div><span className="text-white/60 font-bold">As of: </span>Apr 15, 2026 · US-Iran peace talks Day 2 in Muscat</div>
+      </div>
+
+      {/* ── LEADERBOARDS ── */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+        {/* Top Drone Attacks */}
+        <div className="bg-[#0d1117] border border-white/6 rounded-xl p-5">
+          <div className="text-[10px] font-bold tracking-widest text-orange-400/60 mb-4">🚁 TOP 5 HIGHEST DRONE ATTACKS</div>
+          <div className="space-y-3">
+            {topByDrones.filter(s => s.droneCount > 0).map((s, i) => (
+              <div key={s.id} className="flex items-center gap-3">
+                <div className="w-5 text-center text-[10px] font-bold font-mono text-white/20">#{i+1}</div>
+                <div className="flex-1 min-w-0">
+                  <div className="text-xs font-bold text-white truncate">{s.flag} {s.target}</div>
+                  <div className="text-[10px] text-white/30">{s.country} · {s.date.replace(", 2026","")}</div>
+                </div>
+                <div className="text-right shrink-0">
+                  <div className="text-base font-bold font-mono text-orange-400">{s.droneCount}</div>
+                  <div className="text-[9px] text-white/20">drones</div>
+                </div>
+                <div className="w-20">
+                  <div className="h-1.5 rounded-full bg-white/5 overflow-hidden">
+                    <div className="h-full rounded-full bg-orange-500/60" style={{ width: `${(s.droneCount / topByDrones[0].droneCount) * 100}%` }} />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Top Missile Attacks */}
+        <div className="bg-[#0d1117] border border-white/6 rounded-xl p-5">
+          <div className="text-[10px] font-bold tracking-widest text-red-400/60 mb-4">🚀 TOP 5 HIGHEST MISSILE ATTACKS</div>
+          <div className="space-y-3">
+            {topByMissiles.filter(s => s.missileCount > 0).slice(0,5).map((s, i) => (
+              <div key={s.id} className="flex items-center gap-3">
+                <div className="w-5 text-center text-[10px] font-bold font-mono text-white/20">#{i+1}</div>
+                <div className="flex-1 min-w-0">
+                  <div className="text-xs font-bold text-white truncate">{s.flag} {s.target}</div>
+                  <div className="text-[10px] text-white/30">{s.country} · {s.date.replace(", 2026","")}</div>
+                </div>
+                <div className="text-right shrink-0">
+                  <div className="text-base font-bold font-mono text-red-400">{s.missileCount}</div>
+                  <div className="text-[9px] text-white/20">missiles</div>
+                </div>
+                <div className="w-20">
+                  <div className="h-1.5 rounded-full bg-white/5 overflow-hidden">
+                    <div className="h-full rounded-full bg-red-500/60" style={{ width: `${(s.missileCount / topByMissiles[0].missileCount) * 100}%` }} />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* ── COUNTRIES AFFECTED BREAKDOWN ── */}
+      <div className="bg-[#0d1117] border border-white/6 rounded-xl p-5">
+        <div className="text-[10px] font-bold tracking-widest text-white/25 mb-4">🌍 DAMAGE BY COUNTRY — CUMULATIVE TOTALS</div>
+        <div className="overflow-x-auto">
+          <table className="w-full text-xs">
+            <thead>
+              <tr className="border-b border-white/5">
+                <th className="text-left text-[9px] font-bold tracking-wider text-white/20 pb-2 pr-4">COUNTRY</th>
+                <th className="text-right text-[9px] font-bold tracking-wider text-white/20 pb-2 px-3">STRIKES</th>
+                <th className="text-right text-[9px] font-bold tracking-wider text-orange-400/50 pb-2 px-3">DRONES</th>
+                <th className="text-right text-[9px] font-bold tracking-wider text-red-400/50 pb-2 px-3">MISSILES</th>
+                <th className="text-right text-[9px] font-bold tracking-wider text-red-400/50 pb-2 px-3">KILLED</th>
+                <th className="text-right text-[9px] font-bold tracking-wider text-orange-400/50 pb-2 px-3">WOUNDED</th>
+                <th className="text-right text-[9px] font-bold tracking-wider text-purple-400/50 pb-2 pl-3">DAMAGE</th>
+              </tr>
+            </thead>
+            <tbody>
+              {COUNTRY_STATS.map(([country, v]) => (
+                <tr key={country} className="border-b border-white/3 hover:bg-white/2 transition-colors">
+                  <td className="py-2.5 pr-4">
+                    <span className="font-bold text-white">{v.flag} {country}</span>
+                  </td>
+                  <td className="text-right px-3 font-mono text-white/50">{v.strikes}</td>
+                  <td className="text-right px-3 font-mono text-orange-400 font-bold">{v.drones > 0 ? v.drones : <span className="text-white/15">—</span>}</td>
+                  <td className="text-right px-3 font-mono text-red-400 font-bold">{v.missiles > 0 ? v.missiles : <span className="text-white/15">—</span>}</td>
+                  <td className="text-right px-3 font-mono text-red-400">{v.killed.toLocaleString()}</td>
+                  <td className="text-right px-3 font-mono text-orange-400">{v.wounded.toLocaleString()}</td>
+                  <td className="text-right pl-3 font-mono text-purple-400 font-bold">${v.damageUSD >= 1000 ? (v.damageUSD/1000).toFixed(1)+"B" : v.damageUSD+"M"}</td>
+                </tr>
+              ))}
+            </tbody>
+            <tfoot>
+              <tr className="border-t border-white/10">
+                <td className="pt-3 font-bold text-white/50 text-[9px] tracking-wider">TOTAL</td>
+                <td className="text-right pt-3 px-3 font-mono font-bold text-white/50">{WAR_STATS.totalStrikes}</td>
+                <td className="text-right pt-3 px-3 font-mono font-bold text-orange-400">{WAR_STATS.totalDrones}</td>
+                <td className="text-right pt-3 px-3 font-mono font-bold text-red-400">{WAR_STATS.totalMissiles}</td>
+                <td className="text-right pt-3 px-3 font-mono font-bold text-red-400">{WAR_STATS.totalKilled.toLocaleString()}</td>
+                <td className="text-right pt-3 px-3 font-mono font-bold text-orange-400">{WAR_STATS.totalWounded.toLocaleString()}</td>
+                <td className="text-right pt-3 pl-3 font-mono font-bold text-purple-400">${(WAR_STATS.totalDamageUSD/1000).toFixed(2)}B</td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
       </div>
 
       {/* Damage chart */}

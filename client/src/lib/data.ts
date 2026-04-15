@@ -622,7 +622,7 @@ export const WAR_STATS = {
   totalStrikes: 14, totalDrones: 624, totalMissiles: 786,
   totalKilled: 1556, totalWounded: 4710,
   totalDamageUSD: 51380,
-  countriesStruck: 7,
+  countriesStruck: 8,
   largestStrike: "Ras Laffan LNG ($18.7B damage, Mar 18)",
   hormuzStatus: "PARTIAL REOPEN (Apr 10, under US escort)",
 };
