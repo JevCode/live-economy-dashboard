@@ -1,0 +1,153 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 222 20% 6%;
+    --foreground: 210 20% 92%;
+    --card: 222 18% 9%;
+    --card-foreground: 210 20% 92%;
+    --popover: 222 18% 9%;
+    --popover-foreground: 210 20% 92%;
+    --primary: 38 95% 47%;
+    --primary-foreground: 222 20% 6%;
+    --secondary: 222 15% 14%;
+    --secondary-foreground: 210 15% 70%;
+    --muted: 222 15% 12%;
+    --muted-foreground: 215 12% 45%;
+    --accent: 38 95% 47%;
+    --accent-foreground: 222 20% 6%;
+    --destructive: 0 72% 55%;
+    --destructive-foreground: 210 20% 92%;
+    --border: 222 15% 16%;
+    --input: 222 15% 14%;
+    --ring: 38 95% 47%;
+    --radius: 0.625rem;
+    --sidebar-background: 222 20% 7%;
+    --sidebar-foreground: 210 20% 92%;
+    --sidebar-primary: 38 95% 47%;
+    --sidebar-primary-foreground: 222 20% 6%;
+    --sidebar-accent: 222 15% 12%;
+    --sidebar-accent-foreground: 210 20% 92%;
+    --sidebar-border: 222 15% 16%;
+    --sidebar-ring: 38 95% 47%;
+    --chart-1: 38 95% 47%;
+    --chart-2: 217 91% 60%;
+    --chart-3: 160 84% 39%;
+    --chart-4: 348 83% 60%;
+    --chart-5: 271 91% 65%;
+  }
+}
+
+@layer base {
+  * { @apply border-border; }
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'Space Grotesk', sans-serif;
+    background: #070a0f;
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: rgba(255,255,255,0.02); }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.18); }
+
+/* Ticker animation */
+@keyframes ticker-scroll {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+.ticker-animate { animation: ticker-scroll 50s linear infinite; }
+.ticker-animate:hover { animation-play-state: paused; }
+
+/* Pulse dot */
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.8); }
+}
+.pulse-dot { animation: pulse-dot 1.6s ease-in-out infinite; }
+
+/* Glow effects */
+.glow-gold { box-shadow: 0 0 20px rgba(240,165,0,0.15), 0 0 40px rgba(240,165,0,0.05); }
+.glow-red { box-shadow: 0 0 20px rgba(239,68,68,0.15), 0 0 40px rgba(239,68,68,0.05); }
+.glow-blue { box-shadow: 0 0 20px rgba(59,130,246,0.15); }
+
+/* Map styles */
+.rsm-geography {
+  outline: none;
+  cursor: pointer;
+  transition: fill 0.2s ease, opacity 0.2s ease;
+}
+.rsm-geography:focus { outline: none; }
+
+/* Number mono */
+.mono { font-family: 'Space Mono', monospace; }
+
+/* Count up animation */
+@keyframes count-up {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.count-up { animation: count-up 0.6s ease-out forwards; }
+
+/* News card hover */
+.news-card { transition: transform 0.2s ease, border-color 0.2s ease; }
+.news-card:hover { transform: translateY(-2px); }
+
+/* Strike card */
+.strike-card { transition: all 0.2s ease; }
+.strike-card:hover { transform: translateY(-1px); border-color: rgba(239,68,68,0.4); }
+
+/* Tab indicator */
+.tab-active-indicator {
+  position: relative;
+}
+.tab-active-indicator::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 0; right: 0;
+  height: 2px;
+  background: hsl(var(--primary));
+  border-radius: 1px 1px 0 0;
+}
+
+/* Gradient overlays */
+.gradient-fade-right {
+  background: linear-gradient(to right, transparent, #070a0f);
+}
+
+/* Map tooltip */
+.map-tooltip {
+  pointer-events: none;
+  position: fixed;
+  z-index: 1000;
+  transform: translate(-50%, -100%);
+  margin-top: -8px;
+}
+
+/* Modal backdrop */
+.modal-backdrop {
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+/* Impact bar */
+.impact-bar {
+  height: 3px;
+  border-radius: 2px;
+  transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Grid auto-fill */
+.auto-grid-250 {
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+}
+.auto-grid-300 {
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+}
