@@ -3,6 +3,7 @@ import { LIVE, KARATS, OIL_TIMELINE, GOLD_TIMELINE, COUNTRIES, STRIKE_EVENTS, WA
 import { ComposableMap, Geographies, Geography, ZoomableGroup } from "react-simple-maps";
 import { AreaChart, Area, LineChart, Line, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, ReferenceLine } from "recharts";
 import { scaleLinear } from "d3-scale";
+import { t, type Lang } from "./lib/i18n";
 
 // ════ HELPERS ════
 const geoUrl = "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json";
@@ -50,34 +51,34 @@ const impactColor: Record<string, string> = {
 
 // ════ COMPONENTS ════
 
-function Ticker({ cur }: { cur: string }) {
+function Ticker({ cur, lang }: { cur: string; lang: Lang }) {
   const [vals, setVals] = useState({
     brent: LIVE.brentUSD, wti: LIVE.wtiUSD, gold: LIVE.goldOzUSD,
   });
   useEffect(() => {
-    const t = setInterval(() => {
+    const timer = setInterval(() => {
       setVals(v => ({
         brent: parseFloat((v.brent + (Math.random() - 0.5) * 0.12).toFixed(2)),
         wti:   parseFloat((v.wti   + (Math.random() - 0.5) * 0.12).toFixed(2)),
         gold:  parseFloat((v.gold  + (Math.random() - 0.5) * 2.5).toFixed(2)),
       }));
     }, 2800);
-    return () => clearInterval(t);
+    return () => clearInterval(timer);
   }, []);
 
   const items = [
-    { l: "BRENT CRUDE", v: `$${vals.brent.toFixed(2)}`, c: "▼ −0.32% today", dn: true },
-    { l: "WTI CRUDE",   v: `$${vals.wti.toFixed(2)}`,   c: "▼ −1.65% today", dn: true },
-    { l: "GOLD XAU",    v: `$${vals.gold.toFixed(2)}/oz`, c: "▼ −0.34% today", dn: true },
-    { l: "USD/MYR",     v: `${LIVE.usdMyr}`,             c: "Ringgit pressure", dn: true },
-    { l: "USD/AED",     v: `${LIVE.usdAed}`,             c: "Pegged stable", dn: false },
-    { l: "DXY INDEX",   v: `${LIVE.dxy}`,                c: "▼ −0.35%", dn: true },
-    { l: "GOLD/g 24K",  v: fmt(LIVE.goldGramUSD, cur),   c: `per gram`, dn: false },
-    { l: "CRISIS DAY",  v: `Day ${LIVE.crisisDay}`,      c: "Since Feb 28", dn: true },
-    { l: "BRENT PEAK",  v: `$${LIVE.brentPeak}`,         c: "Mar 18 peak", dn: true },
-    { l: "HORMUZ",      v: `PARTIAL OPEN`,               c: "US escort", dn: false },
-    { l: "QATAR LNG",   v: `−17%`,                       c: "Force Majeure", dn: true },
-    { l: "IEA RELEASE", v: `400M bbl`,                   c: "Largest ever", dn: false },
+    { l: t("ticker.brent", lang),         v: `$${vals.brent.toFixed(2)}`,       c: "▼ −0.32% today",                            dn: true },
+    { l: t("ticker.wti", lang),           v: `$${vals.wti.toFixed(2)}`,         c: "▼ −1.65% today",                            dn: true },
+    { l: t("ticker.goldXau", lang),       v: `$${vals.gold.toFixed(2)}/oz`,      c: "▼ −0.34% today",                            dn: true },
+    { l: t("ticker.usdMyr", lang),        v: `${LIVE.usdMyr}`,                  c: t("ticker.ringgitPressure", lang),            dn: true },
+    { l: t("ticker.usdAed", lang),        v: `${LIVE.usdAed}`,                  c: t("ticker.peggedStable", lang),               dn: false },
+    { l: t("ticker.dxy", lang),           v: `${LIVE.dxy}`,                     c: "▼ −0.35%",                                  dn: true },
+    { l: t("ticker.goldGram", lang),      v: fmt(LIVE.goldGramUSD, cur),        c: t("ticker.perGram", lang),                   dn: false },
+    { l: t("ticker.crisis", lang),        v: `Day ${LIVE.crisisDay}`,           c: t("ticker.sinceFeb28", lang),                dn: true },
+    { l: "BRENT PEAK",                    v: `$${LIVE.brentPeak}`,              c: "Mar 18 peak",                               dn: true },
+    { l: "HORMUZ",                        v: `PARTIAL OPEN`,                    c: "US escort",                                 dn: false },
+    { l: "QATAR LNG",                     v: `−17%`,                            c: "Force Majeure",                             dn: true },
+    { l: "IEA RELEASE",                   v: `400M bbl`,                        c: "Largest ever",                              dn: false },
   ];
 
   return (
@@ -123,15 +124,15 @@ function StatPill({ label, value, color = "text-white" }: { label: string; value
 }
 
 // ── OIL TAB ──
-function OilTab({ cur }: { cur: string }) {
+function OilTab({ cur, lang }: { cur: string; lang: Lang }) {
   const pctPreWar = pct(LIVE.brentUSD, LIVE.brentPreWar);
   const pctFromPeak = pct(LIVE.brentUSD, LIVE.brentPeak);
 
-  const chartData = OIL_TIMELINE.map(t => ({ ...t, brentFmt: t.brent }));
+  const chartData = OIL_TIMELINE.map(item => ({ ...item, brentFmt: item.brent }));
 
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (!active || !payload?.length) return null;
-    const row = OIL_TIMELINE.find(t => t.date === label);
+    const row = OIL_TIMELINE.find(item => item.date === label);
     return (
       <div className="bg-[#0d1117] border border-white/10 rounded-xl p-4 text-xs max-w-xs shadow-2xl">
         <div className="font-bold text-white mb-1">{label} — {row?.label}</div>
@@ -146,12 +147,12 @@ function OilTab({ cur }: { cur: string }) {
     <div className="space-y-6 p-6">
       {/* KPI row */}
       <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3">
-        <KpiCard label="Iran Crisis — Day" value={`Day ${LIVE.crisisDay}`} sub="Since Feb 28, 2026" change={`${pctPreWar} from $65 baseline`} changeUp={false} accent="#ef4444" />
-        <KpiCard label="Brent Crude" value={fmt(LIVE.brentUSD, cur)} sub="per barrel · Apr 15 close" change="▼ −0.32% today" changeUp={false} accent="#f97316" />
-        <KpiCard label="WTI Crude" value={fmt(LIVE.wtiUSD, cur)} sub="per barrel" change="▼ −1.65% today" changeUp={false} accent="#f97316" />
-        <KpiCard label="Peak (Mar 18)" value={fmt(LIVE.brentPeak, cur)} sub="Iran hit Qatar Ras Laffan" change={`${pctFromPeak} from peak`} changeUp={false} accent="#8b5cf6" />
-        <KpiCard label="DXY USD Index" value={`${LIVE.dxy}`} sub="Dollar basket" change="▼ −0.35% today" changeUp={false} accent="#3b82f6" />
-        <KpiCard label="USD / MYR" value={LIVE.usdMyr.toString()} sub="Mid-market rate" change="↑ Ringgit under pressure" changeUp={false} accent="#06b6d4" />
+        <KpiCard label={t("oil.iranCrisis", lang)} value={`Day ${LIVE.crisisDay}`} sub={t("oil.sinceFeb2026", lang)} change={`${pctPreWar} ${t("oil.fromBaseline", lang)}`} changeUp={false} accent="#ef4444" />
+        <KpiCard label={t("oil.brentCrude", lang)} value={fmt(LIVE.brentUSD, cur)} sub={`${t("oil.perBarrel", lang)} · Apr 15 close`} change="▼ −0.32% today" changeUp={false} accent="#f97316" />
+        <KpiCard label={t("oil.wtiCrude", lang)} value={fmt(LIVE.wtiUSD, cur)} sub={t("oil.perBarrel", lang)} change="▼ −1.65% today" changeUp={false} accent="#f97316" />
+        <KpiCard label={t("oil.peak", lang)} value={fmt(LIVE.brentPeak, cur)} sub={t("oil.iranHitQatar", lang)} change={`${pctFromPeak} ${t("oil.fromPeak", lang)}`} changeUp={false} accent="#8b5cf6" />
+        <KpiCard label={t("oil.dxyIndex", lang)} value={`${LIVE.dxy}`} sub={t("oil.dollarBasket", lang)} change="▼ −0.35% today" changeUp={false} accent="#3b82f6" />
+        <KpiCard label={t("oil.usdMyrRate", lang)} value={LIVE.usdMyr.toString()} sub={t("oil.midMarketRate", lang)} change={t("oil.ringgitUnderPressure", lang)} changeUp={false} accent="#06b6d4" />
       </div>
 
       {/* Stats */}
@@ -183,8 +184,8 @@ function OilTab({ cur }: { cur: string }) {
 
       {/* Timeline chart */}
       <div className="bg-[#0d1117] border border-white/6 rounded-xl p-6">
-        <div className="text-[10px] font-bold tracking-widest text-white/30 mb-1">BRENT CRUDE — CRISIS TIMELINE</div>
-        <div className="text-xs text-white/20 mb-5">Feb 27 – Apr 15, 2026 · Key events overlaid</div>
+        <div className="text-[10px] font-bold tracking-widest text-white/30 mb-1">{t("oil.priceTimeline", lang)}</div>
+        <div className="text-xs text-white/20 mb-5">Feb 27 – Apr 15, 2026 · {t("oil.keyEvents", lang)}</div>
         <ResponsiveContainer width="100%" height={240}>
           <AreaChart data={chartData} margin={{ top:10, right:10, left:0, bottom:0 }}>
             <defs>
@@ -235,18 +236,18 @@ function OilTab({ cur }: { cur: string }) {
         </div>
       </div>
 
-      <p className="text-[10px] text-white/20">Sources: Brent/WTI — OilPrice.com · Gold — TradingEconomics · DXY — Yahoo Finance · USD/MYR — open.er-api.com (Apr 15, 2026)</p>
+      <p className="text-[10px] text-white/20">{t("oil.sources", lang)}: Brent/WTI — OilPrice.com · Gold — TradingEconomics · DXY — Yahoo Finance · USD/MYR — open.er-api.com (Apr 15, 2026)</p>
     </div>
   );
 }
 
 // ── GOLD TAB ──
-function GoldTab({ cur }: { cur: string }) {
-  const chartData = GOLD_TIMELINE.map(t => ({ ...t }));
+function GoldTab({ cur, lang }: { cur: string; lang: Lang }) {
+  const chartData = GOLD_TIMELINE.map(item => ({ ...item }));
 
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (!active || !payload?.length) return null;
-    const row = GOLD_TIMELINE.find(t => t.date === label);
+    const row = GOLD_TIMELINE.find(item => item.date === label);
     return (
       <div className="bg-[#0d1117] border border-white/10 rounded-xl p-3 text-xs shadow-2xl">
         <div className="font-bold text-white mb-1">{label}</div>
@@ -260,18 +261,18 @@ function GoldTab({ cur }: { cur: string }) {
     <div className="space-y-6 p-6">
       {/* KPIs */}
       <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3">
-        <KpiCard label="Gold Spot (24K/oz)" value={fmt(LIVE.goldOzUSD, cur)} sub="per troy ounce (31.1g)" change="▼ −0.34% today" changeUp={false} accent="#f0a500" />
-        <KpiCard label="Gold Per Gram (24K)" value={fmt(LIVE.goldGramUSD, cur)} sub="per gram" change="▲ +48% year-on-year" changeUp={true} accent="#f0a500" />
-        <KpiCard label="All-Time High" value={`$${LIVE.goldATH.toLocaleString()}`} sub={`${LIVE.goldATHDate} (per oz)`} change="▼ −14.6% from ATH" changeUp={false} accent="#8b5cf6" />
-        <KpiCard label="Gold in MYR (oz)" value={`RM ${(LIVE.goldOzUSD * LIVE.usdMyr).toLocaleString("en-MY", { maximumFractionDigits:0 })}`} sub="per troy ounce" change="▲ Safe-haven demand" changeUp={true} accent="#f0a500" />
-        <KpiCard label="Gold in AED (oz)" value={`AED ${(LIVE.goldOzUSD * LIVE.usdAed).toLocaleString("en-US", { maximumFractionDigits:0 })}`} sub="per troy ounce" change="▲ AED peg stable" changeUp={true} accent="#f0a500" />
+        <KpiCard label={t("gold.spot24k", lang)} value={fmt(LIVE.goldOzUSD, cur)} sub={t("gold.perTroyOz", lang)} change="▼ −0.34% today" changeUp={false} accent="#f0a500" />
+        <KpiCard label={t("gold.perGram24k", lang)} value={fmt(LIVE.goldGramUSD, cur)} sub={t("gold.perGram", lang)} change="▲ +48% year-on-year" changeUp={true} accent="#f0a500" />
+        <KpiCard label={t("gold.ath", lang)} value={`$${LIVE.goldATH.toLocaleString()}`} sub={`${LIVE.goldATHDate} (per oz)`} change={`▼ −14.6% ${t("gold.fromATH", lang)}`} changeUp={false} accent="#8b5cf6" />
+        <KpiCard label={t("gold.inMyrOz", lang)} value={`RM ${(LIVE.goldOzUSD * LIVE.usdMyr).toLocaleString("en-MY", { maximumFractionDigits:0 })}`} sub={t("gold.perTroyOzShort", lang)} change={t("gold.safeHaven", lang)} changeUp={true} accent="#f0a500" />
+        <KpiCard label={t("gold.inAedOz", lang)} value={`AED ${(LIVE.goldOzUSD * LIVE.usdAed).toLocaleString("en-US", { maximumFractionDigits:0 })}`} sub={t("gold.perTroyOzShort", lang)} change={t("gold.aedPegStable", lang)} changeUp={true} accent="#f0a500" />
         <KpiCard label="Year-on-Year" value="+48%" sub="War premium driving demand" change="↑ vs pre-crisis gold" changeUp={true} accent="#22c55e" />
       </div>
 
       {/* Gold chart */}
       <div className="bg-[#0d1117] border border-white/6 rounded-xl p-6">
-        <div className="text-[10px] font-bold tracking-widest text-white/30 mb-1">GOLD XAU/USD — CRISIS PERIOD</div>
-        <div className="text-xs text-white/20 mb-5">Spot price per troy ounce · Feb–Apr 2026</div>
+        <div className="text-[10px] font-bold tracking-widest text-white/30 mb-1">{t("gold.priceTimeline", lang)}</div>
+        <div className="text-xs text-white/20 mb-5">{t("gold.sinceJan2026", lang)}</div>
         <ResponsiveContainer width="100%" height={200}>
           <AreaChart data={chartData} margin={{ top:10, right:10, left:0, bottom:0 }}>
             <defs>
@@ -291,7 +292,7 @@ function GoldTab({ cur }: { cur: string }) {
 
       {/* Karat cards grid */}
       <div>
-        <div className="text-[10px] font-bold tracking-widest text-white/30 mb-4">GOLD BY KARAT GRADE — PER GRAM · {cur}</div>
+        <div className="text-[10px] font-bold tracking-widest text-white/30 mb-4">{t("gold.karatTitle", lang)} · {cur}</div>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {KARATS.map(k => {
             const priceG = LIVE.goldGramUSD * k.purity;
@@ -322,13 +323,13 @@ function GoldTab({ cur }: { cur: string }) {
       {/* Karat reference table */}
       <div className="bg-[#0d1117] border border-white/6 rounded-xl overflow-hidden">
         <div className="p-4 border-b border-white/6">
-          <div className="text-[10px] font-bold tracking-widest text-white/30">FULL KARAT REFERENCE TABLE · ALL CURRENCIES · PER GRAM</div>
+          <div className="text-[10px] font-bold tracking-widest text-white/30">{t("gold.karatGuide", lang).toUpperCase()} · ALL CURRENCIES · {t("gold.perGram", lang).toUpperCase()}</div>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-xs">
             <thead>
               <tr className="border-b border-white/5">
-                {["Karat","Purity","Common Use","USD/g","MYR/g","AED/g","USD/oz"].map(h => (
+                {["Karat", t("gold.purity", lang), t("gold.commonUse", lang), t("gold.usdPerGram", lang), t("gold.myrPerGram", lang), t("gold.aedPerGram", lang), "USD/oz"].map(h => (
                   <th key={h} className="text-left text-[10px] font-bold tracking-widest text-white/25 px-4 py-3">{h}</th>
                 ))}
               </tr>
@@ -358,7 +359,7 @@ function GoldTab({ cur }: { cur: string }) {
 }
 
 // ── WORLD MAP TAB ──
-function WorldMapTab() {
+function WorldMapTab({ lang }: { lang: Lang }) {
   const [tooltip, setTooltip] = useState<{ name: string; country: Country | null; x: number; y: number } | null>(null);
   const [selected, setSelected] = useState<Country | null>(null);
   const [filter, setFilter] = useState<string>("all");
@@ -396,6 +397,24 @@ function WorldMapTab() {
     africa: COUNTRIES.filter(c => c.region === "africa").length,
   } as Record<string, number>;
 
+  const regionLabel: Record<string, string> = {
+    all: t("map.all", lang),
+    asia: t("map.asia", lang),
+    "middle-east": t("map.middleEast", lang),
+    europe: t("map.europe", lang),
+    americas: t("map.americas", lang),
+    oceania: t("map.oceania", lang),
+    africa: t("map.africa", lang),
+  };
+
+  const statusLabel: Record<string, string> = {
+    critical: t("map.critical", lang),
+    high: t("map.high", lang),
+    moderate: t("map.moderate", lang),
+    low: t("map.low", lang),
+    benefiting: t("map.benefiting", lang),
+  };
+
   return (
     <div className="space-y-4 p-6">
       {/* Summary stats */}
@@ -420,12 +439,12 @@ function WorldMapTab() {
       {/* Interactive map */}
       <div className="bg-[#0d1117] border border-white/6 rounded-xl overflow-hidden relative">
         <div className="p-4 border-b border-white/5 flex items-center justify-between flex-wrap gap-2">
-          <div className="text-[10px] font-bold tracking-widest text-white/30">INTERACTIVE WORLD MAP — HORMUZ CRISIS IMPACT</div>
+          <div className="text-[10px] font-bold tracking-widest text-white/30">{t("map.title", lang)}</div>
           <div className="flex items-center gap-3 text-[9px] font-bold tracking-widest">
             {Object.entries(statusColor).map(([s, c]) => (
               <span key={s} className="flex items-center gap-1.5">
                 <span className="w-2.5 h-2.5 rounded-sm inline-block" style={{ background: c }} />
-                <span className="text-white/40 uppercase">{s}</span>
+                <span className="text-white/40 uppercase">{statusLabel[s] ?? s}</span>
               </span>
             ))}
           </div>
@@ -477,31 +496,31 @@ function WorldMapTab() {
                   <span>{tooltip.country.flag}</span> {tooltip.country.name}
                 </div>
                 <div className="flex items-center gap-2 mt-1.5">
-                  <span className="px-1.5 py-0.5 rounded text-[9px] font-bold uppercase" style={{ background: statusBg[tooltip.country.status], color: statusColor[tooltip.country.status] }}>{tooltip.country.status}</span>
-                  <span className="text-white/50">Impact: <span className="font-mono font-bold" style={{ color: statusColor[tooltip.country.status] }}>{tooltip.country.fuelImpact}</span></span>
+                  <span className="px-1.5 py-0.5 rounded text-[9px] font-bold uppercase" style={{ background: statusBg[tooltip.country.status], color: statusColor[tooltip.country.status] }}>{statusLabel[tooltip.country.status] ?? tooltip.country.status}</span>
+                  <span className="text-white/50">{t("map.impact", lang)}: <span className="font-mono font-bold" style={{ color: statusColor[tooltip.country.status] }}>{tooltip.country.fuelImpact}</span></span>
                 </div>
                 {tooltip.country.hormuzDep && (
-                  <div className="text-white/40 mt-1">Hormuz dep: <span className="font-mono font-bold text-white/60">{tooltip.country.hormuzDep}%</span></div>
+                  <div className="text-white/40 mt-1">{t("map.hormuzDep", lang)}: <span className="font-mono font-bold text-white/60">{tooltip.country.hormuzDep}%</span></div>
                 )}
-                <div className="text-white/30 mt-1 text-[10px]">Click for full details →</div>
+                <div className="text-white/30 mt-1 text-[10px]">{t("map.clickDetails", lang)}</div>
               </div>
             </div>
           )}
         </div>
-        <div className="p-3 text-center text-[10px] text-white/20">Scroll to zoom · Drag to pan · Click country for details</div>
+        <div className="p-3 text-center text-[10px] text-white/20">{t("map.scrollToZoom", lang)}</div>
       </div>
 
       {/* Region filter + search */}
       <div className="flex flex-wrap gap-2 items-center">
         <input
-          type="text" placeholder="Search country..."
+          type="text" placeholder={t("map.searchCountry", lang)}
           className="bg-[#0d1117] border border-white/8 rounded-lg px-3 py-2 text-xs text-white placeholder-white/20 outline-none focus:border-white/20 w-44 transition-colors"
           value={search} onChange={e => setSearch(e.target.value)}
         />
         {Object.entries(regionCounts).map(([r, count]) => (
           <button key={r} onClick={() => setFilter(r)}
             className={`px-3 py-1.5 rounded-lg text-[10px] font-bold tracking-wider uppercase transition-all border ${filter === r ? "bg-amber-500/15 border-amber-500/40 text-amber-400" : "bg-transparent border-white/6 text-white/30 hover:border-white/12 hover:text-white/50"}`}>
-            {r === "middle-east" ? "Mid East" : r} ({count})
+            {regionLabel[r] ?? r} ({count})
           </button>
         ))}
       </div>
@@ -524,7 +543,7 @@ function WorldMapTab() {
                 <td className="px-4 py-3 font-mono text-white/60">{c.hormuzDep !== null ? `${c.hormuzDep}%` : "—"}</td>
                 <td className="px-4 py-3 font-mono font-bold" style={{ color: c.fuelImpact.startsWith("+") ? "#ef4444" : c.fuelImpact === "Windfall" ? "#22c55e" : "#f0a500" }}>{c.fuelImpact}</td>
                 <td className="px-4 py-3">
-                  <span className="px-2 py-0.5 rounded text-[9px] font-bold uppercase" style={{ background: statusBg[c.status], color: statusColor[c.status] }}>{c.status}</span>
+                  <span className="px-2 py-0.5 rounded text-[9px] font-bold uppercase" style={{ background: statusBg[c.status], color: statusColor[c.status] }}>{statusLabel[c.status] ?? c.status}</span>
                 </td>
                 <td className="px-4 py-3 text-white/40 max-w-[220px] truncate">{c.action}</td>
               </tr>
@@ -545,7 +564,7 @@ function WorldMapTab() {
                   <div>
                     <h2 className="text-xl font-bold text-white">{selected.name}</h2>
                     <div className="flex items-center gap-2 mt-1">
-                      <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase" style={{ background: statusBg[selected.status], color: statusColor[selected.status] }}>{selected.status}</span>
+                      <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase" style={{ background: statusBg[selected.status], color: statusColor[selected.status] }}>{statusLabel[selected.status] ?? selected.status}</span>
                       <span className="text-xs text-white/30 capitalize">{selected.region.replace("-", " ")}</span>
                     </div>
                   </div>
@@ -558,10 +577,10 @@ function WorldMapTab() {
               {/* Key metrics */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                 {[
-                  { l:"Population", v:selected.detail.population },
-                  { l:"GDP", v:selected.detail.gdpBillion },
-                  { l:"Hormuz Dep.", v:selected.hormuzDep !== null ? `${selected.hormuzDep}%` : "Producer" },
-                  { l:"Fuel Impact", v:selected.fuelImpact },
+                  { l: t("map.population", lang), v: selected.detail.population },
+                  { l: t("map.gdp", lang), v: selected.detail.gdpBillion },
+                  { l: "Hormuz Dep.", v: selected.hormuzDep !== null ? `${selected.hormuzDep}%` : "Producer" },
+                  { l: "Fuel Impact", v: selected.fuelImpact },
                 ].map(m => (
                   <div key={m.l} className="bg-white/3 rounded-xl p-3 text-center">
                     <div className="text-[10px] text-white/30 font-bold tracking-widest">{m.l}</div>
@@ -572,11 +591,11 @@ function WorldMapTab() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="bg-white/2 rounded-xl p-4">
-                  <div className="text-[10px] font-bold tracking-widest text-white/25 mb-2">ENERGY MIX</div>
+                  <div className="text-[10px] font-bold tracking-widest text-white/25 mb-2">{t("map.energyMix", lang).toUpperCase()}</div>
                   <div className="text-sm text-white/70">{selected.detail.energyMix}</div>
                 </div>
                 <div className="bg-white/2 rounded-xl p-4">
-                  <div className="text-[10px] font-bold tracking-widest text-white/25 mb-2">RESERVES STATUS</div>
+                  <div className="text-[10px] font-bold tracking-widest text-white/25 mb-2">{t("map.reserves", lang).toUpperCase()} STATUS</div>
                   <div className="text-sm text-white/70">{selected.detail.reserves}</div>
                 </div>
               </div>
@@ -595,7 +614,7 @@ function WorldMapTab() {
 
               {/* Measures */}
               <div>
-                <div className="text-[10px] font-bold tracking-widest text-white/25 mb-3">EMERGENCY MEASURES TAKEN</div>
+                <div className="text-[10px] font-bold tracking-widest text-white/25 mb-3">{t("map.govMeasures", lang)}</div>
                 <div className="space-y-2">
                   {selected.detail.measures.map((m, i) => (
                     <div key={i} className="flex items-start gap-3 text-sm">
@@ -608,7 +627,7 @@ function WorldMapTab() {
 
               {/* Economic risk */}
               <div className="rounded-xl p-4" style={{ background: statusBg[selected.status], borderLeft:`3px solid ${statusColor[selected.status]}` }}>
-                <div className="text-[10px] font-bold tracking-widest mb-1" style={{ color: statusColor[selected.status] }}>ECONOMIC RISK ASSESSMENT</div>
+                <div className="text-[10px] font-bold tracking-widest mb-1" style={{ color: statusColor[selected.status] }}>{t("map.econRisk", lang)}</div>
                 <div className="text-sm text-white/80">{selected.detail.economicRisk}</div>
               </div>
 
@@ -637,7 +656,7 @@ const COUNTRY_STATS = (() => {
   return Object.entries(m).sort((a,b) => b[1].damageUSD - a[1].damageUSD);
 })();
 
-function WarTab() {
+function WarTab({ lang }: { lang: Lang }) {
   const [selectedStrike, setSelectedStrike] = useState<StrikeEvent | null>(null);
   const [typeFilter, setTypeFilter] = useState("all");
 
@@ -656,23 +675,23 @@ function WarTab() {
 
       {/* ── GLOBAL DAMAGE COUNTER ── */}
       <div>
-        <div className="text-[10px] font-bold tracking-widest text-white/25 mb-3">CUMULATIVE WAR DAMAGE — APR 15, 2026 · CRISIS DAY 46</div>
+        <div className="text-[10px] font-bold tracking-widest text-white/25 mb-3">{t("war.globalDamage", lang)} — APR 15, 2026 · {t("war.asOf", lang)} DAY 46</div>
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
-          <KpiCard label="Total Strikes" value={WAR_STATS.totalStrikes.toString()} sub="Documented events" accent="#ef4444" />
-          <KpiCard label="Drones Launched" value={WAR_STATS.totalDrones.toLocaleString()} sub="All parties" accent="#f97316" />
-          <KpiCard label="Missiles Fired" value={WAR_STATS.totalMissiles.toLocaleString()} sub="All parties" accent="#f97316" />
-          <KpiCard label="Confirmed Killed" value={WAR_STATS.totalKilled.toLocaleString()} sub="All sides" accent="#ef4444" />
-          <KpiCard label="Confirmed Wounded" value={WAR_STATS.totalWounded.toLocaleString()} sub="All sides" accent="#ef4444" />
-          <KpiCard label="Economic Damage" value={`$${(WAR_STATS.totalDamageUSD / 1000).toFixed(2)}B`} sub="Estimated USD" accent="#8b5cf6" />
-          <KpiCard label="Countries Struck" value={WAR_STATS.countriesStruck.toString()} sub="Confirmed attacks" accent="#3b82f6" />
+          <KpiCard label={t("war.totalStrikes", lang)} value={WAR_STATS.totalStrikes.toString()} sub={t("war.documentedEvents", lang)} accent="#ef4444" />
+          <KpiCard label={t("war.dronesLaunched", lang)} value={WAR_STATS.totalDrones.toLocaleString()} sub={t("war.allParties", lang)} accent="#f97316" />
+          <KpiCard label={t("war.missilesFired", lang)} value={WAR_STATS.totalMissiles.toLocaleString()} sub={t("war.allParties", lang)} accent="#f97316" />
+          <KpiCard label={t("war.confirmedKilled", lang)} value={WAR_STATS.totalKilled.toLocaleString()} sub={t("war.allSides", lang)} accent="#ef4444" />
+          <KpiCard label={t("war.confirmedWounded", lang)} value={WAR_STATS.totalWounded.toLocaleString()} sub={t("war.allSides", lang)} accent="#ef4444" />
+          <KpiCard label={t("war.economicDamage", lang)} value={`$${(WAR_STATS.totalDamageUSD / 1000).toFixed(2)}B`} sub={t("war.estimatedUSD", lang)} accent="#8b5cf6" />
+          <KpiCard label={t("war.countriesStruck", lang)} value={WAR_STATS.countriesStruck.toString()} sub={t("war.confirmedAttacks", lang)} accent="#3b82f6" />
         </div>
       </div>
 
       {/* Status bar */}
       <div className="bg-[#0d1117] border-l-2 border-amber-500/60 border border-white/5 rounded-xl px-5 py-4 text-xs text-white/50 space-y-1">
-        <div><span className="text-white/60 font-bold">Largest single strike: </span>{WAR_STATS.largestStrike}</div>
-        <div><span className="text-white/60 font-bold">Hormuz status: </span><span className="text-emerald-400 font-bold">{WAR_STATS.hormuzStatus}</span></div>
-        <div><span className="text-white/60 font-bold">As of: </span>Apr 15, 2026 · US-Iran peace talks Day 2 · Brent $99.04 · Gold $4,825</div>
+        <div><span className="text-white/60 font-bold">{t("war.largestStrike", lang)}: </span>{WAR_STATS.largestStrike}</div>
+        <div><span className="text-white/60 font-bold">{t("war.hormuzStatus", lang)}: </span><span className="text-emerald-400 font-bold">{WAR_STATS.hormuzStatus}</span></div>
+        <div><span className="text-white/60 font-bold">{t("war.asOf", lang)}: </span>Apr 15, 2026 · US-Iran peace talks Day 2 · Brent $99.04 · Gold $4,825</div>
       </div>
 
       {/* ── LEADERBOARDS ── */}
@@ -680,7 +699,7 @@ function WarTab() {
 
         {/* Top Drone Attacks */}
         <div className="bg-[#0d1117] border border-white/6 rounded-xl p-5">
-          <div className="text-[10px] font-bold tracking-widest text-orange-400/60 mb-4">🚁 TOP 5 HIGHEST DRONE ATTACKS</div>
+          <div className="text-[10px] font-bold tracking-widest text-orange-400/60 mb-4">{t("war.topDrones", lang)}</div>
           <div className="space-y-3">
             {topByDrones.filter(s => s.droneCount > 0).map((s, i) => (
               <div key={s.id} className="flex items-center gap-3">
@@ -691,7 +710,7 @@ function WarTab() {
                 </div>
                 <div className="text-right shrink-0">
                   <div className="text-base font-bold font-mono text-orange-400">{s.droneCount}</div>
-                  <div className="text-[9px] text-white/20">drones</div>
+                  <div className="text-[9px] text-white/20">{t("war.drones", lang)}</div>
                 </div>
                 <div className="w-20">
                   <div className="h-1.5 rounded-full bg-white/5 overflow-hidden">
@@ -705,7 +724,7 @@ function WarTab() {
 
         {/* Top Missile Attacks */}
         <div className="bg-[#0d1117] border border-white/6 rounded-xl p-5">
-          <div className="text-[10px] font-bold tracking-widest text-red-400/60 mb-4">🚀 TOP 5 HIGHEST MISSILE ATTACKS</div>
+          <div className="text-[10px] font-bold tracking-widest text-red-400/60 mb-4">{t("war.topMissiles", lang)}</div>
           <div className="space-y-3">
             {topByMissiles.filter(s => s.missileCount > 0).slice(0,5).map((s, i) => (
               <div key={s.id} className="flex items-center gap-3">
@@ -716,7 +735,7 @@ function WarTab() {
                 </div>
                 <div className="text-right shrink-0">
                   <div className="text-base font-bold font-mono text-red-400">{s.missileCount}</div>
-                  <div className="text-[9px] text-white/20">missiles</div>
+                  <div className="text-[9px] text-white/20">{t("war.missiles", lang)}</div>
                 </div>
                 <div className="w-20">
                   <div className="h-1.5 rounded-full bg-white/5 overflow-hidden">
@@ -731,18 +750,18 @@ function WarTab() {
 
       {/* ── COUNTRIES AFFECTED BREAKDOWN ── */}
       <div className="bg-[#0d1117] border border-white/6 rounded-xl p-5">
-        <div className="text-[10px] font-bold tracking-widest text-white/25 mb-4">🌍 DAMAGE BY COUNTRY — CUMULATIVE TOTALS</div>
+        <div className="text-[10px] font-bold tracking-widest text-white/25 mb-4">{t("war.damageByCountry", lang)}</div>
         <div className="overflow-x-auto">
           <table className="w-full text-xs">
             <thead>
               <tr className="border-b border-white/5">
-                <th className="text-left text-[9px] font-bold tracking-wider text-white/20 pb-2 pr-4">COUNTRY</th>
-                <th className="text-right text-[9px] font-bold tracking-wider text-white/20 pb-2 px-3">STRIKES</th>
-                <th className="text-right text-[9px] font-bold tracking-wider text-orange-400/50 pb-2 px-3">DRONES</th>
-                <th className="text-right text-[9px] font-bold tracking-wider text-red-400/50 pb-2 px-3">MISSILES</th>
-                <th className="text-right text-[9px] font-bold tracking-wider text-red-400/50 pb-2 px-3">KILLED</th>
-                <th className="text-right text-[9px] font-bold tracking-wider text-orange-400/50 pb-2 px-3">WOUNDED</th>
-                <th className="text-right text-[9px] font-bold tracking-wider text-purple-400/50 pb-2 pl-3">DAMAGE</th>
+                <th className="text-left text-[9px] font-bold tracking-wider text-white/20 pb-2 pr-4">{t("war.country", lang)}</th>
+                <th className="text-right text-[9px] font-bold tracking-wider text-white/20 pb-2 px-3">{t("war.strikes", lang)}</th>
+                <th className="text-right text-[9px] font-bold tracking-wider text-orange-400/50 pb-2 px-3">{t("war.dronesLaunched", lang).toUpperCase()}</th>
+                <th className="text-right text-[9px] font-bold tracking-wider text-red-400/50 pb-2 px-3">{t("war.missilesFired", lang).toUpperCase()}</th>
+                <th className="text-right text-[9px] font-bold tracking-wider text-red-400/50 pb-2 px-3">{t("war.killed", lang)}</th>
+                <th className="text-right text-[9px] font-bold tracking-wider text-orange-400/50 pb-2 px-3">{t("war.wounded", lang)}</th>
+                <th className="text-right text-[9px] font-bold tracking-wider text-purple-400/50 pb-2 pl-3">{t("war.damage", lang)}</th>
               </tr>
             </thead>
             <tbody>
@@ -762,7 +781,7 @@ function WarTab() {
             </tbody>
             <tfoot>
               <tr className="border-t border-white/10">
-                <td className="pt-3 font-bold text-white/50 text-[9px] tracking-wider">TOTAL</td>
+                <td className="pt-3 font-bold text-white/50 text-[9px] tracking-wider">{t("war.total", lang)}</td>
                 <td className="text-right pt-3 px-3 font-mono font-bold text-white/50">{WAR_STATS.totalStrikes}</td>
                 <td className="text-right pt-3 px-3 font-mono font-bold text-orange-400">{WAR_STATS.totalDrones}</td>
                 <td className="text-right pt-3 px-3 font-mono font-bold text-red-400">{WAR_STATS.totalMissiles}</td>
@@ -778,8 +797,8 @@ function WarTab() {
       {/* ── HUMAN CASUALTIES BY COUNTRY — OFFICIAL SOURCES ── */}
       <div className="bg-[#0d1117] border border-white/6 rounded-xl p-5">
         <div className="flex items-start justify-between flex-wrap gap-2 mb-1">
-          <div className="text-[10px] font-bold tracking-widest text-red-400/60">☠️ HUMAN CASUALTIES BY COUNTRY — VERIFIED OFFICIAL DATA</div>
-          <div className="text-[9px] text-white/20 font-mono">As of Apr 7, 2026</div>
+          <div className="text-[10px] font-bold tracking-widest text-red-400/60">{t("war.casualties", lang)}</div>
+          <div className="text-[9px] text-white/20 font-mono">{t("war.asOf", lang)} Apr 7, 2026</div>
         </div>
         <div className="text-[9px] text-white/20 mb-4">
           Source: Wikipedia • Al Jazeera live tracker • Iran Health Ministry • Lebanon Health Ministry • US CENTCOM • IDF • Gulf state media
@@ -788,10 +807,10 @@ function WarTab() {
           <table className="w-full text-xs">
             <thead>
               <tr className="border-b border-white/5">
-                <th className="text-left text-[9px] font-bold tracking-wider text-white/20 pb-2 pr-4">COUNTRY</th>
-                <th className="text-right text-[9px] font-bold tracking-wider text-red-400/60 pb-2 px-3">KILLED</th>
-                <th className="text-right text-[9px] font-bold tracking-wider text-orange-400/60 pb-2 px-3">INJURED</th>
-                <th className="text-left text-[9px] font-bold tracking-wider text-white/15 pb-2 pl-4">SOURCE</th>
+                <th className="text-left text-[9px] font-bold tracking-wider text-white/20 pb-2 pr-4">{t("war.country", lang)}</th>
+                <th className="text-right text-[9px] font-bold tracking-wider text-red-400/60 pb-2 px-3">{t("war.killed", lang)}</th>
+                <th className="text-right text-[9px] font-bold tracking-wider text-orange-400/60 pb-2 px-3">{t("war.injured", lang)}</th>
+                <th className="text-left text-[9px] font-bold tracking-wider text-white/15 pb-2 pl-4">{t("war.source", lang)}</th>
               </tr>
             </thead>
             <tbody>
@@ -814,7 +833,7 @@ function WarTab() {
             </tbody>
             <tfoot>
               <tr className="border-t border-white/10">
-                <td className="pt-3 text-[9px] font-bold tracking-wider text-white/40">TOTAL</td>
+                <td className="pt-3 text-[9px] font-bold tracking-wider text-white/40">{t("war.total", lang)}</td>
                 <td className="text-right pt-3 px-3 font-mono font-bold text-red-400">5,681–9,956+</td>
                 <td className="text-right pt-3 px-3 font-mono font-bold text-orange-400">42,017+</td>
                 <td className="pl-4 pt-3 text-[9px] text-white/20">Wikipedia — Casualties of the 2026 Iran war</td>
@@ -823,15 +842,14 @@ function WarTab() {
           </table>
         </div>
         <div className="mt-3 text-[9px] text-white/15 leading-relaxed">
-          ⚠️ All figures are officially reported and publicly sourced. Ranges indicate lower–upper confirmed estimates where reporting differs between sources.
-          Data does not include unreported civilian casualties in conflict zones with restricted press access.
+          {t("war.casualtyDisclaimer", lang)}
         </div>
       </div>
 
       {/* Damage chart */}
       <div className="bg-[#0d1117] border border-white/6 rounded-xl p-6">
-        <div className="text-[10px] font-bold tracking-widest text-white/30 mb-1">STRIKE ECONOMIC DAMAGE — USD MILLIONS</div>
-        <div className="text-xs text-white/20 mb-5">Per event · Ras Laffan ($18.7B) is off-chart scaled</div>
+        <div className="text-[10px] font-bold tracking-widest text-white/30 mb-1">{t("war.strikeDamageChart", lang)}</div>
+        <div className="text-xs text-white/20 mb-5">{t("war.perEvent", lang)}</div>
         <ResponsiveContainer width="100%" height={180}>
           <BarChart data={barData} margin={{ top:0, right:10, left:0, bottom:0 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
@@ -849,10 +867,10 @@ function WarTab() {
 
       {/* Filter */}
       <div className="flex flex-wrap gap-2">
-        {["all","airstrike","missile","drone","naval"].map(t => (
-          <button key={t} onClick={() => setTypeFilter(t)}
-            className={`px-3 py-1.5 rounded-lg text-[10px] font-bold tracking-wider uppercase transition-all border ${typeFilter === t ? "bg-red-500/15 border-red-500/40 text-red-400" : "bg-transparent border-white/6 text-white/30 hover:border-white/12"}`}>
-            {t === "all" ? "All Strikes" : `${typeIcon[t]} ${t}`}
+        {["all","airstrike","missile","drone","naval"].map(typeVal => (
+          <button key={typeVal} onClick={() => setTypeFilter(typeVal)}
+            className={`px-3 py-1.5 rounded-lg text-[10px] font-bold tracking-wider uppercase transition-all border ${typeFilter === typeVal ? "bg-red-500/15 border-red-500/40 text-red-400" : "bg-transparent border-white/6 text-white/30 hover:border-white/12"}`}>
+            {typeVal === "all" ? t("war.allStrikes", lang) : `${typeIcon[typeVal]} ${typeVal}`}
           </button>
         ))}
       </div>
@@ -903,7 +921,7 @@ function WarTab() {
                 </div>
               </div>
             </div>
-            <div className="text-[10px] text-white/20 mt-2">Click for full briefing →</div>
+            <div className="text-[10px] text-white/20 mt-2">{t("war.clickBriefing", lang)}</div>
           </div>
         ))}
       </div>
@@ -931,18 +949,18 @@ function WarTab() {
                 <div className="bg-white/3 rounded-xl p-3 text-center"><div className="text-[9px] text-white/25 font-bold tracking-wider">WOUNDED</div><div className="text-xl font-bold font-mono text-orange-400">{selectedStrike.casualties.wounded}</div></div>
               </div>
               <div className="bg-white/3 rounded-xl p-4">
-                <div className="text-[9px] text-white/25 font-bold tracking-wider mb-1">ESTIMATED DAMAGE</div>
+                <div className="text-[9px] text-white/25 font-bold tracking-wider mb-1">{t("war.estimatedDamage", lang)}</div>
                 <div className="text-2xl font-bold font-mono text-purple-400">${selectedStrike.damageUSD >= 1000 ? (selectedStrike.damageUSD / 1000).toFixed(1) + "B" : selectedStrike.damageUSD + "M"} USD</div>
               </div>
               <div className="bg-white/2 rounded-xl p-4">
-                <div className="text-[9px] text-white/25 font-bold tracking-wider mb-2">STRIKE BRIEFING</div>
+                <div className="text-[9px] text-white/25 font-bold tracking-wider mb-2">{t("war.strikeBriefing", lang)}</div>
                 <div className="text-sm text-white/70 leading-relaxed">{selectedStrike.description}</div>
               </div>
               <div className="bg-white/2 rounded-xl p-4">
-                <div className="text-[9px] text-white/25 font-bold tracking-wider mb-2">INFRASTRUCTURE DAMAGED</div>
+                <div className="text-[9px] text-white/25 font-bold tracking-wider mb-2">{t("war.infraDamaged", lang)}</div>
                 <div className="text-sm text-white/60">{selectedStrike.infrastructure}</div>
               </div>
-              <div className="text-[10px] text-white/20">All damage figures are estimates based on public intelligence reports and infrastructure valuations.</div>
+              <div className="text-[10px] text-white/20">{t("war.disclaimer", lang)}</div>
             </div>
           </div>
         </div>
@@ -952,79 +970,246 @@ function WarTab() {
 }
 
 // ── NEWS TAB ──
-function NewsTab() {
+function NewsTab({ lang }: { lang: Lang }) {
   const [catFilter, setCatFilter] = useState("all");
-  const [expanded, setExpanded] = useState<number | null>(null);
+  const [expanded, setExpanded] = useState<number | string | null>(null);
+  const [rssNews, setRssNews] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [rssError, setRssError] = useState(false);
+  const [lastFetched, setLastFetched] = useState<string | null>(null);
 
   const cats = ["all","military","energy","economy","diplomacy","humanitarian"] as const;
   const catIcon: Record<string, string> = { military:"⚔️", energy:"⚡", economy:"📈", diplomacy:"🕊️", humanitarian:"🤝" };
 
-  const filtered = catFilter === "all" ? NEWS : NEWS.filter(n => n.category === catFilter);
+  function doFetch() {
+    setLoading(true);
+    fetch("/api/news")
+      .then(r => r.json())
+      .then(data => {
+        if (data.ok && data.items?.length > 0) {
+          setRssNews(data.items);
+          setLastFetched(data.fetchedAt ?? new Date().toISOString());
+        }
+        setLoading(false);
+      })
+      .catch(() => { setRssError(true); setLoading(false); });
+  }
+
+  useEffect(() => {
+    doFetch();
+    const interval = setInterval(doFetch, 15 * 60 * 1000); // auto-refresh every 15 minutes
+    return () => clearInterval(interval);
+  }, []);
+
+  const usingRss = rssNews.length > 0;
+
+  // For RSS items, we map category from data or default to "energy"
+  function getRssCategory(item: any): string {
+    if (item.category) return item.category;
+    const title = (item.title || "").toLowerCase();
+    if (title.includes("oil") || title.includes("gas") || title.includes("energy") || title.includes("fuel")) return "energy";
+    if (title.includes("war") || title.includes("strike") || title.includes("missile") || title.includes("attack") || title.includes("drone")) return "military";
+    if (title.includes("sanction") || title.includes("economy") || title.includes("market") || title.includes("price") || title.includes("gdp")) return "economy";
+    if (title.includes("peace") || title.includes("talk") || title.includes("diplomat") || title.includes("treaty") || title.includes("un ")) return "diplomacy";
+    if (title.includes("civilian") || title.includes("refugee") || title.includes("aid") || title.includes("humanitarian") || title.includes("hospital")) return "humanitarian";
+    return "energy";
+  }
+
+  const staticFiltered = catFilter === "all" ? NEWS : NEWS.filter(n => n.category === catFilter);
+  const rssFiltered = catFilter === "all" ? rssNews : rssNews.filter(item => getRssCategory(item) === catFilter);
+  const displayItems = usingRss ? rssFiltered : staticFiltered;
+
+  function formatRssTime(pubDate: string | undefined): string {
+    if (!pubDate) return "";
+    try {
+      const d = new Date(pubDate);
+      return d.toLocaleTimeString("en-US", { hour:"2-digit", minute:"2-digit", hour12: false }) + " UTC";
+    } catch {
+      return pubDate;
+    }
+  }
+
+  function formatLastFetched(iso: string | null): string {
+    if (!iso) return "";
+    try {
+      const d = new Date(iso);
+      return d.toLocaleTimeString("en-US", { hour:"2-digit", minute:"2-digit", hour12: false });
+    } catch {
+      return iso;
+    }
+  }
 
   return (
     <div className="space-y-5 p-6">
       {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
-          <h2 className="text-lg font-bold text-white">Daily Briefing</h2>
-          <div className="text-xs text-white/30 mt-0.5">Apr 15, 2026 · Crisis Day 46 · {NEWS.length} reports</div>
+          <h2 className="text-lg font-bold text-white">{t("news.dailyBriefing", lang)}</h2>
+          <div className="text-xs text-white/30 mt-0.5">
+            Apr 15, 2026 · Crisis Day 46 · {usingRss ? rssNews.length : NEWS.length} {t("news.reports", lang)}
+            {lastFetched && (
+              <span className="ml-2 text-white/20">· {t("news.refreshed", lang)} {formatLastFetched(lastFetched)}</span>
+            )}
+          </div>
         </div>
-        <div className="flex items-center gap-2 bg-[#0d1117] border border-white/6 rounded-full px-4 py-2">
-          <div className="w-2 h-2 rounded-full bg-red-500 pulse-dot" />
-          <span className="text-[10px] font-bold tracking-widest text-white/50">LIVE UPDATES</span>
+        <div className="flex items-center gap-2">
+          {usingRss && (
+            <div className="flex items-center gap-1.5 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[10px] font-bold tracking-widest px-3 py-1.5 rounded-full">
+              <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 pulse-dot" />
+              {t("news.liveRss", lang)}
+            </div>
+          )}
+          <div className="flex items-center gap-2 bg-[#0d1117] border border-white/6 rounded-full px-4 py-2">
+            <div className="w-2 h-2 rounded-full bg-red-500 pulse-dot" />
+            <span className="text-[10px] font-bold tracking-widest text-white/50">{t("news.liveUpdates", lang)}</span>
+          </div>
         </div>
       </div>
+
+      {/* Loading skeleton */}
+      {loading && (
+        <div className="space-y-3">
+          <div className="text-xs text-white/40 flex items-center gap-2">
+            <div className="w-2 h-2 rounded-full bg-amber-400 pulse-dot" />
+            {t("news.loading", lang)}
+          </div>
+          {[1,2,3].map(i => (
+            <div key={i} className="bg-[#0d1117] border border-white/6 rounded-xl p-5 animate-pulse">
+              <div className="h-3 bg-white/5 rounded w-3/4 mb-3" />
+              <div className="h-2 bg-white/3 rounded w-1/2" />
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Error banner */}
+      {rssError && !loading && (
+        <div className="bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3 text-xs text-red-400/80">
+          {t("news.error", lang)}
+        </div>
+      )}
+
+      {/* Cached fallback label */}
+      {!loading && !usingRss && (
+        <div className="bg-white/3 border border-white/5 rounded-lg px-3 py-2 text-[10px] text-white/30 font-mono">
+          {t("news.cached", lang)}
+        </div>
+      )}
+
+      {/* RSS powered label */}
+      {!loading && usingRss && (
+        <div className="text-[10px] text-white/20 font-mono">
+          {t("news.powered", lang)} · {rssNews.length} articles
+        </div>
+      )}
 
       {/* Category filter */}
-      <div className="flex flex-wrap gap-2">
-        {cats.map(c => (
-          <button key={c} onClick={() => setCatFilter(c)}
-            className={`px-3 py-1.5 rounded-full text-[10px] font-bold tracking-wider uppercase transition-all border ${catFilter === c ? "border-white/20 text-white bg-white/8" : "bg-transparent border-white/5 text-white/30 hover:border-white/10"}`}
-            style={catFilter === c && c !== "all" ? { borderColor: catColor[c] + "60", color: catColor[c], background: catColor[c] + "12" } : {}}>
-            {c !== "all" ? catIcon[c] : ""} {c}
-          </button>
-        ))}
-      </div>
+      {!loading && (
+        <div className="flex flex-wrap gap-2">
+          {cats.map(c => (
+            <button key={c} onClick={() => setCatFilter(c)}
+              className={`px-3 py-1.5 rounded-full text-[10px] font-bold tracking-wider uppercase transition-all border ${catFilter === c ? "border-white/20 text-white bg-white/8" : "bg-transparent border-white/5 text-white/30 hover:border-white/10"}`}
+              style={catFilter === c && c !== "all" ? { borderColor: catColor[c] + "60", color: catColor[c], background: catColor[c] + "12" } : {}}>
+              {c !== "all" ? catIcon[c] : ""} {t(`news.${c}` as any, lang)}
+            </button>
+          ))}
+        </div>
+      )}
 
-      {/* News cards */}
-      <div className="space-y-3">
-        {filtered.map(n => (
-          <div key={n.id}
-            className="news-card bg-[#0d1117] border border-white/6 rounded-xl overflow-hidden cursor-pointer hover:border-white/10"
-            onClick={() => setExpanded(expanded === n.id ? null : n.id)}
-          >
-            <div className="p-5">
-              <div className="flex items-start gap-4">
-                <div className="shrink-0 w-8 h-8 rounded-lg flex items-center justify-center text-base" style={{ background: catColor[n.category] + "15" }}>
-                  {catIcon[n.category]}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap mb-1.5">
-                    <span className="text-[10px] font-bold font-mono text-white/25">{n.time}</span>
-                    <span className="text-[9px] px-1.5 py-0.5 rounded font-bold uppercase" style={{ background: catColor[n.category] + "15", color: catColor[n.category] }}>{n.category}</span>
-                    <span className="text-[9px] px-1.5 py-0.5 rounded font-bold uppercase" style={{ background: impactColor[n.impact] + "15", color: impactColor[n.impact] }}>{n.impact}</span>
-                    <span className="text-[9px] text-white/20 font-mono">{n.region}</span>
-                  </div>
-                  <h3 className="text-sm font-bold text-white leading-tight">{n.headline}</h3>
-                  {expanded === n.id && (
-                    <div className="mt-3 space-y-2">
-                      <p className="text-xs text-white/55 leading-relaxed">{n.summary}</p>
-                      <div className="text-[10px] text-white/25">Source: {n.source}</div>
+      {/* News cards — RSS */}
+      {!loading && usingRss && (
+        <div className="space-y-3">
+          {(displayItems as any[]).map((item, idx) => {
+            const itemId = `rss-${idx}`;
+            const cat = getRssCategory(item);
+            return (
+              <div key={itemId}
+                className="news-card bg-[#0d1117] border border-white/6 rounded-xl overflow-hidden cursor-pointer hover:border-white/10"
+                onClick={() => setExpanded(expanded === itemId ? null : itemId)}
+              >
+                <div className="p-5">
+                  <div className="flex items-start gap-4">
+                    <div className="shrink-0 w-8 h-8 rounded-lg flex items-center justify-center text-base" style={{ background: catColor[cat] + "15" }}>
+                      {catIcon[cat]}
                     </div>
-                  )}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap mb-1.5">
+                        <span className="text-[10px] font-bold font-mono text-white/25">{formatRssTime(item.pubDate)}</span>
+                        <span className="text-[9px] px-1.5 py-0.5 rounded font-bold uppercase" style={{ background: catColor[cat] + "15", color: catColor[cat] }}>{cat}</span>
+                        {item.source && (
+                          <span className="text-[9px] text-white/20 font-mono">{item.source}</span>
+                        )}
+                      </div>
+                      <h3 className="text-sm font-bold text-white leading-tight">{item.title}</h3>
+                      {expanded === itemId && (
+                        <div className="mt-3 space-y-2">
+                          {item.summary && (
+                            <p className="text-xs text-white/55 leading-relaxed">{item.summary}</p>
+                          )}
+                          {item.link && (
+                            <a
+                              href={item.link}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-[10px] text-amber-400/70 hover:text-amber-400 transition-colors underline-offset-2 underline"
+                              onClick={e => e.stopPropagation()}
+                            >
+                              {t("news.source", lang)}: {item.source || item.link}
+                            </a>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                    <div className="text-white/20 text-xs shrink-0">{expanded === itemId ? "▲" : "▼"}</div>
+                  </div>
                 </div>
-                <div className="text-white/20 text-xs shrink-0">{expanded === n.id ? "▲" : "▼"}</div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* News cards — Static fallback */}
+      {!loading && !usingRss && (
+        <div className="space-y-3">
+          {(staticFiltered as NewsItem[]).map(n => (
+            <div key={n.id}
+              className="news-card bg-[#0d1117] border border-white/6 rounded-xl overflow-hidden cursor-pointer hover:border-white/10"
+              onClick={() => setExpanded(expanded === n.id ? null : n.id)}
+            >
+              <div className="p-5">
+                <div className="flex items-start gap-4">
+                  <div className="shrink-0 w-8 h-8 rounded-lg flex items-center justify-center text-base" style={{ background: catColor[n.category] + "15" }}>
+                    {catIcon[n.category]}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap mb-1.5">
+                      <span className="text-[10px] font-bold font-mono text-white/25">{n.time}</span>
+                      <span className="text-[9px] px-1.5 py-0.5 rounded font-bold uppercase" style={{ background: catColor[n.category] + "15", color: catColor[n.category] }}>{n.category}</span>
+                      <span className="text-[9px] px-1.5 py-0.5 rounded font-bold uppercase" style={{ background: impactColor[n.impact] + "15", color: impactColor[n.impact] }}>{n.impact}</span>
+                      <span className="text-[9px] text-white/20 font-mono">{n.region}</span>
+                    </div>
+                    <h3 className="text-sm font-bold text-white leading-tight">{n.headline}</h3>
+                    {expanded === n.id && (
+                      <div className="mt-3 space-y-2">
+                        <p className="text-xs text-white/55 leading-relaxed">{n.summary}</p>
+                        <div className="text-[10px] text-white/25">{t("news.source", lang)}: {n.source}</div>
+                      </div>
+                    )}
+                  </div>
+                  <div className="text-white/20 text-xs shrink-0">{expanded === n.id ? "▲" : "▼"}</div>
+                </div>
               </div>
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
 
 // ── CURRENCIES TAB ──
-function CurrenciesTab() {
+function CurrenciesTab({ cur, lang }: { cur: string; lang: Lang }) {
   const [fromCur, setFromCur] = useState("USD");
   const [amount, setAmount] = useState("100");
 
@@ -1042,17 +1227,17 @@ function CurrenciesTab() {
     <div className="space-y-6 p-6">
       {/* Quick converter */}
       <div className="bg-[#0d1117] border border-white/6 rounded-xl p-6">
-        <div className="text-[10px] font-bold tracking-widest text-white/30 mb-4">CURRENCY CONVERTER</div>
+        <div className="text-[10px] font-bold tracking-widest text-white/30 mb-4">{t("cur.converter", lang)}</div>
         <div className="flex flex-wrap gap-4 items-end">
           <div>
-            <div className="text-[10px] text-white/30 font-bold tracking-wider mb-2">AMOUNT</div>
+            <div className="text-[10px] text-white/30 font-bold tracking-wider mb-2">{t("cur.amount", lang)}</div>
             <input
               type="number" value={amount} onChange={e => setAmount(e.target.value)}
               className="bg-white/5 border border-white/8 rounded-lg px-4 py-3 text-white font-mono text-lg outline-none focus:border-amber-500/50 w-36 transition-colors"
             />
           </div>
           <div>
-            <div className="text-[10px] text-white/30 font-bold tracking-wider mb-2">FROM</div>
+            <div className="text-[10px] text-white/30 font-bold tracking-wider mb-2">{t("cur.from", lang)}</div>
             <div className="flex gap-2">
               {["USD","MYR","AED"].map(c => (
                 <button key={c} onClick={() => setFromCur(c)}
@@ -1082,13 +1267,13 @@ function CurrenciesTab() {
       {/* FX table */}
       <div className="bg-[#0d1117] border border-white/6 rounded-xl overflow-hidden">
         <div className="p-4 border-b border-white/5">
-          <div className="text-[10px] font-bold tracking-widest text-white/30">FX RATES — APR 15, 2026 MID-MARKET</div>
+          <div className="text-[10px] font-bold tracking-widest text-white/30">{t("cur.fxRates", lang)}</div>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-xs">
             <thead>
               <tr className="border-b border-white/5">
-                {["Pair","Rate","Prev Close","Change","Trend","Note"].map(h => (
+                {[t("cur.pair", lang), t("cur.rate", lang), t("cur.prevClose", lang), t("cur.change", lang), t("cur.trend", lang), t("cur.note", lang)].map(h => (
                   <th key={h} className="text-left text-[10px] font-bold tracking-widest text-white/25 px-4 py-3">{h}</th>
                 ))}
               </tr>
@@ -1108,11 +1293,11 @@ function CurrenciesTab() {
                     </td>
                     <td className="px-4 py-3">
                       {fx.pegged ? (
-                        <span className="text-[9px] px-1.5 py-0.5 rounded bg-blue-500/15 text-blue-400 font-bold">PEGGED</span>
+                        <span className="text-[9px] px-1.5 py-0.5 rounded bg-blue-500/15 text-blue-400 font-bold">{t("cur.pegged", lang)}</span>
                       ) : isUp ? (
-                        <span className="text-red-400 text-xs">↑ Weakening</span>
+                        <span className="text-red-400 text-xs">{t("cur.weakening", lang)}</span>
                       ) : (
-                        <span className="text-emerald-400 text-xs">↓ Strengthening</span>
+                        <span className="text-emerald-400 text-xs">{t("cur.strengthening", lang)}</span>
                       )}
                     </td>
                     <td className="px-4 py-3 text-white/35 max-w-[220px] text-[10px]">{fx.note}</td>
@@ -1126,19 +1311,19 @@ function CurrenciesTab() {
 
       {/* DXY info */}
       <div className="bg-[#0d1117] border-l-2 border-blue-500/60 border border-white/5 rounded-xl px-5 py-4 text-xs text-white/50 leading-relaxed">
-        <span className="text-white/70 font-bold">DXY US Dollar Index: 98.37 (▲ +0.36% today)</span> — Dollar weakening as peace talks reduce safe-haven demand. EUR/USD at 1.082. The DXY measures USD against a basket of 6 currencies (EUR, JPY, GBP, CAD, SEK, CHF).
+        <span className="text-white/70 font-bold">{t("cur.dxyInfo", lang)}: 98.37 (▲ +0.36% today)</span> — {t("cur.dxyDesc", lang)}
       </div>
 
       {/* Fill-up calculator */}
       <div className="bg-[#0d1117] border border-white/6 rounded-xl overflow-hidden">
         <div className="p-4 border-b border-white/5">
-          <div className="text-[10px] font-bold tracking-widest text-white/30">50-LITRE TANK FILL-UP COST — NOW VS PRE-CRISIS</div>
+          <div className="text-[10px] font-bold tracking-widest text-white/30">{t("cur.tankFillUp", lang)}</div>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-xs">
             <thead>
               <tr className="border-b border-white/5">
-                {["Country","Price/Litre (Now)","Pre-Crisis","50L Tank Now","Change"].map(h => (
+                {[t("cur.countryCol", lang), t("cur.pricePerLitre", lang), t("cur.preCrisis", lang), t("cur.tankNow", lang), t("cur.changeCol", lang)].map(h => (
                   <th key={h} className="text-left text-[10px] font-bold tracking-widest text-white/25 px-4 py-3">{h}</th>
                 ))}
               </tr>
@@ -1171,23 +1356,24 @@ function CurrenciesTab() {
 }
 
 // ════ MAIN APP ════
-const TABS = [
-  { id:"oil",       label:"🛢  OIL & ENERGY" },
-  { id:"gold",      label:"🥇  GOLD" },
-  { id:"map",       label:"🌍  WORLD MAP" },
-  { id:"war",       label:"💥  WAR DAMAGE" },
-  { id:"news",      label:"📰  NEWS FEED" },
-  { id:"currencies",label:"💱  CURRENCIES" },
-];
-
 export default function App() {
   const [tab, setTab] = useState("oil");
   const [cur, setCur] = useState<"USD"|"MYR"|"AED">("USD");
+  const [lang, setLang] = useState<Lang>("en");
   const [now] = useState(new Date());
+
+  const TABS = [
+    { id:"oil",        label: lang === "en" ? "🛢  OIL & ENERGY"  : "🛢  MINYAK & TENAGA" },
+    { id:"gold",       label: lang === "en" ? "🥇  GOLD"          : "🥇  EMAS" },
+    { id:"map",        label: lang === "en" ? "🌍  WORLD MAP"     : "🌍  PETA DUNIA" },
+    { id:"war",        label: lang === "en" ? "💥  WAR DAMAGE"    : "💥  KEROSAKAN PERANG" },
+    { id:"news",       label: lang === "en" ? "📰  NEWS FEED"     : "📰  SUAPAN BERITA" },
+    { id:"currencies", label: lang === "en" ? "💱  CURRENCIES"    : "💱  MATA WANG" },
+  ];
 
   return (
     <div className="min-h-screen bg-[#070a0f] text-white flex flex-col">
-      <Ticker cur={cur} />
+      <Ticker cur={cur} lang={lang} />
 
       {/* Header */}
       <header className="sticky top-9 z-40 bg-[#070a0f]/95 backdrop-blur border-b border-white/5 h-14 flex items-center justify-between px-5 shrink-0">
@@ -1203,7 +1389,7 @@ export default function App() {
             <div className="text-[13px] font-bold text-white leading-none">
               Jeff's <span className="text-amber-400">MarketIntel</span>
             </div>
-            <div className="text-[9px] text-white/25 font-mono tracking-wider leading-none mt-0.5">LIVE ECONOMY DASHBOARD v3</div>
+            <div className="text-[9px] text-white/25 font-mono tracking-wider leading-none mt-0.5">{t("header.liveEconomy", lang)}</div>
           </div>
         </div>
 
@@ -1211,7 +1397,16 @@ export default function App() {
           <div className="hidden md:block text-[10px] font-mono text-white/20">APR 15, 2026</div>
           <div className="flex items-center gap-1.5 bg-red-500/10 border border-red-500/20 text-red-400 text-[10px] font-bold tracking-widest px-3 py-1.5 rounded-full">
             <span className="w-1.5 h-1.5 rounded-full bg-red-500 pulse-dot inline-block" />
-            CRISIS DAY {LIVE.crisisDay}
+            {t("header.crisisDay", lang)} {LIVE.crisisDay}
+          </div>
+          {/* Language toggle */}
+          <div className="flex bg-white/4 border border-white/6 rounded-lg overflow-hidden">
+            {(["en","bm"] as Lang[]).map(l => (
+              <button key={l} onClick={() => setLang(l)}
+                className={`text-[11px] font-bold px-3 py-1.5 transition-all ${lang === l ? "bg-amber-500 text-black" : "text-white/40 hover:text-white/70"}`}>
+                {l.toUpperCase()}
+              </button>
+            ))}
           </div>
           {/* Currency toggle */}
           <div className="flex bg-white/4 border border-white/6 rounded-lg overflow-hidden">
@@ -1227,29 +1422,29 @@ export default function App() {
 
       {/* Tabs */}
       <nav className="sticky top-[88px] z-30 bg-[#070a0f]/95 backdrop-blur border-b border-white/5 flex overflow-x-auto shrink-0">
-        {TABS.map(t => (
-          <button key={t.id} onClick={() => setTab(t.id)}
-            className={`shrink-0 text-[11px] font-bold tracking-widest uppercase px-5 py-3.5 transition-all border-b-2 whitespace-nowrap ${tab === t.id ? "border-amber-400 text-amber-400 bg-amber-500/5" : "border-transparent text-white/30 hover:text-white/60 hover:bg-white/2"}`}>
-            {t.label}
+        {TABS.map(tabItem => (
+          <button key={tabItem.id} onClick={() => setTab(tabItem.id)}
+            className={`shrink-0 text-[11px] font-bold tracking-widest uppercase px-5 py-3.5 transition-all border-b-2 whitespace-nowrap ${tab === tabItem.id ? "border-amber-400 text-amber-400 bg-amber-500/5" : "border-transparent text-white/30 hover:text-white/60 hover:bg-white/2"}`}>
+            {tabItem.label}
           </button>
         ))}
       </nav>
 
       {/* Tab content */}
       <main className="flex-1">
-        {tab === "oil"        && <OilTab cur={cur} />}
-        {tab === "gold"       && <GoldTab cur={cur} />}
-        {tab === "map"        && <WorldMapTab />}
-        {tab === "war"        && <WarTab />}
-        {tab === "news"       && <NewsTab />}
-        {tab === "currencies" && <CurrenciesTab />}
+        {tab === "oil"        && <OilTab cur={cur} lang={lang} />}
+        {tab === "gold"       && <GoldTab cur={cur} lang={lang} />}
+        {tab === "map"        && <WorldMapTab lang={lang} />}
+        {tab === "war"        && <WarTab lang={lang} />}
+        {tab === "news"       && <NewsTab lang={lang} />}
+        {tab === "currencies" && <CurrenciesTab cur={cur} lang={lang} />}
       </main>
 
       {/* Footer */}
       <footer className="border-t border-white/4 px-6 py-4 flex flex-wrap justify-between gap-2 text-[10px] text-white/20 font-mono">
         <span>Jeff's MarketIntel v3 · Apr 15, 2026 · Crisis Day {LIVE.crisisDay} · <a href="https://github.com/JevCode/live-economy-dashboard" className="hover:text-amber-400 transition-colors">GitHub</a></span>
-        <span>Data: Middle East Insider · goldpricez.com · Pound Sterling Live · Investing.com · Wikipedia · Carbon Brief</span>
-        <span>Auto-refreshes daily 08:00 UAE</span>
+        <span>{t("footer.data", lang)}: Middle East Insider · goldpricez.com · Pound Sterling Live · Investing.com · Wikipedia · Carbon Brief</span>
+        <span>{t("header.autoRefresh", lang)}</span>
       </footer>
     </div>
   );

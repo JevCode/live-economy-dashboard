@@ -1,0 +1,203 @@
+// ═══════════════════════════════════════════════════
+// JEFF'S MARKETINTEL v3 — i18n TRANSLATIONS
+// EN (English) + BM (Bahasa Melayu)
+// ═══════════════════════════════════════════════════
+
+export type Lang = "en" | "bm";
+
+const translations = {
+  // ── TABS ──
+  "tab.oil": { en: "OIL & ENERGY", bm: "MINYAK & TENAGA" },
+  "tab.gold": { en: "GOLD", bm: "EMAS" },
+  "tab.map": { en: "WORLD MAP", bm: "PETA DUNIA" },
+  "tab.war": { en: "WAR DAMAGE", bm: "KEROSAKAN PERANG" },
+  "tab.news": { en: "NEWS FEED", bm: "SUAPAN BERITA" },
+  "tab.currencies": { en: "CURRENCIES", bm: "MATA WANG" },
+
+  // ── HEADER / NAV ──
+  "header.liveEconomy": { en: "LIVE ECONOMY DASHBOARD v3", bm: "PAPAN PEMUKA EKONOMI LANGSUNG v3" },
+  "header.crisisDay": { en: "CRISIS DAY", bm: "HARI KRISIS" },
+  "header.autoRefresh": { en: "Auto-refreshes daily 08:00 UAE", bm: "Muat semula automatik setiap hari 08:00 UAE" },
+
+  // ── TICKER ──
+  "ticker.brent": { en: "BRENT CRUDE", bm: "MINYAK MENTAH BRENT" },
+  "ticker.wti": { en: "WTI CRUDE", bm: "MINYAK MENTAH WTI" },
+  "ticker.goldXau": { en: "GOLD XAU", bm: "EMAS XAU" },
+  "ticker.usdMyr": { en: "USD/MYR", bm: "USD/MYR" },
+  "ticker.usdAed": { en: "USD/AED", bm: "USD/AED" },
+  "ticker.dxy": { en: "DXY INDEX", bm: "INDEKS DXY" },
+  "ticker.goldGram": { en: "GOLD/g 24K", bm: "EMAS/g 24K" },
+  "ticker.crisis": { en: "CRISIS DAY", bm: "HARI KRISIS" },
+  "ticker.ringgitPressure": { en: "Ringgit pressure", bm: "Tekanan Ringgit" },
+  "ticker.peggedStable": { en: "Pegged stable", bm: "Tambatan stabil" },
+  "ticker.perGram": { en: "per gram", bm: "per gram" },
+  "ticker.sinceFeb28": { en: "Since Feb 28", bm: "Sejak 28 Feb" },
+
+  // ── OIL TAB ──
+  "oil.iranCrisis": { en: "Iran Crisis — Day", bm: "Krisis Iran — Hari" },
+  "oil.brentCrude": { en: "Brent Crude", bm: "Minyak Mentah Brent" },
+  "oil.wtiCrude": { en: "WTI Crude", bm: "Minyak Mentah WTI" },
+  "oil.peak": { en: "Peak (Mar 18)", bm: "Puncak (18 Mac)" },
+  "oil.dxyIndex": { en: "DXY USD Index", bm: "Indeks DXY USD" },
+  "oil.usdMyrRate": { en: "USD / MYR", bm: "USD / MYR" },
+  "oil.perBarrel": { en: "per barrel", bm: "setong" },
+  "oil.sinceFeb2026": { en: "Since Feb 28, 2026", bm: "Sejak 28 Feb 2026" },
+  "oil.fromBaseline": { en: "from $65 baseline", bm: "dari garis asas $65" },
+  "oil.iranHitQatar": { en: "Iran hit Qatar Ras Laffan", bm: "Iran serang Qatar Ras Laffan" },
+  "oil.fromPeak": { en: "from peak", bm: "dari puncak" },
+  "oil.dollarBasket": { en: "Dollar basket", bm: "Bakul Dolar" },
+  "oil.midMarketRate": { en: "Mid-market rate", bm: "Kadar pasaran pertengahan" },
+  "oil.ringgitUnderPressure": { en: "↑ Ringgit under pressure", bm: "↑ Ringgit di bawah tekanan" },
+  "oil.priceTimeline": { en: "OIL PRICE TIMELINE — IRAN WAR CRISIS", bm: "GARIS MASA HARGA MINYAK — KRISIS PERANG IRAN" },
+  "oil.keyEvents": { en: "Key events overlaid", bm: "Peristiwa penting ditindih" },
+  "oil.sources": { en: "Sources", bm: "Sumber" },
+
+  // ── GOLD TAB ──
+  "gold.spot24k": { en: "Gold Spot (24K/oz)", bm: "Emas Spot (24K/oz)" },
+  "gold.perGram24k": { en: "Gold Per Gram (24K)", bm: "Emas Per Gram (24K)" },
+  "gold.ath": { en: "All-Time High", bm: "Paras Tertinggi Sepanjang Masa" },
+  "gold.inMyrOz": { en: "Gold in MYR (oz)", bm: "Emas dalam MYR (oz)" },
+  "gold.inAedOz": { en: "Gold in AED (oz)", bm: "Emas dalam AED (oz)" },
+  "gold.karatGuide": { en: "Gold Karat & Purity Guide", bm: "Panduan Karat & Ketulenan Emas" },
+  "gold.perTroyOz": { en: "per troy ounce (31.1g)", bm: "per troy auns (31.1g)" },
+  "gold.perTroyOzShort": { en: "per troy ounce", bm: "per troy auns" },
+  "gold.perGram": { en: "per gram", bm: "per gram" },
+  "gold.fromATH": { en: "from ATH", bm: "dari paras tertinggi" },
+  "gold.safeHaven": { en: "▲ Safe-haven demand", bm: "▲ Permintaan perlindungan nilai" },
+  "gold.aedPegStable": { en: "▲ AED peg stable", bm: "▲ Tambatan AED stabil" },
+  "gold.priceTimeline": { en: "GOLD PRICE TIMELINE", bm: "GARIS MASA HARGA EMAS" },
+  "gold.sinceJan2026": { en: "January 2026 – Present", bm: "Januari 2026 – Kini" },
+  "gold.karatTitle": { en: "KARAT GRADES — PRICE PER GRAM", bm: "GRED KARAT — HARGA PER GRAM" },
+  "gold.purity": { en: "Purity", bm: "Ketulenan" },
+  "gold.commonUse": { en: "Common Use", bm: "Kegunaan Biasa" },
+  "gold.usdPerGram": { en: "USD/gram", bm: "USD/gram" },
+  "gold.myrPerGram": { en: "MYR/gram", bm: "MYR/gram" },
+  "gold.aedPerGram": { en: "AED/gram", bm: "AED/gram" },
+
+  // ── WORLD MAP TAB ──
+  "map.title": { en: "GLOBAL ENERGY CRISIS IMPACT MAP", bm: "PETA KESAN KRISIS TENAGA GLOBAL" },
+  "map.subtitle": { en: "60+ countries assessed · Hormuz dependency & fuel impact", bm: "60+ negara dinilai · Kebergantungan Hormuz & kesan bahan api" },
+  "map.scrollToZoom": { en: "Scroll to zoom · Drag to pan · Click country for details", bm: "Tatal untuk zum · Seret untuk gerakkan · Klik negara untuk butiran" },
+  "map.searchCountry": { en: "Search country...", bm: "Cari negara..." },
+  "map.all": { en: "All", bm: "Semua" },
+  "map.asia": { en: "Asia", bm: "Asia" },
+  "map.middleEast": { en: "Middle East", bm: "Timur Tengah" },
+  "map.europe": { en: "Europe", bm: "Eropah" },
+  "map.americas": { en: "Americas", bm: "Amerika" },
+  "map.oceania": { en: "Oceania", bm: "Oceania" },
+  "map.africa": { en: "Africa", bm: "Afrika" },
+  "map.critical": { en: "Critical", bm: "Kritikal" },
+  "map.high": { en: "High", bm: "Tinggi" },
+  "map.moderate": { en: "Moderate", bm: "Sederhana" },
+  "map.low": { en: "Low", bm: "Rendah" },
+  "map.benefiting": { en: "Benefiting", bm: "Mendapat Manfaat" },
+  "map.impact": { en: "Impact", bm: "Kesan" },
+  "map.hormuzDep": { en: "Hormuz dep", bm: "Kebergantungan Hormuz" },
+  "map.clickDetails": { en: "Click for full details →", bm: "Klik untuk butiran penuh →" },
+  "map.countryDetail": { en: "Country Detail", bm: "Butiran Negara" },
+  "map.population": { en: "Population", bm: "Penduduk" },
+  "map.gdp": { en: "GDP", bm: "KDNK" },
+  "map.energyMix": { en: "Energy Mix", bm: "Campuran Tenaga" },
+  "map.reserves": { en: "Reserves", bm: "Rizab" },
+  "map.govMeasures": { en: "GOVERNMENT MEASURES", bm: "LANGKAH KERAJAAN" },
+  "map.econRisk": { en: "ECONOMIC RISK ASSESSMENT", bm: "PENILAIAN RISIKO EKONOMI" },
+
+  // ── WAR DAMAGE TAB ──
+  "war.globalDamage": { en: "CUMULATIVE WAR DAMAGE", bm: "KEROSAKAN PERANG KUMULATIF" },
+  "war.totalStrikes": { en: "Total Strikes", bm: "Jumlah Serangan" },
+  "war.dronesLaunched": { en: "Drones Launched", bm: "Dron Dilancarkan" },
+  "war.missilesFired": { en: "Missiles Fired", bm: "Peluru Berpandu Ditembak" },
+  "war.confirmedKilled": { en: "Confirmed Killed", bm: "Terbunuh Disahkan" },
+  "war.confirmedWounded": { en: "Confirmed Wounded", bm: "Cedera Disahkan" },
+  "war.economicDamage": { en: "Economic Damage", bm: "Kerosakan Ekonomi" },
+  "war.countriesStruck": { en: "Countries Struck", bm: "Negara Diserang" },
+  "war.documentedEvents": { en: "Documented events", bm: "Peristiwa didokumenkan" },
+  "war.allParties": { en: "All parties", bm: "Semua pihak" },
+  "war.allSides": { en: "All sides", bm: "Semua pihak" },
+  "war.estimatedUSD": { en: "Estimated USD", bm: "Anggaran USD" },
+  "war.confirmedAttacks": { en: "Confirmed attacks", bm: "Serangan disahkan" },
+  "war.largestStrike": { en: "Largest single strike", bm: "Serangan tunggal terbesar" },
+  "war.hormuzStatus": { en: "Hormuz status", bm: "Status Hormuz" },
+  "war.asOf": { en: "As of", bm: "Setakat" },
+  "war.topDrones": { en: "🚁 TOP 5 HIGHEST DRONE ATTACKS", bm: "🚁 5 SERANGAN DRON TERTINGGI" },
+  "war.topMissiles": { en: "🚀 TOP 5 HIGHEST MISSILE ATTACKS", bm: "🚀 5 SERANGAN PELURU BERPANDU TERTINGGI" },
+  "war.drones": { en: "drones", bm: "dron" },
+  "war.missiles": { en: "missiles", bm: "peluru berpandu" },
+  "war.damageByCountry": { en: "🌍 DAMAGE BY COUNTRY — CUMULATIVE TOTALS", bm: "🌍 KEROSAKAN MENGIKUT NEGARA — JUMLAH KUMULATIF" },
+  "war.country": { en: "COUNTRY", bm: "NEGARA" },
+  "war.strikes": { en: "STRIKES", bm: "SERANGAN" },
+  "war.killed": { en: "KILLED", bm: "TERBUNUH" },
+  "war.wounded": { en: "WOUNDED", bm: "CEDERA" },
+  "war.damage": { en: "DAMAGE", bm: "KEROSAKAN" },
+  "war.total": { en: "TOTAL", bm: "JUMLAH" },
+  "war.casualties": { en: "☠️ HUMAN CASUALTIES BY COUNTRY — VERIFIED OFFICIAL DATA", bm: "☠️ KORBAN MANUSIA MENGIKUT NEGARA — DATA RASMI DISAHKAN" },
+  "war.injured": { en: "INJURED", bm: "CEDERA" },
+  "war.source": { en: "SOURCE", bm: "SUMBER" },
+  "war.strikeDamageChart": { en: "STRIKE ECONOMIC DAMAGE — USD MILLIONS", bm: "KEROSAKAN EKONOMI SERANGAN — JUTA USD" },
+  "war.perEvent": { en: "Per event · Ras Laffan ($18.7B) is off-chart scaled", bm: "Setiap peristiwa · Ras Laffan ($18.7B) berskala di luar carta" },
+  "war.allStrikes": { en: "All Strikes", bm: "Semua Serangan" },
+  "war.clickBriefing": { en: "Click for full briefing →", bm: "Klik untuk taklimat penuh →" },
+  "war.strikeBriefing": { en: "STRIKE BRIEFING", bm: "TAKLIMAT SERANGAN" },
+  "war.estimatedDamage": { en: "ESTIMATED DAMAGE", bm: "ANGGARAN KEROSAKAN" },
+  "war.infraDamaged": { en: "INFRASTRUCTURE DAMAGED", bm: "INFRASTRUKTUR ROSAK" },
+  "war.disclaimer": { en: "All damage figures are estimates based on public intelligence reports and infrastructure valuations.", bm: "Semua angka kerosakan adalah anggaran berdasarkan laporan perisikan awam dan penilaian infrastruktur." },
+  "war.casualtyDisclaimer": { en: "⚠️ All figures are officially reported and publicly sourced. Ranges indicate lower–upper confirmed estimates where reporting differs between sources. Data does not include unreported civilian casualties in conflict zones with restricted press access.", bm: "⚠️ Semua angka dilaporkan secara rasmi dan bersumber awam. Julat menunjukkan anggaran bawah–atas yang disahkan di mana pelaporan berbeza antara sumber. Data tidak termasuk korban sivil yang tidak dilaporkan di zon konflik dengan akses media terhad." },
+
+  // ── NEWS TAB ──
+  "news.dailyBriefing": { en: "Daily Briefing", bm: "Taklimat Harian" },
+  "news.liveUpdates": { en: "LIVE UPDATES", bm: "KEMAS KINI LANGSUNG" },
+  "news.liveRss": { en: "LIVE RSS FEED", bm: "SUAPAN RSS LANGSUNG" },
+  "news.reports": { en: "reports", bm: "laporan" },
+  "news.all": { en: "all", bm: "semua" },
+  "news.military": { en: "military", bm: "ketenteraan" },
+  "news.energy": { en: "energy", bm: "tenaga" },
+  "news.economy": { en: "economy", bm: "ekonomi" },
+  "news.diplomacy": { en: "diplomacy", bm: "diplomasi" },
+  "news.humanitarian": { en: "humanitarian", bm: "kemanusiaan" },
+  "news.source": { en: "Source", bm: "Sumber" },
+  "news.loading": { en: "Fetching latest news...", bm: "Mendapatkan berita terkini..." },
+  "news.error": { en: "Failed to load live feed. Showing cached briefing.", bm: "Gagal memuatkan suapan langsung. Menunjukkan taklimat cache." },
+  "news.powered": { en: "Live feed powered by RSS", bm: "Suapan langsung dikuasakan oleh RSS" },
+  "news.refreshed": { en: "Last refreshed", bm: "Kemas kini terakhir" },
+  "news.cached": { en: "Showing cached daily briefing", bm: "Menunjukkan taklimat harian cache" },
+
+  // ── CURRENCIES TAB ──
+  "cur.converter": { en: "CURRENCY CONVERTER", bm: "PENUKAR MATA WANG" },
+  "cur.amount": { en: "AMOUNT", bm: "JUMLAH" },
+  "cur.from": { en: "FROM", bm: "DARI" },
+  "cur.fxRates": { en: "FX RATES — APR 15, 2026 MID-MARKET", bm: "KADAR FX — 15 APR 2026 PASARAN PERTENGAHAN" },
+  "cur.pair": { en: "Pair", bm: "Pasangan" },
+  "cur.rate": { en: "Rate", bm: "Kadar" },
+  "cur.prevClose": { en: "Prev Close", bm: "Tutup Sebelum" },
+  "cur.change": { en: "Change", bm: "Perubahan" },
+  "cur.trend": { en: "Trend", bm: "Trend" },
+  "cur.note": { en: "Note", bm: "Nota" },
+  "cur.pegged": { en: "PEGGED", bm: "DITAMBAT" },
+  "cur.weakening": { en: "↑ Weakening", bm: "↑ Melemah" },
+  "cur.strengthening": { en: "↓ Strengthening", bm: "↓ Mengukuh" },
+  "cur.dxyInfo": { en: "DXY US Dollar Index", bm: "Indeks DXY Dolar AS" },
+  "cur.dxyDesc": { en: "Dollar weakening as peace talks reduce safe-haven demand. The DXY measures USD against a basket of 6 currencies (EUR, JPY, GBP, CAD, SEK, CHF).", bm: "Dolar melemah kerana rundingan damai mengurangkan permintaan perlindungan. DXY mengukur USD terhadap bakul 6 mata wang (EUR, JPY, GBP, CAD, SEK, CHF)." },
+  "cur.tankFillUp": { en: "50-LITRE TANK FILL-UP COST — NOW VS PRE-CRISIS", bm: "KOS ISI TANGKI 50 LITER — KINI VS PRA-KRISIS" },
+  "cur.countryCol": { en: "Country", bm: "Negara" },
+  "cur.pricePerLitre": { en: "Price/Litre (Now)", bm: "Harga/Liter (Kini)" },
+  "cur.preCrisis": { en: "Pre-Crisis", bm: "Pra-Krisis" },
+  "cur.tankNow": { en: "50L Tank Now", bm: "Tangki 50L Kini" },
+  "cur.changeCol": { en: "Change", bm: "Perubahan" },
+
+  // ── FOOTER ──
+  "footer.data": { en: "Data", bm: "Data" },
+
+  // ── LANGUAGE ──
+  "lang.en": { en: "EN", bm: "EN" },
+  "lang.bm": { en: "BM", bm: "BM" },
+} as const;
+
+type TranslationKey = keyof typeof translations;
+
+export function t(key: TranslationKey, lang: Lang): string {
+  const entry = translations[key];
+  if (!entry) return key;
+  return entry[lang] || entry.en;
+}
+
+export default translations;
