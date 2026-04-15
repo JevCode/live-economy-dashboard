@@ -1043,14 +1043,42 @@ function translateToBM(text: string): string {
   return result;
 }
 
-// RSS feeds via rss2json.com (free, CORS-friendly, no API key for basic use)
+// RSS feeds via rss2json.com — full coverage: wire services + regional + energy + Gulf + Israel
 const RSS_SOURCES = [
-  { url: "https://feeds.bbci.co.uk/news/world/middle_east/rss.xml", source: "BBC News" },
-  { url: "https://www.aljazeera.com/xml/rss/all.xml", source: "Al Jazeera" },
-  { url: "https://feeds.reuters.com/reuters/worldNews", source: "Reuters" },
-  { url: "https://feeds.skynews.com/feeds/rss/world.xml", source: "Sky News" },
-  { url: "https://www.theguardian.com/world/middleeast/rss", source: "The Guardian" },
-  { url: "https://rss.nytimes.com/services/xml/rss/nyt/MiddleEast.xml", source: "NY Times" },
+  // ── Global Wire Services ──
+  { url: "https://feeds.bbci.co.uk/news/world/middle_east/rss.xml",          source: "BBC Middle East" },
+  { url: "https://feeds.bbci.co.uk/news/world/rss.xml",                       source: "BBC World" },
+  { url: "https://www.aljazeera.com/xml/rss/all.xml",                         source: "Al Jazeera" },
+  { url: "https://feeds.reuters.com/reuters/worldNews",                        source: "Reuters World" },
+  { url: "https://feeds.skynews.com/feeds/rss/world.xml",                     source: "Sky News" },
+  { url: "https://www.theguardian.com/world/middleeast/rss",                  source: "The Guardian ME" },
+  { url: "https://rss.nytimes.com/services/xml/rss/nyt/MiddleEast.xml",       source: "NY Times ME" },
+  { url: "https://feeds.npr.org/1004/rss.xml",                                source: "NPR World" },
+  { url: "https://rss.dw.com/rdf/rss-en-world",                               source: "DW World" },
+  { url: "https://www.france24.com/en/rss",                                   source: "France 24" },
+  { url: "https://apnews.com/rss/worldnews",                                  source: "AP News" },
+  // ── Middle East Specialist ──
+  { url: "https://middleeasteye.net/rss",                                     source: "Middle East Eye" },
+  { url: "https://al-monitor.com/rss",                                        source: "Al-Monitor" },
+  { url: "https://www.middleeastmonitor.com/feed/",                           source: "MEMO" },
+  { url: "https://www.mei.edu/rss.xml",                                       source: "Middle East Institute" },
+  { url: "https://menews247.com/feed",                                        source: "ME News 247" },
+  // ── Gulf / UAE / Qatar ──
+  { url: "https://www.thenationalnews.com/rss",                               source: "The National (UAE)" },
+  { url: "https://gulfnews.com/rss/uae.xml",                                  source: "Gulf News" },
+  { url: "https://www.khaleejtimes.com/rss",                                  source: "Khaleej Times" },
+  { url: "https://dohanews.co/feed/",                                         source: "Doha News" },
+  { url: "https://www.arabnews.com/rss.xml",                                  source: "Arab News" },
+  // ── Israel ──
+  { url: "https://www.timesofisrael.com/feed/",                               source: "Times of Israel" },
+  { url: "https://rss.jpost.com/rss/rssfeedsfrontpage.aspx",                  source: "Jerusalem Post" },
+  { url: "https://www.haaretz.com/cmlink/1.4595544",                          source: "Haaretz" },
+  // ── Energy / Oil ──
+  { url: "https://oilprice.com/rss/main",                                     source: "OilPrice.com" },
+  { url: "https://www.energymonitor.ai/feed",                                 source: "Energy Monitor" },
+  // ── Finance / Economy ──
+  { url: "https://feeds.marketwatch.com/marketwatch/topstories/",             source: "MarketWatch" },
+  { url: "https://feeds.bloomberg.com/markets/news.rss",                      source: "Bloomberg Markets" },
 ];
 
 const WAR_KW = ["iran","hormuz","tehran","brent","oil","crude","opec","gold","energy","crisis","war","strike","missile","drone","ceasefire","peace","sanction","gulf","qatar","uae","saudi","kuwait","bahrain","oman","iraq","israel","hezbollah","houthi","irgc","lng","refinery","nuclear","fuel","barrel","humanitarian","un ","imf","recession","inflation","dollar","ringgit"];
