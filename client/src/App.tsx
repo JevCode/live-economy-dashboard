@@ -69,7 +69,7 @@ function Ticker({ cur, lang }: { cur: string; lang: Lang }) {
   const items = [
     { l: t("ticker.brent", lang),         v: `$${vals.brent.toFixed(2)}`,       c: "▼ −0.32% today",                            dn: true },
     { l: t("ticker.wti", lang),           v: `$${vals.wti.toFixed(2)}`,         c: "▼ −1.65% today",                            dn: true },
-    { l: t("ticker.goldXau", lang),       v: `$${vals.gold.toFixed(2)}/oz`,      c: "▼ −0.34% today",                            dn: true },
+    { l: t("ticker.goldXau", lang),       v: `$${vals.gold.toFixed(2)}/oz`,      c: "▲ +0.75% today",                            dn: false },
     { l: t("ticker.usdMyr", lang),        v: `${LIVE.usdMyr}`,                  c: t("ticker.ringgitPressure", lang),            dn: true },
     { l: t("ticker.usdAed", lang),        v: `${LIVE.usdAed}`,                  c: t("ticker.peggedStable", lang),               dn: false },
     { l: t("ticker.dxy", lang),           v: `${LIVE.dxy}`,                     c: "▼ −0.35%",                                  dn: true },
@@ -148,7 +148,7 @@ function OilTab({ cur, lang }: { cur: string; lang: Lang }) {
       {/* KPI row */}
       <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3">
         <KpiCard label={t("oil.iranCrisis", lang)} value={`Day ${LIVE.crisisDay}`} sub={t("oil.sinceFeb2026", lang)} change={`${pctPreWar} ${t("oil.fromBaseline", lang)}`} changeUp={false} accent="#ef4444" />
-        <KpiCard label={t("oil.brentCrude", lang)} value={fmt(LIVE.brentUSD, cur)} sub={`${t("oil.perBarrel", lang)} · Apr 15 close`} change="▼ −0.32% today" changeUp={false} accent="#f97316" />
+        <KpiCard label={t("oil.brentCrude", lang)} value={fmt(LIVE.brentUSD, cur)} sub={`${t("oil.perBarrel", lang)} · Apr 16 close`} change="▼ −4.08% today" changeUp={false} accent="#f97316" />
         <KpiCard label={t("oil.wtiCrude", lang)} value={fmt(LIVE.wtiUSD, cur)} sub={t("oil.perBarrel", lang)} change="▼ −1.65% today" changeUp={false} accent="#f97316" />
         <KpiCard label={t("oil.peak", lang)} value={fmt(LIVE.brentPeak, cur)} sub={t("oil.iranHitQatar", lang)} change={`${pctFromPeak} ${t("oil.fromPeak", lang)}`} changeUp={false} accent="#8b5cf6" />
         <KpiCard label={t("oil.dxyIndex", lang)} value={`${LIVE.dxy}`} sub={t("oil.dollarBasket", lang)} change="▼ −0.35% today" changeUp={false} accent="#3b82f6" />
@@ -222,7 +222,7 @@ function OilTab({ cur, lang }: { cur: string; lang: Lang }) {
       {/* Timeline chart */}
       <div className="bg-[#0d1117] border border-white/6 rounded-xl p-6">
         <div className="text-[10px] font-bold tracking-widest text-white/30 mb-1">{t("oil.priceTimeline", lang)}</div>
-        <div className="text-xs text-white/20 mb-5">Feb 27 – Apr 15, 2026 · {t("oil.keyEvents", lang)}</div>
+        <div className="text-xs text-white/20 mb-5">Feb 27 – Apr 16, 2026 · {t("oil.keyEvents", lang)}</div>
         <ResponsiveContainer width="100%" height={240}>
           <AreaChart data={chartData} margin={{ top:10, right:10, left:0, bottom:0 }}>
             <defs>
@@ -273,7 +273,7 @@ function OilTab({ cur, lang }: { cur: string; lang: Lang }) {
         </div>
       </div>
 
-      <p className="text-[10px] text-white/20">{t("oil.sources", lang)}: Brent/WTI — OilPrice.com · Gold — TradingEconomics · DXY — Yahoo Finance · USD/MYR — open.er-api.com (Apr 15, 2026)</p>
+      <p className="text-[10px] text-white/20">{t("oil.sources", lang)}: Brent/WTI — OilPrice.com · Gold — TradingEconomics · DXY — Yahoo Finance · USD/MYR — open.er-api.com (Apr 16, 2026)</p>
     </div>
   );
 }
@@ -298,7 +298,7 @@ function GoldTab({ cur, lang }: { cur: string; lang: Lang }) {
     <div className="space-y-6 p-6">
       {/* KPIs */}
       <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3">
-        <KpiCard label={t("gold.spot24k", lang)} value={fmt(LIVE.goldOzUSD, cur)} sub={t("gold.perTroyOz", lang)} change="▼ −0.34% today" changeUp={false} accent="#f0a500" />
+        <KpiCard label={t("gold.spot24k", lang)} value={fmt(LIVE.goldOzUSD, cur)} sub={t("gold.perTroyOz", lang)} change="▲ +0.75% today" changeUp={true} accent="#f0a500" />
         <KpiCard label={t("gold.perGram24k", lang)} value={fmt(LIVE.goldGramUSD, cur)} sub={t("gold.perGram", lang)} change="▲ +48% year-on-year" changeUp={true} accent="#f0a500" />
         <KpiCard label={t("gold.ath", lang)} value={`$${LIVE.goldATH.toLocaleString()}`} sub={`${LIVE.goldATHDate} (per oz)`} change={`▼ −14.6% ${t("gold.fromATH", lang)}`} changeUp={false} accent="#8b5cf6" />
         <KpiCard label={t("gold.inMyrOz", lang)} value={`RM ${(LIVE.goldOzUSD * LIVE.usdMyr).toLocaleString("en-MY", { maximumFractionDigits:0 })}`} sub={t("gold.perTroyOzShort", lang)} change={t("gold.safeHaven", lang)} changeUp={true} accent="#f0a500" />
@@ -728,7 +728,7 @@ function WarTab({ lang }: { lang: Lang }) {
       <div className="bg-[#0d1117] border-l-2 border-amber-500/60 border border-white/5 rounded-xl px-5 py-4 text-xs text-white/50 space-y-1">
         <div><span className="text-white/60 font-bold">{t("war.largestStrike", lang)}: </span>{WAR_STATS.largestStrike}</div>
         <div><span className="text-white/60 font-bold">{t("war.hormuzStatus", lang)}: </span><span className="text-emerald-400 font-bold">{WAR_STATS.hormuzStatus}</span></div>
-        <div><span className="text-white/60 font-bold">{t("war.asOf", lang)}: </span>Apr 15, 2026 · US-Iran peace talks Day 2 · Brent $99.04 · Gold $4,825</div>
+        <div><span className="text-white/60 font-bold">{t("war.asOf", lang)}: </span>Apr 16, 2026 · US-Iran ceasefire talks ongoing · Brent $95.01 · Gold $4,826</div>
       </div>
 
       {/* ── LEADERBOARDS ── */}
@@ -1498,7 +1498,7 @@ function HormuzTab({ lang }: { lang: Lang }) {
         </div>
       </div>
 
-      <p className="text-[10px] text-white/20">Sources: HormuzTracker.com · HormuzStraitMonitor.com · Kpler · Al Jazeera · LSEG · Lloyd's of London · Apr 15, 2026</p>
+      <p className="text-[10px] text-white/20">Sources: HormuzTracker.com · HormuzStraitMonitor.com · Kpler · Al Jazeera · LSEG · Lloyd's of London · Apr 16, 2026</p>
     </div>
   );
 }
@@ -1530,7 +1530,7 @@ function MarketsTab({ lang }: { lang: Lang }) {
       {/* Global Indices Table */}
       <div className="bg-[#0d1117] border border-white/6 rounded-xl p-6">
         <div className="text-[10px] font-bold tracking-widest text-white/30 mb-1">GLOBAL EQUITY INDICES</div>
-        <div className="text-xs text-white/20 mb-4">Performance since Feb 28, 2026 crisis onset · Apr 15, 2026</div>
+        <div className="text-xs text-white/20 mb-4">Performance since Feb 28, 2026 crisis onset · Apr 16, 2026</div>
         <div className="overflow-x-auto">
           <table className="w-full text-xs">
             <thead>
@@ -1706,7 +1706,7 @@ function MarketsTab({ lang }: { lang: Lang }) {
         </div>
       </div>
 
-      <p className="text-[10px] text-white/20">Sources: Yahoo Finance · Bloomberg · Reuters · Morningstar · Seeking Alpha · Korean Exchange · LSEG · Apr 15, 2026</p>
+      <p className="text-[10px] text-white/20">Sources: Yahoo Finance · Bloomberg · Reuters · Morningstar · Seeking Alpha · Korean Exchange · LSEG · Apr 16, 2026</p>
     </div>
   );
 }
@@ -1862,7 +1862,7 @@ function NewsTab({ lang }: { lang: Lang }) {
         <div>
           <h2 className="text-lg font-bold text-white">{t("news.dailyBriefing", lang)}</h2>
           <div className="text-xs text-white/30 mt-0.5">
-            Apr 15, 2026 · Crisis Day 46 · {usingRss ? rssNews.length : NEWS.length} {t("news.reports", lang)}
+            Apr 16, 2026 · Crisis Day 47 · {usingRss ? rssNews.length : NEWS.length} {t("news.reports", lang)}
             {lastFetched && (
               <span className="ml-2 text-white/20">· {t("news.refreshed", lang)}: {formatLastFetched(lastFetched)} · {t("news.autoRefresh", lang)}</span>
             )}
@@ -2316,7 +2316,7 @@ export default function App() {
 
       {/* Footer */}
       <footer className="border-t border-white/4 px-6 py-4 flex flex-wrap justify-between gap-2 text-[10px] text-white/20 font-mono">
-        <span>Jeff's MarketIntel v3 · Apr 15, 2026 · Crisis Day {LIVE.crisisDay} · <a href="https://github.com/JevCode/live-economy-dashboard" className="hover:text-amber-400 transition-colors">GitHub</a></span>
+        <span>Jeff's MarketIntel v3 · Apr 16, 2026 · Crisis Day {LIVE.crisisDay} · <a href="https://github.com/JevCode/live-economy-dashboard" className="hover:text-amber-400 transition-colors">GitHub</a></span>
         <span>{t("footer.data", lang)}: Middle East Insider · goldpricez.com · Pound Sterling Live · Investing.com · Wikipedia · Carbon Brief</span>
         <span>{t("header.autoRefresh", lang)}</span>
       </footer>
