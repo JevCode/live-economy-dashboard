@@ -1598,6 +1598,15 @@ function MarketsTab({ lang }: { lang: Lang }) {
   );
 }
 
+// ── Dual-timezone formatter (UAE = GMT+4, Malaysia = GMT+8) ──────────────────
+function fmtDual(isoStr: string): { uae: string; my: string; date: string } {
+  const d = new Date(isoStr);
+  const fmt = (tz: string) =>
+    d.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: false, timeZone: tz });
+  const dateFmt = d.toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: "Asia/Dubai" });
+  return { uae: fmt("Asia/Dubai") + " UAE", my: fmt("Asia/Kuala_Lumpur") + " MY", date: dateFmt };
+}
+
 // ── NEWS TAB ──────────────────────────────────────────────────────────────────
 function NewsTab({ lang }: { lang: Lang }) {
   const [catFilter, setCatFilter] = useState("all");
@@ -1727,7 +1736,7 @@ function NewsTab({ lang }: { lang: Lang }) {
 
   function formatLastFetched(d: Date): string {
     const { uae, my } = fmtDual(d.toISOString());
-    return `${uae} UAE · ${my} MY`;
+    return `${uae} · ${my}`;
   }
 
   return (
