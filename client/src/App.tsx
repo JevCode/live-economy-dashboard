@@ -1081,136 +1081,23 @@ function translateToBM(text: string): string {
 }
 
 // All feeds verified working — April 2026
-const RSS_SOURCES = [
-  // ── 🇺🇸 Trump / US Leadership (Truth Social via trumpstruth.org) ──
-  { url: "https://trumpstruth.org/feed",                            source: "Trump · Truth Social",  leader: "trump" },
-  // ── 🇮🇷 Iran Official Sources ──
-  { url: "https://ifpnews.com/feed",                                source: "Iran Front Page",        leader: "iran" },
-  { url: "https://ifpnews.com/category/news/politics/feed/",        source: "IFP Politics",           leader: "iran" },
-  { url: "https://en.mehrnews.com/rss",                             source: "Mehr News (IR)",         leader: "iran" },
-  { url: "https://tasnimnews.com/en/rss/feed/0/5",                  source: "Tasnim News (IR)",       leader: "iran" },
-  { url: "https://tehrantimes.com/rss",                             source: "Tehran Times (IR)",      leader: "iran" },
-  { url: "https://english.khamenei.ir/rss",                         source: "Khamenei Office (IR)",   leader: "iran" },
-  { url: "https://en.irna.ir/rss",                                  source: "IRNA (IR)",              leader: "iran" },
-  // ── Global Wire Services ──
-  { url: "https://feeds.bbci.co.uk/news/world/middle_east/rss.xml", source: "BBC Middle East" },
-  { url: "https://feeds.bbci.co.uk/news/world/rss.xml",             source: "BBC World" },
-  { url: "https://feeds.skynews.com/feeds/rss/world.xml",           source: "Sky News" },
-  { url: "https://www.theguardian.com/world/middleeast/rss",        source: "The Guardian" },
-  { url: "https://rss.nytimes.com/services/xml/rss/nyt/MiddleEast.xml", source: "NY Times ME" },
-  { url: "https://feeds.npr.org/1004/rss.xml",                      source: "NPR World" },
-  // ── Middle East Specialist ──
-  { url: "https://www.middleeastmonitor.com/feed/",                 source: "MEMO" },
-  { url: "https://www.al-monitor.com/rss.xml",                      source: "Al-Monitor" },
-  { url: "https://dohanews.co/feed/",                               source: "Doha News" },
-  { url: "https://www.crisisgroup.org/rss.xml",                     source: "Crisis Group" },
-  { url: "https://reliefweb.int/updates/rss.xml",                   source: "ReliefWeb" },
-  // ── Israel / ME ──
-  { url: "https://www.jpost.com/rss/rssfeedsfrontpage.aspx",        source: "Jerusalem Post" },
-  { url: "https://www.jewishpress.com/feed/",                       source: "Jewish Press" },
-  // ── Energy / Oil ──
-  { url: "https://oilprice.com/rss/main",                           source: "OilPrice.com" },
-  // ── Finance / Economy ──
-  { url: "https://feeds.bloomberg.com/markets/news.rss",            source: "Bloomberg Markets" },
-];
-
-const WAR_KW = ["iran","hormuz","tehran","brent","oil","crude","opec","gold","energy","crisis","war","strike","missile","drone","ceasefire","peace","sanction","gulf","qatar","uae","saudi","kuwait","bahrain","oman","iraq","israel","hezbollah","houthi","irgc","lng","refinery","nuclear","fuel","barrel","humanitarian","un ","imf","recession","inflation","dollar","ringgit"];
-
-function categorizeItem(title: string, desc: string): string {
-  const text = (title + " " + desc).toLowerCase();
-  if (/missile|strike|drone|military|attack|bomb|navy|pentagon|centcom|irgc|weapon|soldier|airstrike/.test(text)) return "military";
-  if (/oil|crude|brent|wti|lng|opec|energy|fuel|power|refinery|pipeline|barrel/.test(text)) return "energy";
-  if (/gold|dollar|gdp|inflation|economy|recession|trade|market|stock|imf|bank|currency|ringgit|dirham|peso/.test(text)) return "economy";
-  if (/ceasefire|diplomacy|peace|talks|negotiat|sanction|un |treaty|resolution|summit/.test(text)) return "diplomacy";
-  if (/humanitarian|refugee|aid|hunger|famine|medical|hospital|civilian|casualt|death|killed|wounded/.test(text)) return "humanitarian";
-  return "economy";
-}
-
-function impactFromText(title: string, desc: string): string {
-  const text = (title + " " + desc).toLowerCase();
-  if (/ceasefire|peace deal|agreement|reopen|positive|recovery|stabilise|stabilize/.test(text)) return "positive";
-  if (/catastroph|emergency|famine|historic|record|surge|worst|collapse/.test(text)) return "critical";
-  if (/major|significant|escalat|intensif|veto|deadline|ultimatum/.test(text)) return "major";
-  return "moderate";
-}
-
-function fmtDual(isoOrRfc: string): { uae: string; my: string; date: string } {
-  try {
-    const d = new Date(isoOrRfc);
-    if (isNaN(d.getTime())) return { uae: "", my: "", date: "" };
-    const uae = d.toLocaleString("en-GB", { timeZone: "Asia/Dubai",   hour: "2-digit", minute: "2-digit", hour12: false });
-    const my  = d.toLocaleString("en-GB", { timeZone: "Asia/Kuala_Lumpur", hour: "2-digit", minute: "2-digit", hour12: false });
-    const date = d.toLocaleString("en-GB", { timeZone: "Asia/Dubai", day: "2-digit", month: "short" });
-    return { uae, my, date };
-  } catch {
-    return { uae: "", my: "", date: "" };
-  }
-}
-
-// ─── RSS XML parser (shared by all proxies) ───────────────────────────────
-function parseRssXml(xml: string): any[] {
-  const items: any[] = [];
-  const blocks = [...xml.matchAll(/<item[^>]*>([\s\S]*?)<\/item>/gi),
-                  ...xml.matchAll(/<entry[^>]*>([\s\S]*?)<\/entry>/gi)];
-  for (const m of blocks) {
-    const b = m[1];
-    const strip = (s: string) => s.replace(/<[^>]*>/g, "").replace(/&amp;/g,"&").replace(/&lt;/g,"<").replace(/&gt;/g,">").replace(/&quot;/g,'"').replace(/&#39;/g,"'").replace(/&nbsp;/g," ").trim();
-    const get = (tag: string) => {
-      const m2 = b.match(new RegExp(`<${tag}[^>]*>(?:<!\\[CDATA\\[)?([\\s\\S]*?)(?:\\]\\]>)?<\/${tag}>`, "i"));
-      return m2 ? strip(m2[1]) : "";
-    };
-    const title = get("title");
-    const desc  = get("description") || get("summary") || get("content");
-    const link  = b.match(/<link[^>]+href=["']([^"']+)["']/i)?.[1] ||
-                  b.match(/<link[^>]*>([^<]+)<\/link>/i)?.[1]?.trim() || "";
-    const pubDate = get("pubDate") || get("published") || get("updated") || get("dc:date") || "";
-    if (title) items.push({ title, description: desc, link, pubDate });
-  }
-  return items;
-}
-
-// ─── Proxy 1: allorigins /raw — returns XML directly, free & reliable ───
-async function fetchViaAlloriginsRaw(rssUrl: string): Promise<any[]> {
-  const proxy = `https://api.allorigins.win/raw?url=${encodeURIComponent(rssUrl)}`;
-  const res = await fetch(proxy, { signal: AbortSignal.timeout(7000) });
-  if (!res.ok) throw new Error(`allorigins/raw ${res.status}`);
-  const xml = await res.text();
-  const items = parseRssXml(xml);
-  if (!items.length) throw new Error("allorigins/raw no items");
-  return items;
-}
-
-// ─── Proxy 2: rss2json — fallback ──────────────────────────────────────────────
-async function fetchViaRss2Json(rssUrl: string): Promise<any[]> {
-  const url = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(rssUrl)}&count=20`;
-  const res = await fetch(url, { signal: AbortSignal.timeout(7000) });
+// ── Server-side RSS fetcher (calls /api/news backend — no CORS issues) ──────
+async function fetchNewsFromServer(forceRefresh = false): Promise<any[]> {
+  const url = forceRefresh ? "/api/news?refresh=1" : "/api/news";
+  const res = await fetch(url, { signal: AbortSignal.timeout(25000) });
+  if (!res.ok) throw new Error(`/api/news ${res.status}`);
   const data = await res.json();
-  if (data.status !== "ok") throw new Error("rss2json failed");
-  return data.items || [];
-}
-
-async function fetchRssFeed(source: { url: string; source: string; leader?: string }): Promise<any[]> {
-  let rawItems: any[] = [];
-  try { rawItems = await fetchViaAlloriginsRaw(source.url); }
-  catch { try { rawItems = await fetchViaRss2Json(source.url); }
-  catch { return []; } }
-
-  return rawItems.map((item: any) => {
-    const title   = item.title || "";
-    const desc    = (item.description || item.content || "").replace(/<[^>]*>/g, "").slice(0, 500);
-    // Leader posts always get the "leaders" category regardless of content
-    const category = source.leader ? "leaders" : categorizeItem(title, desc);
-    return {
-      title,
-      summary: desc,
-      link: item.link || item.url || "",
-      pubDate: item.pubDate || item.published || item.isoDate || "",
-      source: source.source,
-      leader: source.leader || null,   // "trump" | "iran" | null
-      category,
-      impact: impactFromText(title, desc),
-    };
-  });
+  if (!data.ok) throw new Error(data.error || "server error");
+  return (data.items || []).map((item: any) => ({
+    title:    item.headline,
+    summary:  item.summary,
+    link:     item.link,
+    pubDate:  item.pubDate,
+    source:   item.source,
+    leader:   item.leader,
+    category: item.category,
+    impact:   item.impact,
+  }));
 }
 
 // ─── MyMemory free translation API (500 chars/req, no key needed) ────────
@@ -1750,39 +1637,29 @@ function NewsTab({ lang }: { lang: Lang }) {
     });
   }
 
-  async function doFetch() {
+  async function doFetch(forceRefresh = false) {
     // Skip if a fetch is already running
     if (isFetchingRef.current) return;
     isFetchingRef.current = true;
     const isFirst = isFirstLoadRef.current;
 
     try {
-      // All feeds fire in parallel, hard 20s global cap
-      const timeout = new Promise<never>((_, rej) => setTimeout(() => rej(new Error("timeout")), 20000));
-      const fetchAll = Promise.allSettled(RSS_SOURCES.map(fetchRssFeed));
-      const results = await Promise.race([fetchAll, timeout]) as PromiseSettledResult<any[]>[];
-
-      const all: any[] = [];
-      for (const r of results) {
-        if (r.status === "fulfilled") all.push(...r.value);
-      }
+      // Fetch from backend — server fetches all feeds server-side, no CORS issues
+      const all = await fetchNewsFromServer(forceRefresh);
 
       if (all.length === 0) {
         if (isFirst) setRssError(true);
         return;
       }
 
-      // Show ALL articles — no keyword filter blocking anything
       const unique = dedupeAndSort(all);
 
       if (isFirst) {
-        // First load: show everything
         unique.forEach(item => seenTitlesRef.current.add(item.title.slice(0, 60).toLowerCase()));
         setRssNews(unique);
         setRssError(false);
         isFirstLoadRef.current = false;
       } else {
-        // Subsequent refresh: only prepend brand-new articles not seen before
         const brandNew = unique.filter(
           item => !seenTitlesRef.current.has(item.title.slice(0, 60).toLowerCase())
         );
@@ -1794,14 +1671,12 @@ function NewsTab({ lang }: { lang: Lang }) {
           ]);
           setNewCount(prev => prev + brandNew.length);
         }
-        // If nothing new, existing articles stay exactly as-is — no change
         setRssError(false);
       }
     } catch {
-      // On error, keep whatever is already showing — never clear the feed
       if (isFirst) {
         setRssError(true);
-        setCatFilter("all"); // reset to all so static fallback always shows content
+        setCatFilter("all");
       }
     } finally {
       setLastFetched(new Date());
@@ -1883,10 +1758,11 @@ function NewsTab({ lang }: { lang: Lang }) {
               +{newCount} NEW ↑
             </button>
           )}
-          <div className="flex items-center gap-2 bg-[#0d1117] border border-white/6 rounded-full px-4 py-2">
+          <button onClick={() => { if (!isFetchingRef.current) doFetch(true); }}
+            className="flex items-center gap-2 bg-[#0d1117] border border-white/6 rounded-full px-4 py-2 hover:border-amber-500/30 transition-colors cursor-pointer">
             <div className="w-2 h-2 rounded-full bg-red-500 pulse-dot" />
             <span className="text-[10px] font-bold tracking-widest text-white/50">{t("news.liveUpdates", lang)}</span>
-          </div>
+          </button>
         </div>
       </div>
 
