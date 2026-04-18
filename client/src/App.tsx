@@ -3,12 +3,18 @@ import { LIVE as LIVE_STATIC, KARATS, OIL_TIMELINE, GOLD_TIMELINE, COUNTRIES, ST
 
 // ── Live market context — polls /api/market-data every 15 min ────────────
 type LiveData = typeof LIVE_STATIC;
-const LiveCtx = createContext<LiveData>(LIVE_STATIC);
-export function useLive() { return useContext(LiveCtx); }
+type LiveCtxType = { data: LiveData; countdown: string; lastRefresh: Date | null };
+const LiveCtx = createContext<LiveCtxType>({ data: LIVE_STATIC, countdown: "15:00", lastRefresh: null });
+export function useLive() { return useContext(LiveCtx).data; }
+export function useLiveMeta() { return useContext(LiveCtx); }
+
+const REFRESH_MS = 15 * 60 * 1000;
 
 function LiveProvider({ children }: { children: React.ReactNode }) {
   const [live, setLive] = useState<LiveData>(LIVE_STATIC);
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+  const [countdown, setCountdown] = useState("15:00");
+  const nextRef = useRef<number>(0);
 
   async function fetchLive(force = false) {
     try {
@@ -28,17 +34,29 @@ function LiveProvider({ children }: { children: React.ReactNode }) {
         crisisDay:   typeof d.crisisDay   === "number" ? d.crisisDay   : prev.crisisDay,
         asOf:        typeof d.asOf        === "string" ? d.asOf        : prev.asOf,
       }));
-      setLastRefresh(new Date());
+      const now = Date.now();
+      nextRef.current = now + REFRESH_MS;
+      setLastRefresh(new Date(now));
     } catch { /* keep previous */ }
   }
 
   useEffect(() => {
-    fetchLive();                               // immediate on mount
-    const id = setInterval(() => fetchLive(), 15 * 60 * 1000); // every 15 min
+    const tick = setInterval(() => {
+      const rem = Math.max(0, nextRef.current - Date.now());
+      const m = Math.floor(rem / 60000);
+      const s = Math.floor((rem % 60000) / 1000);
+      setCountdown(`${m}:${String(s).padStart(2, "0")}`);
+    }, 1000);
+    return () => clearInterval(tick);
+  }, []);
+
+  useEffect(() => {
+    fetchLive();
+    const id = setInterval(() => fetchLive(), REFRESH_MS);
     return () => clearInterval(id);
   }, []);
 
-  return <LiveCtx.Provider value={live}>{children}</LiveCtx.Provider>;
+  return <LiveCtx.Provider value={{ data: live, countdown, lastRefresh }}>{children}</LiveCtx.Provider>;
 }
 // ─────────────────────────────────────────────────────────────────
 
@@ -2160,6 +2178,7 @@ function CurrenciesTab({ cur, lang }: { cur: string; lang: Lang }) {
 // ════ MAIN APP ════
 export default function App() {
   const [tab, setTab] = useState("oil");
+  const { countdown, lastRefresh } = useLiveMeta();
   const [cur, setCur] = useState<"USD"|"MYR"|"AED">("USD");
   const [lang, setLang] = useState<Lang>("en");
   const [now] = useState(new Date());
@@ -2204,6 +2223,12 @@ export default function App() {
           <div className="flex items-center gap-1.5 bg-red-500/10 border border-red-500/20 text-red-400 text-[10px] font-bold tracking-widest px-3 py-1.5 rounded-full">
             <span className="w-1.5 h-1.5 rounded-full bg-red-500 pulse-dot inline-block" />
             {t("header.crisisDay", lang)} {live.crisisDay}
+          </div>
+          <div className="hidden sm:flex items-center gap-1.5 bg-emerald-500/8 border border-emerald-500/20 rounded-full px-2.5 py-1">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse shrink-0" />
+            <span className="text-[9px] font-mono text-emerald-400 tracking-wider whitespace-nowrap">
+              {lastRefresh ? `↻ ${countdown}` : "● LIVE"}
+            </span>
           </div>
           {/* Language toggle */}
           <div className="flex bg-white/4 border border-white/6 rounded-lg overflow-hidden">
