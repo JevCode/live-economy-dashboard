@@ -471,6 +471,7 @@ function GoldTab({ cur, lang }: { cur: string; lang: Lang }) {
 
 // ── WORLD MAP TAB ──
 function WorldMapTab({ lang }: { lang: Lang }) {
+  const live = useLive();
   const [tooltip, setTooltip] = useState<{ name: string; country: Country | null; x: number; y: number } | null>(null);
   const [selected, setSelected] = useState<Country | null>(null);
   const [filter, setFilter] = useState<string>("all");
@@ -768,6 +769,7 @@ const COUNTRY_STATS = (() => {
 })();
 
 function WarTab({ lang }: { lang: Lang }) {
+  const live = useLive();
   const [selectedStrike, setSelectedStrike] = useState<StrikeEvent | null>(null);
   const [typeFilter, setTypeFilter] = useState("all");
 
@@ -1481,6 +1483,7 @@ function HormuzTab({ lang }: { lang: Lang }) {
 
 // ── MARKETS TAB ──────────────────────────────────────────────────────────────
 function MarketsTab({ lang }: { lang: Lang }) {
+  const live = useLive();
   const [companyFilter, setCompanyFilter] = useState<"all" | "winner" | "loser">("all");
   const [sectorSort, setSectorSort] = useState<"change" | "name">("change");
 
@@ -1698,6 +1701,7 @@ function fmtDual(isoStr: string): { uae: string; my: string; date: string } {
 
 // ── NEWS TAB ──────────────────────────────────────────────────────────────────
 function NewsTab({ lang }: { lang: Lang }) {
+  const live = useLive();
   const [catFilter, setCatFilter] = useState("all");
   const [expanded, setExpanded] = useState<number | string | null>(null);
   const [rssNews, setRssNews] = useState<any[]>([]);
