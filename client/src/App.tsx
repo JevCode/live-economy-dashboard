@@ -377,7 +377,7 @@ function GoldTab({ cur, lang }: { cur: string; lang: Lang }) {
         <KpiCard label={t("gold.ath", lang)} value={`$${live.goldATH.toLocaleString()}`} sub={`${live.goldATHDate} (per oz)`} change={`▼ −14.6% ${t("gold.fromATH", lang)}`} changeUp={false} accent="#8b5cf6" />
         <KpiCard label={t("gold.inMyrOz", lang)} value={`RM ${(live.goldOzUSD * live.usdMyr).toLocaleString("en-MY", { maximumFractionDigits:0 })}`} sub={t("gold.perTroyOzShort", lang)} change={t("gold.safeHaven", lang)} changeUp={true} accent="#f0a500" />
         <KpiCard label={t("gold.inAedOz", lang)} value={`AED ${(live.goldOzUSD * live.usdAed).toLocaleString("en-US", { maximumFractionDigits:0 })}`} sub={t("gold.perTroyOzShort", lang)} change={t("gold.aedPegStable", lang)} changeUp={true} accent="#f0a500" />
-        <KpiCard label="Year-on-Year" value="+48%" sub="War premium driving demand" change="↑ vs pre-crisis gold" changeUp={true} accent="#22c55e" />
+        <KpiCard label={lang === "en" ? "Year-on-Year" : "Tahun-ke-Tahun"} value="+48%" sub={lang === "en" ? "War premium driving demand" : "Premium perang mendorong permintaan"} change={lang === "en" ? "↑ vs pre-crisis gold" : "↑ vs emas pra-krisis"} changeUp={true} accent="#22c55e" />
       </div>
 
       {/* Gold chart */}
@@ -642,7 +642,7 @@ function WorldMapTab({ lang }: { lang: Lang }) {
         <table className="w-full text-xs min-w-[700px]">
           <thead>
             <tr className="border-b border-white/5">
-              {["Country","Region","Hormuz Dep.","Fuel Impact","Status","Key Action"].map(h => (
+              {[t("map.countryCol", lang), t("map.regionCol", lang), t("map.hormuzDepLabel", lang), t("map.fuelImpact", lang), t("map.statusCol", lang), t("map.keyAction", lang)].map(h => (
                 <th key={h} className="text-left text-[10px] font-bold tracking-widest text-white/25 px-4 py-3 bg-[var(--bg-card)]">{h}</th>
               ))}
             </tr>
@@ -691,8 +691,8 @@ function WorldMapTab({ lang }: { lang: Lang }) {
                 {[
                   { l: t("map.population", lang), v: selected.detail.population },
                   { l: t("map.gdp", lang), v: selected.detail.gdpBillion },
-                  { l: "Hormuz Dep.", v: selected.hormuzDep !== null ? `${selected.hormuzDep}%` : "Producer" },
-                  { l: "Fuel Impact", v: selected.fuelImpact },
+                  { l: t("map.hormuzDepLabel", lang), v: selected.hormuzDep !== null ? `${selected.hormuzDep}%` : t("map.producer", lang) },
+                  { l: t("map.fuelImpact", lang), v: selected.fuelImpact },
                 ].map(m => (
                   <div key={m.l} className="bg-white/3 rounded-xl p-3 text-center">
                     <div className="text-[10px] text-white/30 font-bold tracking-widest">{m.l}</div>
@@ -707,7 +707,7 @@ function WorldMapTab({ lang }: { lang: Lang }) {
                   <div className="text-sm text-white/70">{selected.detail.energyMix}</div>
                 </div>
                 <div className="bg-white/2 rounded-xl p-4">
-                  <div className="text-[10px] font-bold tracking-widest text-white/25 mb-2">{t("map.reserves", lang).toUpperCase()} STATUS</div>
+                  <div className="text-[10px] font-bold tracking-widest text-white/25 mb-2">{t("map.reservesStatus", lang)}</div>
                   <div className="text-sm text-white/70">{selected.detail.reserves}</div>
                 </div>
               </div>
@@ -716,7 +716,7 @@ function WorldMapTab({ lang }: { lang: Lang }) {
               {selected.hormuzDep !== null && (
                 <div>
                   <div className="flex justify-between text-[10px] text-white/30 font-bold tracking-widest mb-1">
-                    <span>HORMUZ DEPENDENCY</span><span>{selected.hormuzDep}%</span>
+                    <span>{t("map.hormuzDepBar", lang)}</span><span>{selected.hormuzDep}%</span>
                   </div>
                   <div className="h-2 bg-white/5 rounded-full overflow-hidden">
                     <div className="h-full rounded-full transition-all" style={{ width:`${selected.hormuzDep}%`, background: statusColor[selected.status] }} />
@@ -743,7 +743,7 @@ function WorldMapTab({ lang }: { lang: Lang }) {
                 <div className="text-sm text-white/80">{selected.detail.economicRisk}</div>
               </div>
 
-              <div className="text-[10px] text-white/20">Source: {selected.detail.source}</div>
+              <div className="text-[10px] text-white/20">{t("map.source", lang)}: {selected.detail.source}</div>
             </div>
           </div>
         </div>
@@ -1227,38 +1227,38 @@ function HormuzTab({ lang }: { lang: Lang }) {
           <div className="text-4xl">⚓</div>
           <div>
             <div className="flex items-center gap-3 mb-1">
-              <span className="text-xl font-black tracking-wider" style={{ color: statusColor }}>STRAIT OF HORMUZ — {H.status}</span>
-              <span className="text-[10px] font-bold tracking-widest bg-red-500/20 text-red-400 px-2 py-0.5 rounded-full border border-red-500/30">DAY {H.disruptionDay}</span>
+              <span className="text-xl font-black tracking-wider" style={{ color: statusColor }}>{t("hor.title", lang)} — {H.status}</span>
+              <span className="text-[10px] font-bold tracking-widest bg-red-500/20 text-red-400 px-2 py-0.5 rounded-full border border-red-500/30">{t("hor.day", lang)} {H.disruptionDay}</span>
             </div>
             <div className="text-xs text-white/50 max-w-2xl">{H.statusNote}</div>
-            <div className="text-[10px] text-white/30 font-mono mt-1">Since {H.sinceDate} · Updated {H.lastUpdated} · Sources: {H.sources.join(" · ")}</div>
+            <div className="text-[10px] text-white/30 font-mono mt-1">{t("hor.since", lang)} {H.sinceDate} · {t("hor.updated", lang)} {H.lastUpdated} · {t("hor.sources", lang)}: {H.sources.join(" · ")}</div>
           </div>
         </div>
         <div className="md:ml-auto text-right">
-          <div className="text-[10px] text-white/30 font-mono">TOTAL TRANSITS SINCE FEB 28</div>
+          <div className="text-[10px] text-white/30 font-mono">{t("hor.totalTransits", lang)}</div>
           <div className="text-2xl font-black font-mono text-white">{H.transitSince.toLocaleString()}</div>
-          <div className="text-[10px] text-white/30 font-mono">vs {(H.transitAvgPreWar * H.disruptionDay).toLocaleString()} expected</div>
+          <div className="text-[10px] text-white/30 font-mono">{t("hor.vsExpected", lang)} {(H.transitAvgPreWar * H.disruptionDay).toLocaleString()} {t("hor.expected", lang)}</div>
         </div>
       </div>
 
       {/* KPI Cards */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
-        <KpiCard label="Transits Today" value={`${H.transitToday}`} sub={`Pre-war avg: ${H.transitAvgPreWar}/day`} change={`${((H.transitToday/H.transitAvgPreWar)*100).toFixed(1)}% of normal`} changeUp={false} accent="#ef4444" />
-        <KpiCard label="Throughput" value={`${H.throughputPct}%`} sub="of normal deadweight" change="98% flow blocked" changeUp={false} accent="#ef4444" />
-        <KpiCard label="Stranded Vessels" value={`${H.strandedVessels}+`} sub="in or near strait" change={`${H.attackedVessels} attacked`} changeUp={false} accent="#f97316" />
-        <KpiCard label="Daily Econ. Cost" value={`$${H.dailyCostBn}B`} sub="global economic loss" change="per day" changeUp={false} accent="#8b5cf6" />
-        <KpiCard label="Insurance" value={`${H.insuranceMult}×`} sub="war risk multiplier" change="0.125% → 10% hull" changeUp={false} accent="#f97316" />
-        <KpiCard label="VLCC Voyage Cost" value="$2.5M" sub="per single passage" change="was $125K pre-war" changeUp={false} accent="#ef4444" />
+        <KpiCard label={t("hor.transitsToday", lang)} value={`${H.transitToday}`} sub={`${t("hor.preWarAvg", lang)}: ${H.transitAvgPreWar}/day`} change={`${((H.transitToday/H.transitAvgPreWar)*100).toFixed(1)}${t("hor.ofNormal", lang)}`} changeUp={false} accent="#ef4444" />
+        <KpiCard label={t("hor.throughput", lang)} value={`${H.throughputPct}%`} sub={t("hor.ofNormalDWT", lang)} change={`98${t("hor.flowBlocked", lang)}`} changeUp={false} accent="#ef4444" />
+        <KpiCard label={t("hor.strandedVessels", lang)} value={`${H.strandedVessels}+`} sub={t("hor.inOrNear", lang)} change={`${H.attackedVessels} ${t("hor.attacked", lang)}`} changeUp={false} accent="#f97316" />
+        <KpiCard label={t("hor.dailyCost", lang)} value={`$${H.dailyCostBn}B`} sub={t("hor.globalLoss", lang)} change={t("hor.perDay", lang)} changeUp={false} accent="#8b5cf6" />
+        <KpiCard label={t("hor.insurance", lang)} value={`${H.insuranceMult}×`} sub={t("hor.warRiskMult", lang)} change={t("hor.hullPct", lang)} changeUp={false} accent="#f97316" />
+        <KpiCard label={t("hor.vlccCost", lang)} value="$2.5M" sub={t("hor.perPassage", lang)} change={t("hor.wasPreWar", lang)} changeUp={false} accent="#ef4444" />
       </div>
 
       {/* Stats pills row */}
       <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
-        <StatPill label="Normal Flow" value="20M bbl/day" />
-        <StatPill label="Bypassed (Pipelines)" value="7M bbl/day" color="text-emerald-400" />
-        <StatPill label="Still Blocked" value="13M bbl/day" color="text-red-400" />
-        <StatPill label="Pipeline Coverage" value="35%" color="text-amber-400" />
-        <StatPill label="Tanker Rate Increase" value="3×" color="text-red-400" />
-        <StatPill label="Extra Reroute Days" value="+14 days" color="text-orange-400" />
+        <StatPill label={t("hor.normalFlow", lang)} value="20M bbl/day" />
+        <StatPill label={t("hor.bypassed", lang)} value="7M bbl/day" color="text-emerald-400" />
+        <StatPill label={t("hor.stillBlocked", lang)} value="13M bbl/day" color="text-red-400" />
+        <StatPill label={t("hor.pipelineCoverage", lang)} value="35%" color="text-amber-400" />
+        <StatPill label={t("hor.tankerRate", lang)} value="3×" color="text-red-400" />
+        <StatPill label={t("hor.extraDays", lang)} value="+14 days" color="text-orange-400" />
       </div>
 
       {/* Transit Timeline + Bypass Pipelines */}
@@ -1266,8 +1266,8 @@ function HormuzTab({ lang }: { lang: Lang }) {
 
         {/* Transit Timeline Chart */}
         <div className="bg-[var(--bg-card)] border border-white/6 rounded-xl p-6">
-          <div className="text-[10px] font-bold tracking-widest text-white/30 mb-1">WEEKLY TRANSIT COUNT</div>
-          <div className="text-xs text-white/20 mb-5">Vessels through Hormuz since Feb 28 (pre-war avg: {H.transitAvgPreWar}/week ≈ 966/day×7)</div>
+          <div className="text-[10px] font-bold tracking-widest text-white/30 mb-1">{t("hor.weeklyTransit", lang)}</div>
+          <div className="text-xs text-white/20 mb-5">{t("hor.weeklyDesc", lang)} (pre-war avg: {H.transitAvgPreWar}/week ≈ 966/day×7)</div>
           <ResponsiveContainer width="100%" height={220}>
             <BarChart data={H.transitTimeline} margin={{ top: 5, right: 5, left: -20, bottom: 5 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
@@ -1277,7 +1277,7 @@ function HormuzTab({ lang }: { lang: Lang }) {
                 contentStyle={{ background: "var(--bg-card)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "8px", fontSize: "11px" }}
                 labelStyle={{ color: "#f0a500", fontWeight: "bold" }}
                 formatter={(val: any, name: any, props: any) => [
-                  <span style={{ color: "#f0a500", fontFamily: "Space Mono" }}>{val} vessels</span>,
+                  <span style={{ color: "#f0a500", fontFamily: "Space Mono" }}>{val} {t("hor.vessels", lang)}</span>,
                   <span style={{ color: "rgba(255,255,255,0.5)", fontSize: "9px" }}>{H.transitTimeline.find(t => t.transits === val)?.note}</span>
                 ]}
               />
@@ -1288,10 +1288,10 @@ function HormuzTab({ lang }: { lang: Lang }) {
 
         {/* Bypass Pipelines */}
         <div className="bg-[var(--bg-card)] border border-white/6 rounded-xl p-6">
-          <div className="text-[10px] font-bold tracking-widest text-white/30 mb-4">BYPASS PIPELINES — STATUS</div>
+          <div className="text-[10px] font-bold tracking-widest text-white/30 mb-4">{t("hor.bypassPipelines", lang)}</div>
           <div className="mb-4">
             <div className="flex justify-between text-xs text-white/40 mb-2">
-              <span>Pipeline capacity covering {H.bypassPct}% of normal Hormuz flow</span>
+              <span>{t("hor.pipelineCapacity", lang)} {H.bypassPct}% {t("hor.ofNormalFlow", lang)}</span>
               <span className="font-mono">{H.bypassTotal}M / {H.normalFlow}M bbl/day</span>
             </div>
             <div className="bg-white/5 rounded-full h-2">
@@ -1330,17 +1330,17 @@ function HormuzTab({ lang }: { lang: Lang }) {
 
       {/* Carrier Suspension Table */}
       <div className="bg-[var(--bg-card)] border border-white/6 rounded-xl p-6">
-        <div className="text-[10px] font-bold tracking-widest text-white/30 mb-1">CARRIER SUSPENSION STATUS</div>
-        <div className="text-xs text-white/20 mb-4">All 9 major global carriers have suspended Hormuz transits — {H.carriers.filter(c => c.status === "SUSPENDED").length}/9 suspended · 192 vessels trapped</div>
+        <div className="text-[10px] font-bold tracking-widest text-white/30 mb-1">{t("hor.carrierStatus", lang)}</div>
+        <div className="text-xs text-white/20 mb-4">{t("hor.carrierDesc", lang)} — {H.carriers.filter(c => c.status === "SUSPENDED").length}/9 {t("hor.suspended", lang)} · 192 {t("hor.trapped", lang)}</div>
         <div className="overflow-x-auto">
           <table className="w-full text-xs">
             <thead>
               <tr className="text-white/30 font-mono text-[10px] tracking-widest border-b border-white/6">
-                <th className="text-left pb-3 pr-4">CARRIER</th>
-                <th className="text-left pb-3 pr-4">STATUS</th>
-                <th className="text-right pb-3 pr-4">TRAPPED</th>
-                <th className="text-right pb-3 pr-4">TEU AT RISK</th>
-                <th className="text-right pb-3">UPDATED</th>
+                <th className="text-left pb-3 pr-4">{t("hor.carrier", lang)}</th>
+                <th className="text-left pb-3 pr-4">{t("hor.status", lang)}</th>
+                <th className="text-right pb-3 pr-4">{t("hor.trappedCol", lang)}</th>
+                <th className="text-right pb-3 pr-4">{t("hor.teuAtRisk", lang)}</th>
+                <th className="text-right pb-3">{t("hor.updatedCol", lang)}</th>
               </tr>
             </thead>
             <tbody>
@@ -1350,7 +1350,7 @@ function HormuzTab({ lang }: { lang: Lang }) {
                   <td className="py-3 pr-4">
                     <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-red-500/15 text-red-400 border border-red-500/20">{c.status}</span>
                   </td>
-                  <td className="py-3 pr-4 text-right font-mono text-amber-400">{c.trapped > 0 ? `${c.trapped} vessels` : "—"}</td>
+                  <td className="py-3 pr-4 text-right font-mono text-amber-400">{c.trapped > 0 ? `${c.trapped} ${t("hor.vessels", lang)}` : "—"}</td>
                   <td className="py-3 pr-4 text-right font-mono text-white/50">{c.teu ? `${(c.teu/1000).toFixed(0)}K TEU` : "—"}</td>
                   <td className="py-3 text-right font-mono text-white/30 text-[10px]">{c.updated}</td>
                 </tr>
@@ -1358,28 +1358,28 @@ function HormuzTab({ lang }: { lang: Lang }) {
             </tbody>
             <tfoot>
               <tr className="border-t border-white/10">
-                <td className="pt-3 pr-4 font-bold text-white/50">TOTAL</td>
+                <td className="pt-3 pr-4 font-bold text-white/50">{t("hor.total", lang)}</td>
                 <td className="pt-3 pr-4"><span className="text-[10px] font-bold text-red-400">9/9 SUSPENDED</span></td>
-                <td className="pt-3 pr-4 text-right font-mono font-bold text-amber-400">192+ vessels</td>
+                <td className="pt-3 pr-4 text-right font-mono font-bold text-amber-400">192+ {t("hor.vessels", lang)}</td>
                 <td className="pt-3 pr-4 text-right font-mono text-white/50">579K+ TEU</td>
                 <td className="pt-3"></td>
               </tr>
             </tfoot>
           </table>
         </div>
-        <div className="mt-4 text-[10px] text-white/20">Emergency surcharges: $1,500–$4,000/TEU · Reroute adds 14 days via Cape of Good Hope</div>
+        <div className="mt-4 text-[10px] text-white/20">{t("hor.surcharge", lang)}</div>
       </div>
 
       {/* Company Impact — Winners vs Losers */}
       <div className="bg-[var(--bg-card)] border border-white/6 rounded-xl p-6">
-        <div className="text-[10px] font-bold tracking-widest text-white/30 mb-4">COMPANY IMPACT — HORMUZ CRISIS WINNERS &amp; LOSERS</div>
+        <div className="text-[10px] font-bold tracking-widest text-white/30 mb-4">{t("hor.companyImpact", lang)}</div>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
           {/* Winners */}
           <div>
             <div className="flex items-center gap-2 mb-3">
               <div className="w-2 h-2 rounded-full bg-emerald-500" />
-              <span className="text-[10px] font-bold text-emerald-400 tracking-widest">WINNERS — WAR PREMIUM</span>
+              <span className="text-[10px] font-bold text-emerald-400 tracking-widest">{t("hor.winners", lang)}</span>
             </div>
             <div className="space-y-2">
               {[
@@ -1400,7 +1400,7 @@ function HormuzTab({ lang }: { lang: Lang }) {
                   </div>
                   <div className="text-right">
                     <div className="text-base font-bold font-mono text-emerald-400">+{co.change}%</div>
-                    <div className="text-[9px] text-white/20">YTD</div>
+                    <div className="text-[9px] text-white/20">{t("hor.ytd", lang)}</div>
                   </div>
                 </div>
               ))}
@@ -1411,7 +1411,7 @@ function HormuzTab({ lang }: { lang: Lang }) {
           <div>
             <div className="flex items-center gap-2 mb-3">
               <div className="w-2 h-2 rounded-full bg-red-500" />
-              <span className="text-[10px] font-bold text-red-400 tracking-widest">LOSERS — ROUTES SEVERED</span>
+              <span className="text-[10px] font-bold text-red-400 tracking-widest">{t("hor.losers", lang)}</span>
             </div>
             <div className="space-y-2">
               {[
@@ -1432,7 +1432,7 @@ function HormuzTab({ lang }: { lang: Lang }) {
                   </div>
                   <div className="text-right">
                     <div className="text-base font-bold font-mono text-red-400">{co.change}%</div>
-                    <div className="text-[9px] text-white/20">YTD</div>
+                    <div className="text-[9px] text-white/20">{t("hor.ytd", lang)}</div>
                   </div>
                 </div>
               ))}
@@ -1443,16 +1443,16 @@ function HormuzTab({ lang }: { lang: Lang }) {
 
       {/* Historical Comparison */}
       <div className="bg-[var(--bg-card)] border border-white/6 rounded-xl p-6">
-        <div className="text-[10px] font-bold tracking-widest text-white/30 mb-4">HISTORICAL COMPARISON — STRAIT DISRUPTIONS</div>
+        <div className="text-[10px] font-bold tracking-widest text-white/30 mb-4">{lang === "en" ? "HISTORICAL COMPARISON — STRAIT DISRUPTIONS" : "PERBANDINGAN SEJARAH — GANGGUAN SELAT"}</div>
         <div className="overflow-x-auto">
           <table className="w-full text-xs">
             <thead>
               <tr className="text-white/30 font-mono text-[10px] tracking-widest border-b border-white/6">
-                <th className="text-left pb-3 pr-4">EVENT</th>
-                <th className="text-left pb-3 pr-4">YEAR</th>
-                <th className="text-left pb-3 pr-4">DURATION</th>
-                <th className="text-right pb-3 pr-4">OIL SPIKE</th>
-                <th className="text-left pb-3">IMPACT</th>
+                <th className="text-left pb-3 pr-4">{lang === "en" ? "EVENT" : "PERISTIWA"}</th>
+                <th className="text-left pb-3 pr-4">{lang === "en" ? "YEAR" : "TAHUN"}</th>
+                <th className="text-left pb-3 pr-4">{lang === "en" ? "DURATION" : "TEMPOH"}</th>
+                <th className="text-right pb-3 pr-4">{lang === "en" ? "OIL SPIKE" : "LONJAKAN MINYAK"}</th>
+                <th className="text-left pb-3">{lang === "en" ? "IMPACT" : "KESAN"}</th>
               </tr>
             </thead>
             <tbody>
@@ -1461,7 +1461,7 @@ function HormuzTab({ lang }: { lang: Lang }) {
                 return (
                   <tr key={i} className={`border-b border-white/3 hover:bg-white/2 transition-colors ${isNow ? "bg-amber-500/5" : ""}`}>
                     <td className={`py-3 pr-4 font-bold ${isNow ? "text-amber-400" : "text-white"}`}>
-                      {isNow && <span className="text-[9px] bg-amber-500/20 border border-amber-500/30 text-amber-400 px-1.5 py-0.5 rounded mr-2 font-mono">NOW</span>}
+                      {isNow && <span className="text-[9px] bg-amber-500/20 border border-amber-500/30 text-amber-400 px-1.5 py-0.5 rounded mr-2 font-mono">{lang === "en" ? "NOW" : "KINI"}</span>}
                       {h.event}
                     </td>
                     <td className="py-3 pr-4 font-mono text-white/50">{h.year}</td>
@@ -1500,25 +1500,25 @@ function MarketsTab({ lang }: { lang: Lang }) {
 
       {/* Header KPIs */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <KpiCard label="Best Performing" value="Tadawul +8.4%" sub="Saudi Arabia · energy windfall" change="Record highs on oil revenue" changeUp={true} accent="#22c55e" />
-        <KpiCard label="Worst Performing" value="KOSPI −17%" sub="South Korea · 100% oil importer" change="War premium maximum" changeUp={false} accent="#ef4444" />
-        <KpiCard label="Tanker Sector" value="+62.5%" sub="YTD war premium" change="Best sector since Feb 28" changeUp={true} accent="#f0a500" />
-        <KpiCard label="Tech / Semicon" value="−15–20%" sub="Supply chain + Taiwan risk" change="Worst sector YTD" changeUp={false} accent="#8b5cf6" />
+        <KpiCard label={t("mkt.bestPerforming", lang)} value="Tadawul +8.4%" sub={t("mkt.saudiWindfall", lang)} change={t("mkt.recordHighs", lang)} changeUp={true} accent="#22c55e" />
+        <KpiCard label={t("mkt.worstPerforming", lang)} value="KOSPI −17%" sub={t("mkt.koreaImporter", lang)} change={t("mkt.warPremMax", lang)} changeUp={false} accent="#ef4444" />
+        <KpiCard label={t("mkt.tankerSector", lang)} value="+62.5%" sub={t("mkt.ytdWarPremium", lang)} change={t("mkt.bestSector", lang)} changeUp={true} accent="#f0a500" />
+        <KpiCard label={t("mkt.techSemicon", lang)} value="−15–20%" sub={t("mkt.supplyChain", lang)} change={t("mkt.worstSector", lang)} changeUp={false} accent="#8b5cf6" />
       </div>
 
       {/* Global Indices Table */}
       <div className="bg-[var(--bg-card)] border border-white/6 rounded-xl p-6">
-        <div className="text-[10px] font-bold tracking-widest text-white/30 mb-1">GLOBAL EQUITY INDICES</div>
-        <div className="text-xs text-white/20 mb-4">Performance since Feb 28, 2026 crisis onset · Apr 18, 2026</div>
+        <div className="text-[10px] font-bold tracking-widest text-white/30 mb-1">{t("mkt.globalIndices", lang)}</div>
+        <div className="text-xs text-white/20 mb-4">{t("mkt.indicesDesc", lang)} · Apr 18, 2026</div>
         <div className="overflow-x-auto">
           <table className="w-full text-xs">
             <thead>
               <tr className="text-white/30 font-mono text-[10px] tracking-widest border-b border-white/6">
-                <th className="text-left pb-3 pr-4">INDEX</th>
-                <th className="text-left pb-3 pr-4">REGION</th>
-                <th className="text-right pb-3 pr-4">LEVEL</th>
-                <th className="text-right pb-3 pr-4">YTD CHANGE</th>
-                <th className="text-left pb-3">WAR NOTE</th>
+                <th className="text-left pb-3 pr-4">{t("mkt.index", lang)}</th>
+                <th className="text-left pb-3 pr-4">{t("mkt.region", lang)}</th>
+                <th className="text-right pb-3 pr-4">{t("mkt.level", lang)}</th>
+                <th className="text-right pb-3 pr-4">{t("mkt.ytdChange", lang)}</th>
+                <th className="text-left pb-3">{t("mkt.warNote", lang)}</th>
               </tr>
             </thead>
             <tbody>
@@ -1550,15 +1550,15 @@ function MarketsTab({ lang }: { lang: Lang }) {
       <div className="bg-[var(--bg-card)] border border-white/6 rounded-xl p-6">
         <div className="flex items-center justify-between mb-4">
           <div>
-            <div className="text-[10px] font-bold tracking-widest text-white/30 mb-1">SECTOR PERFORMANCE — WAR IMPACT</div>
-            <div className="text-xs text-white/20">YTD since Feb 28, 2026</div>
+            <div className="text-[10px] font-bold tracking-widest text-white/30 mb-1">{t("mkt.sectorPerf", lang)}</div>
+            <div className="text-xs text-white/20">{t("mkt.sectorDesc", lang)}</div>
           </div>
           <div className="flex gap-2">
             {(["change", "name"] as const).map(s => (
               <button key={s} onClick={() => setSectorSort(s)}
                 className={`text-[10px] font-bold px-3 py-1 rounded-lg transition-all ${
                   sectorSort === s ? "bg-amber-500 text-black" : "bg-white/5 text-white/40 hover:text-white/60"
-                }`}>{s === "change" ? "BY CHANGE" : "A–Z"}</button>
+                }`}>{s === "change" ? t("mkt.byChange", lang) : t("mkt.az", lang)}</button>
             ))}
           </div>
         </div>
@@ -1603,8 +1603,8 @@ function MarketsTab({ lang }: { lang: Lang }) {
       <div className="bg-[var(--bg-card)] border border-white/6 rounded-xl p-6">
         <div className="flex items-center justify-between mb-4">
           <div>
-            <div className="text-[10px] font-bold tracking-widest text-white/30 mb-1">WAR-IMPACTED COMPANIES</div>
-            <div className="text-xs text-white/20">Stock performance since Feb 28, 2026 crisis onset</div>
+            <div className="text-[10px] font-bold tracking-widest text-white/30 mb-1">{lang === "en" ? "WAR-IMPACTED COMPANIES" : "SYARIKAT TERKESAN PERANG"}</div>
+            <div className="text-xs text-white/20">{lang === "en" ? "Stock performance since Feb 28, 2026 crisis onset" : "Prestasi saham sejak permulaan krisis 28 Feb 2026"}</div>
           </div>
           <div className="flex gap-2">
             {(["all", "winner", "loser"] as const).map(f => (
@@ -1613,7 +1613,7 @@ function MarketsTab({ lang }: { lang: Lang }) {
                   companyFilter === f
                     ? f === "winner" ? "bg-emerald-500 text-black" : f === "loser" ? "bg-red-500 text-white" : "bg-amber-500 text-black"
                     : "bg-white/5 text-white/40 hover:text-white/60"
-                }`}>{f === "all" ? "ALL" : f === "winner" ? "✓ WINNERS" : "✗ LOSERS"}</button>
+                }`}>{f === "all" ? t("mkt.all", lang) : f === "winner" ? t("mkt.winnersBtn", lang) : t("mkt.losersBtn", lang)}</button>
             ))}
           </div>
         </div>
@@ -1636,7 +1636,7 @@ function MarketsTab({ lang }: { lang: Lang }) {
                     <div className={`text-lg font-black font-mono ${isWinner ? "text-emerald-400" : "text-red-400"}`}>
                       {isWinner ? "+" : ""}{co.change}%
                     </div>
-                    <div className="text-[9px] text-white/20">YTD</div>
+                    <div className="text-[9px] text-white/20">{t("hor.ytd", lang)}</div>
                   </div>
                 </div>
                 <div className="text-[10px] font-bold text-white/25 tracking-wider mb-1">{co.sector}</div>
@@ -1645,7 +1645,7 @@ function MarketsTab({ lang }: { lang: Lang }) {
                   <span className="text-[10px] font-mono text-white/30">{co.price}</span>
                   <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full ${
                     isWinner ? "bg-emerald-500/10 text-emerald-400" : "bg-red-500/10 text-red-400"
-                  }`}>{isWinner ? "WAR WINNER" : "WAR LOSER"}</span>
+                  }`}>{isWinner ? t("mkt.warWinner", lang) : t("mkt.warLoser", lang)}</span>
                 </div>
               </div>
             );
@@ -1655,8 +1655,8 @@ function MarketsTab({ lang }: { lang: Lang }) {
 
       {/* Currency Moves */}
       <div className="bg-[var(--bg-card)] border border-white/6 rounded-xl p-6">
-        <div className="text-[10px] font-bold tracking-widest text-white/30 mb-1">CURRENCY IMPACT — SINCE FEB 28</div>
-        <div className="text-xs text-white/20 mb-4">War-driven pressure on oil-importing nations' currencies</div>
+        <div className="text-[10px] font-bold tracking-widest text-white/30 mb-1">{lang === "en" ? "CURRENCY IMPACT — SINCE FEB 28" : "KESAN MATA WANG — SEJAK 28 FEB"}</div>
+        <div className="text-xs text-white/20 mb-4">{lang === "en" ? "War-driven pressure on oil-importing nations' currencies" : "Tekanan didorong perang ke atas mata wang negara pengimport minyak"}</div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {MARKETS_DATA.currencies.map((fx, i) => {
             const isUp = fx.change > 0;
@@ -1672,12 +1672,12 @@ function MarketsTab({ lang }: { lang: Lang }) {
                     <span className="text-xs font-mono font-bold text-white">{fx.rate.toLocaleString()}</span>
                     <span className={`text-xs font-bold font-mono ${
                       isFlat ? "text-white/40" : isUp ? "text-red-400" : "text-emerald-400"
-                    }`}>{isFlat ? "PEGGED" : isUp ? `+${fx.change}%` : `${fx.change}%`}</span>
+                    }`}>{isFlat ? t("mkt.pegged", lang) : isUp ? `+${fx.change}%` : `${fx.change}%`}</span>
                   </div>
                 </div>
                 <div className="text-[10px] text-white/40">{fx.note}</div>
                 {!isFlat && (
-                  <div className="mt-2 text-[9px] text-white/25 font-mono">Pre-war: {fx.preWar.toLocaleString()} · Change: {fx.change > 0 ? `+${fx.change}` : fx.change}%</div>
+                  <div className="mt-2 text-[9px] text-white/25 font-mono">{lang === "en" ? "Pre-war" : "Pra-perang"}: {fx.preWar.toLocaleString()} · {lang === "en" ? "Change" : "Perubahan"}: {fx.change > 0 ? `+${fx.change}` : fx.change}%</div>
                 )}
               </div>
             );
@@ -1978,7 +1978,7 @@ function NewsTab({ lang }: { lang: Lang }) {
                       {/* Market impact note for leader posts */}
                       {ldr && (
                         <p className="text-[10px] mt-1 font-mono" style={{ color: ldr.color + "99" }}>
-                          ⚡ {item.leader === "trump" ? "Market-moving statement · US policy signal" : "Official Iranian position · Geopolitical signal"}
+                          ⚡ {item.leader === "trump" ? t("news.marketSignal", lang) : t("news.iranSignal", lang)}
                         </p>
                       )}
                       {/* Summary + Read More */}
