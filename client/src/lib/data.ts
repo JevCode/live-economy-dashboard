@@ -19,6 +19,13 @@ export const LIVE = {
   brentPreWar: 65.0,
   goldATH: 5602.22,
   goldATHDate: "Jan 28, 2026",
+  // Hormuz live fields (overridden by /api/market-data every 10 min)
+  hormuzTransitToday:  18,
+  hormuzThroughputPct: 13,
+  hormuzStranded:      94,
+  hormuzInsuranceMult: 10.0,
+  hormuzStatus:        "RESTRICTED" as "OPEN" | "RESTRICTED" | "CLOSED",
+  hormuzDailyCostBn:   2.1,
 };
 
 export const KARATS = [
@@ -717,24 +724,24 @@ export const FX_RATES = [
 // ─── HORMUZ DATA ─────────────────────────────────────────────────────────────
 export const HORMUZ = {
   status: "RESTRICTED" as "OPEN" | "RESTRICTED" | "CLOSED",
-  statusNote: "Selective passage via approved US Navy escort corridor. Commercially unviable for most carriers.",
-  disruptionDay: 47,
+  statusNote: "Iran FM declared Hormuz open during ceasefire (Apr 17). US Navy escort corridor active. Commercial traffic resuming cautiously.",
+  disruptionDay: 50,
   sinceDate: "Feb 28, 2026",
   // Transit counts
-  transitToday: 3,         // Al Jazeera Apr 15
+  transitToday: 18,        // Resuming under ceasefire — Apr 18
   transitAvgPreWar: 138,   // vessels/day
-  transitSince: 279,       // total since Feb 28 (Kpler)
-  throughputPct: 2,        // % of normal deadweight tonnage
+  transitSince: 312,       // total since Feb 28 (Kpler est.)
+  throughputPct: 13,       // % of normal — recovering
   // Vessels
-  strandedVessels: 150,
-  attackedVessels: 27,     // Kpler data
+  strandedVessels: 94,     // Clearing backlog
+  attackedVessels: 27,     // Kpler data (no new attacks since Apr 17)
   // Economic
-  dailyCostBn: 4,          // $4B/day estimated
-  insuranceMult: 16,       // 16x normal war risk premium
+  dailyCostBn: 2.1,        // Reduced from $4B as traffic resumes
+  insuranceMult: 10,       // Down from 16x — war risk premium easing
   vllcCostNormal: 125000,  // USD per passage
-  vllcCostNow: 2500000,    // USD per passage (avg of range)
-  emergencySurchargeTEU: 2750, // avg $1500-$4000
-  tankerRateIncrease: 3,   // 3x tripled
+  vllcCostNow: 1200000,    // USD per passage (down from $2.5M)
+  emergencySurchargeTEU: 1400, // Easing from $2750
+  tankerRateIncrease: 2,   // Down from 3x
   rerouteDaysAdded: 14,
   // Pipelines
   pipelines: [

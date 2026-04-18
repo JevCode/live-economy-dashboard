@@ -8,16 +8,16 @@ import { t, type Lang } from "./lib/i18n";
 // ── Live market context — polls /api/market-data every 15 min ────────────
 type LiveData = typeof LIVE_STATIC;
 type LiveCtxType = { data: LiveData; countdown: string; lastRefresh: Date | null };
-const LiveCtx = createContext<LiveCtxType>({ data: LIVE_STATIC, countdown: "15:00", lastRefresh: null });
+const LiveCtx = createContext<LiveCtxType>({ data: LIVE_STATIC, countdown: "10:00", lastRefresh: null });
 export function useLive() { return useContext(LiveCtx).data; }
 export function useLiveMeta() { return useContext(LiveCtx); }
 
-const REFRESH_MS = 15 * 60 * 1000;
+const REFRESH_MS = 10 * 60 * 1000; // 10 minutes
 
 function LiveProvider({ children }: { children: React.ReactNode }) {
   const [live, setLive] = useState<LiveData>(LIVE_STATIC);
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
-  const [countdown, setCountdown] = useState("15:00");
+  const [countdown, setCountdown] = useState("10:00");
   const nextRef = useRef<number>(0);
 
   async function fetchLive(force = false) {
@@ -29,14 +29,20 @@ function LiveProvider({ children }: { children: React.ReactNode }) {
       if (!d.ok) return;
       setLive(prev => ({
         ...prev,
-        brentUSD:    typeof d.brentUSD    === "number" ? d.brentUSD    : prev.brentUSD,
-        wtiUSD:      typeof d.wtiUSD      === "number" ? d.wtiUSD      : prev.wtiUSD,
-        goldOzUSD:   typeof d.goldOzUSD   === "number" ? d.goldOzUSD   : prev.goldOzUSD,
-        goldGramUSD: typeof d.goldGramUSD === "number" ? d.goldGramUSD : prev.goldGramUSD,
-        usdMyr:      typeof d.usdMyr      === "number" ? d.usdMyr      : prev.usdMyr,
-        dxy:         typeof d.dxy         === "number" ? d.dxy         : prev.dxy,
-        crisisDay:   typeof d.crisisDay   === "number" ? d.crisisDay   : prev.crisisDay,
-        asOf:        typeof d.asOf        === "string" ? d.asOf        : prev.asOf,
+        brentUSD:              typeof d.brentUSD              === "number" ? d.brentUSD              : prev.brentUSD,
+        wtiUSD:                typeof d.wtiUSD                === "number" ? d.wtiUSD                : prev.wtiUSD,
+        goldOzUSD:             typeof d.goldOzUSD             === "number" ? d.goldOzUSD             : prev.goldOzUSD,
+        goldGramUSD:           typeof d.goldGramUSD           === "number" ? d.goldGramUSD           : prev.goldGramUSD,
+        usdMyr:                typeof d.usdMyr                === "number" ? d.usdMyr                : prev.usdMyr,
+        dxy:                   typeof d.dxy                   === "number" ? d.dxy                   : prev.dxy,
+        crisisDay:             typeof d.crisisDay             === "number" ? d.crisisDay             : prev.crisisDay,
+        asOf:                  typeof d.asOf                  === "string" ? d.asOf                  : prev.asOf,
+        hormuzTransitToday:    typeof d.hormuzTransitToday    === "number" ? d.hormuzTransitToday    : prev.hormuzTransitToday,
+        hormuzThroughputPct:   typeof d.hormuzThroughputPct   === "number" ? d.hormuzThroughputPct   : prev.hormuzThroughputPct,
+        hormuzStranded:        typeof d.hormuzStranded        === "number" ? d.hormuzStranded        : prev.hormuzStranded,
+        hormuzInsuranceMult:   typeof d.hormuzInsuranceMult   === "number" ? d.hormuzInsuranceMult   : prev.hormuzInsuranceMult,
+        hormuzStatus:          typeof d.hormuzStatus          === "string" ? d.hormuzStatus          : prev.hormuzStatus,
+        hormuzDailyCostBn:     typeof d.hormuzDailyCostBn     === "number" ? d.hormuzDailyCostBn     : prev.hormuzDailyCostBn,
       }));
       const now = Date.now();
       nextRef.current = now + REFRESH_MS;
@@ -215,8 +221,8 @@ function OilTab({ cur, lang }: { cur: string; lang: Lang }) {
       {/* KPI row */}
       <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3">
         <KpiCard label={t("oil.iranCrisis", lang)} value={`Day ${live.crisisDay}`} sub={t("oil.sinceFeb2026", lang)} change={`${pctPreWar} ${t("oil.fromBaseline", lang)}`} changeUp={false} accent="#ef4444" />
-        <KpiCard label={t("oil.brentCrude", lang)} value={fmt(live.brentUSD, cur)} sub={`${t("oil.perBarrel", lang)} · ${live.asOf}`} change={`▼ −4.91% vs Apr 16`} changeUp={false} accent="#f97316" />
-        <KpiCard label={t("oil.wtiCrude", lang)} value={fmt(live.wtiUSD, cur)} sub={t("oil.perBarrel", lang)} change="▼ −5.0% vs Apr 16" changeUp={false} accent="#f97316" />
+        <KpiCard label={t("oil.brentCrude", lang)} value={fmt(live.brentUSD, cur)} sub={`${t("oil.perBarrel", lang)} · ${live.asOf}`} change={`${live.brentUSD < 95 ? "▼" : "▲"} ${((live.brentUSD - 95.005)/95.005*100).toFixed(1)}% vs Apr 16`} changeUp={false} accent="#f97316" />
+        <KpiCard label={t("oil.wtiCrude", lang)} value={fmt(live.wtiUSD, cur)} sub={t("oil.perBarrel", lang)} change={`${live.wtiUSD < 92.10 ? "▼" : "▲"} ${((live.wtiUSD - 92.10)/92.10*100).toFixed(1)}% vs Apr 16`} changeUp={false} accent="#f97316" />
         <KpiCard label={t("oil.peak", lang)} value={fmt(live.brentPeak, cur)} sub={t("oil.iranHitQatar", lang)} change={`${pctFromPeak} ${t("oil.fromPeak", lang)}`} changeUp={false} accent="#8b5cf6" />
         <KpiCard label={t("oil.dxyIndex", lang)} value={`${live.dxy}`} sub={t("oil.dollarBasket", lang)} change="▼ −0.35% today" changeUp={false} accent="#3b82f6" />
         <KpiCard label={t("oil.usdMyrRate", lang)} value={live.usdMyr.toString()} sub={t("oil.midMarketRate", lang)} change={t("oil.ringgitUnderPressure", lang)} changeUp={false} accent="#06b6d4" />
@@ -780,7 +786,7 @@ function WarTab({ lang }: { lang: Lang }) {
 
       {/* ── GLOBAL DAMAGE COUNTER ── */}
       <div>
-        <div className="text-[10px] font-bold tracking-widest text-white/25 mb-3">{t("war.globalDamage", lang)} — APR 15, 2026 · {t("war.asOf", lang)} DAY 46</div>
+        <div className="text-[10px] font-bold tracking-widest text-white/25 mb-3">{t("war.globalDamage", lang)} — {live.asOf.toUpperCase()} · {t("war.asOf", lang)} DAY {live.crisisDay}</div>
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
           <KpiCard label={t("war.totalStrikes", lang)} value={WAR_STATS.totalStrikes.toString()} sub={t("war.documentedEvents", lang)} accent="#ef4444" />
           <KpiCard label={t("war.dronesLaunched", lang)} value={WAR_STATS.totalDrones.toLocaleString()} sub={t("war.allParties", lang)} accent="#f97316" />
@@ -796,7 +802,7 @@ function WarTab({ lang }: { lang: Lang }) {
       <div className="bg-[var(--bg-card)] border-l-2 border-amber-500/60 border border-white/5 rounded-xl px-5 py-4 text-xs text-white/50 space-y-1">
         <div><span className="text-white/60 font-bold">{t("war.largestStrike", lang)}: </span>{WAR_STATS.largestStrike}</div>
         <div><span className="text-white/60 font-bold">{t("war.hormuzStatus", lang)}: </span><span className="text-emerald-400 font-bold">{WAR_STATS.hormuzStatus}</span></div>
-        <div><span className="text-white/60 font-bold">{t("war.asOf", lang)}: </span>Apr 18, 2026 · US-Iran ceasefire talks ongoing · Brent $90.38 · Gold $4,834</div>
+        <div><span className="text-white/60 font-bold">{t("war.asOf", lang)}: </span>{live.asOf} · US-Iran ceasefire ongoing · Brent ${live.brentUSD.toFixed(2)} · Gold ${live.goldOzUSD.toLocaleString()}</div>
       </div>
 
       {/* ── LEADERBOARDS ── */}
@@ -1192,8 +1198,23 @@ async function translateToMalay(text: string): Promise<string> {
 
 // ── HORMUZ TAB ──────────────────────────────────────────────────────────────
 function HormuzTab({ lang }: { lang: Lang }) {
-  const statusColor = HORMUZ.status === "OPEN" ? "#22c55e" : HORMUZ.status === "RESTRICTED" ? "#f0a500" : "#ef4444";
-  const statusBg = HORMUZ.status === "OPEN" ? "bg-emerald-500/10 border-emerald-500/20" : HORMUZ.status === "RESTRICTED" ? "bg-amber-500/10 border-amber-500/20" : "bg-red-500/10 border-red-500/20";
+  const live = useLive();
+  // Merge static HORMUZ with live overrides
+  const H = {
+    ...HORMUZ,
+    status:           (live.hormuzStatus || H.status) as "OPEN" | "RESTRICTED" | "CLOSED",
+    statusNote:       live.crisisDay <= 49
+      ? "Iran FM declared Hormuz open during ceasefire (Apr 17). US Navy escort active. Commercial traffic resuming."
+      : H.statusNote,
+    transitToday:     live.hormuzTransitToday    ?? H.transitToday,
+    throughputPct:    live.hormuzThroughputPct   ?? H.throughputPct,
+    strandedVessels:  live.hormuzStranded        ?? H.strandedVessels,
+    insuranceMult:    live.hormuzInsuranceMult   ?? H.insuranceMult,
+    dailyCostBn:      live.hormuzDailyCostBn     ?? H.dailyCostBn,
+    disruptionDay:    live.crisisDay,
+  };
+  const statusColor = H.status === "OPEN" ? "#22c55e" : H.status === "RESTRICTED" ? "#f0a500" : "#ef4444";
+  const statusBg = H.status === "OPEN" ? "bg-emerald-500/10 border-emerald-500/20" : H.status === "RESTRICTED" ? "bg-amber-500/10 border-amber-500/20" : "bg-red-500/10 border-red-500/20";
 
   return (
     <div className="space-y-6 p-6">
@@ -1204,27 +1225,27 @@ function HormuzTab({ lang }: { lang: Lang }) {
           <div className="text-4xl">⚓</div>
           <div>
             <div className="flex items-center gap-3 mb-1">
-              <span className="text-xl font-black tracking-wider" style={{ color: statusColor }}>STRAIT OF HORMUZ — {HORMUZ.status}</span>
-              <span className="text-[10px] font-bold tracking-widest bg-red-500/20 text-red-400 px-2 py-0.5 rounded-full border border-red-500/30">DAY {HORMUZ.disruptionDay}</span>
+              <span className="text-xl font-black tracking-wider" style={{ color: statusColor }}>STRAIT OF HORMUZ — {H.status}</span>
+              <span className="text-[10px] font-bold tracking-widest bg-red-500/20 text-red-400 px-2 py-0.5 rounded-full border border-red-500/30">DAY {H.disruptionDay}</span>
             </div>
-            <div className="text-xs text-white/50 max-w-2xl">{HORMUZ.statusNote}</div>
-            <div className="text-[10px] text-white/30 font-mono mt-1">Since {HORMUZ.sinceDate} · Updated {HORMUZ.lastUpdated} · Sources: {HORMUZ.sources.join(" · ")}</div>
+            <div className="text-xs text-white/50 max-w-2xl">{H.statusNote}</div>
+            <div className="text-[10px] text-white/30 font-mono mt-1">Since {H.sinceDate} · Updated {H.lastUpdated} · Sources: {H.sources.join(" · ")}</div>
           </div>
         </div>
         <div className="md:ml-auto text-right">
           <div className="text-[10px] text-white/30 font-mono">TOTAL TRANSITS SINCE FEB 28</div>
-          <div className="text-2xl font-black font-mono text-white">{HORMUZ.transitSince.toLocaleString()}</div>
-          <div className="text-[10px] text-white/30 font-mono">vs {(HORMUZ.transitAvgPreWar * HORMUZ.disruptionDay).toLocaleString()} expected</div>
+          <div className="text-2xl font-black font-mono text-white">{H.transitSince.toLocaleString()}</div>
+          <div className="text-[10px] text-white/30 font-mono">vs {(H.transitAvgPreWar * H.disruptionDay).toLocaleString()} expected</div>
         </div>
       </div>
 
       {/* KPI Cards */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
-        <KpiCard label="Transits Today" value={`${HORMUZ.transitToday}`} sub={`Pre-war avg: ${HORMUZ.transitAvgPreWar}/day`} change={`${((HORMUZ.transitToday/HORMUZ.transitAvgPreWar)*100).toFixed(1)}% of normal`} changeUp={false} accent="#ef4444" />
-        <KpiCard label="Throughput" value={`${HORMUZ.throughputPct}%`} sub="of normal deadweight" change="98% flow blocked" changeUp={false} accent="#ef4444" />
-        <KpiCard label="Stranded Vessels" value={`${HORMUZ.strandedVessels}+`} sub="in or near strait" change={`${HORMUZ.attackedVessels} attacked`} changeUp={false} accent="#f97316" />
-        <KpiCard label="Daily Econ. Cost" value={`$${HORMUZ.dailyCostBn}B`} sub="global economic loss" change="per day" changeUp={false} accent="#8b5cf6" />
-        <KpiCard label="Insurance" value={`${HORMUZ.insuranceMult}×`} sub="war risk multiplier" change="0.125% → 10% hull" changeUp={false} accent="#f97316" />
+        <KpiCard label="Transits Today" value={`${H.transitToday}`} sub={`Pre-war avg: ${H.transitAvgPreWar}/day`} change={`${((H.transitToday/H.transitAvgPreWar)*100).toFixed(1)}% of normal`} changeUp={false} accent="#ef4444" />
+        <KpiCard label="Throughput" value={`${H.throughputPct}%`} sub="of normal deadweight" change="98% flow blocked" changeUp={false} accent="#ef4444" />
+        <KpiCard label="Stranded Vessels" value={`${H.strandedVessels}+`} sub="in or near strait" change={`${H.attackedVessels} attacked`} changeUp={false} accent="#f97316" />
+        <KpiCard label="Daily Econ. Cost" value={`$${H.dailyCostBn}B`} sub="global economic loss" change="per day" changeUp={false} accent="#8b5cf6" />
+        <KpiCard label="Insurance" value={`${H.insuranceMult}×`} sub="war risk multiplier" change="0.125% → 10% hull" changeUp={false} accent="#f97316" />
         <KpiCard label="VLCC Voyage Cost" value="$2.5M" sub="per single passage" change="was $125K pre-war" changeUp={false} accent="#ef4444" />
       </div>
 
@@ -1244,9 +1265,9 @@ function HormuzTab({ lang }: { lang: Lang }) {
         {/* Transit Timeline Chart */}
         <div className="bg-[var(--bg-card)] border border-white/6 rounded-xl p-6">
           <div className="text-[10px] font-bold tracking-widest text-white/30 mb-1">WEEKLY TRANSIT COUNT</div>
-          <div className="text-xs text-white/20 mb-5">Vessels through Hormuz since Feb 28 (pre-war avg: {HORMUZ.transitAvgPreWar}/week ≈ 966/day×7)</div>
+          <div className="text-xs text-white/20 mb-5">Vessels through Hormuz since Feb 28 (pre-war avg: {H.transitAvgPreWar}/week ≈ 966/day×7)</div>
           <ResponsiveContainer width="100%" height={220}>
-            <BarChart data={HORMUZ.transitTimeline} margin={{ top: 5, right: 5, left: -20, bottom: 5 }}>
+            <BarChart data={H.transitTimeline} margin={{ top: 5, right: 5, left: -20, bottom: 5 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
               <XAxis dataKey="week" tick={{ fill: "#ffffff30", fontSize: 9, fontFamily: "Space Mono" }} axisLine={false} tickLine={false} />
               <YAxis tick={{ fill: "#ffffff30", fontSize: 9, fontFamily: "Space Mono" }} axisLine={false} tickLine={false} />
@@ -1255,7 +1276,7 @@ function HormuzTab({ lang }: { lang: Lang }) {
                 labelStyle={{ color: "#f0a500", fontWeight: "bold" }}
                 formatter={(val: any, name: any, props: any) => [
                   <span style={{ color: "#f0a500", fontFamily: "Space Mono" }}>{val} vessels</span>,
-                  <span style={{ color: "rgba(255,255,255,0.5)", fontSize: "9px" }}>{HORMUZ.transitTimeline.find(t => t.transits === val)?.note}</span>
+                  <span style={{ color: "rgba(255,255,255,0.5)", fontSize: "9px" }}>{H.transitTimeline.find(t => t.transits === val)?.note}</span>
                 ]}
               />
               <Bar dataKey="transits" fill="#f0a500" fillOpacity={0.8} radius={[3, 3, 0, 0]} />
@@ -1268,15 +1289,15 @@ function HormuzTab({ lang }: { lang: Lang }) {
           <div className="text-[10px] font-bold tracking-widest text-white/30 mb-4">BYPASS PIPELINES — STATUS</div>
           <div className="mb-4">
             <div className="flex justify-between text-xs text-white/40 mb-2">
-              <span>Pipeline capacity covering {HORMUZ.bypassPct}% of normal Hormuz flow</span>
-              <span className="font-mono">{HORMUZ.bypassTotal}M / {HORMUZ.normalFlow}M bbl/day</span>
+              <span>Pipeline capacity covering {H.bypassPct}% of normal Hormuz flow</span>
+              <span className="font-mono">{H.bypassTotal}M / {H.normalFlow}M bbl/day</span>
             </div>
             <div className="bg-white/5 rounded-full h-2">
-              <div className="h-2 rounded-full bg-amber-500" style={{ width: `${HORMUZ.bypassPct}%` }} />
+              <div className="h-2 rounded-full bg-amber-500" style={{ width: `${H.bypassPct}%` }} />
             </div>
           </div>
           <div className="space-y-3">
-            {HORMUZ.pipelines.map((p, i) => {
+            {H.pipelines.map((p, i) => {
               const statusCol = p.status === "ACTIVE" ? "text-emerald-400 bg-emerald-500/10 border-emerald-500/20" : p.status === "PARTIAL" ? "text-amber-400 bg-amber-500/10 border-amber-500/20" : "text-orange-400 bg-orange-500/10 border-orange-500/20";
               const fillPct = (p.effective / p.capacity) * 100;
               return (
@@ -1300,7 +1321,7 @@ function HormuzTab({ lang }: { lang: Lang }) {
           </div>
           <div className="mt-4 border border-red-500/10 bg-red-500/5 rounded-xl p-3">
             <div className="text-[10px] font-bold text-red-400 mb-1">⚠ UNBYPASSABLE GAP</div>
-            <div className="text-xs text-white/40">{HORMUZ.bypassGap}M bbl/day ({100 - HORMUZ.bypassPct}% of flow) cannot be rerouted via any existing pipeline. No infrastructure exists to replace this volume.</div>
+            <div className="text-xs text-white/40">{H.bypassGap}M bbl/day ({100 - H.bypassPct}% of flow) cannot be rerouted via any existing pipeline. No infrastructure exists to replace this volume.</div>
           </div>
         </div>
       </div>
@@ -1308,7 +1329,7 @@ function HormuzTab({ lang }: { lang: Lang }) {
       {/* Carrier Suspension Table */}
       <div className="bg-[var(--bg-card)] border border-white/6 rounded-xl p-6">
         <div className="text-[10px] font-bold tracking-widest text-white/30 mb-1">CARRIER SUSPENSION STATUS</div>
-        <div className="text-xs text-white/20 mb-4">All 9 major global carriers have suspended Hormuz transits — {HORMUZ.carriers.filter(c => c.status === "SUSPENDED").length}/9 suspended · 192 vessels trapped</div>
+        <div className="text-xs text-white/20 mb-4">All 9 major global carriers have suspended Hormuz transits — {H.carriers.filter(c => c.status === "SUSPENDED").length}/9 suspended · 192 vessels trapped</div>
         <div className="overflow-x-auto">
           <table className="w-full text-xs">
             <thead>
@@ -1321,7 +1342,7 @@ function HormuzTab({ lang }: { lang: Lang }) {
               </tr>
             </thead>
             <tbody>
-              {HORMUZ.carriers.map((c, i) => (
+              {H.carriers.map((c, i) => (
                 <tr key={i} className="border-b border-white/3 hover:bg-white/2 transition-colors">
                   <td className="py-3 pr-4 font-bold text-white">{c.name}</td>
                   <td className="py-3 pr-4">
@@ -1433,7 +1454,7 @@ function HormuzTab({ lang }: { lang: Lang }) {
               </tr>
             </thead>
             <tbody>
-              {HORMUZ.historical.map((h, i) => {
+              {H.historical.map((h, i) => {
                 const isNow = h.year === "2026";
                 return (
                   <tr key={i} className={`border-b border-white/3 hover:bg-white/2 transition-colors ${isNow ? "bg-amber-500/5" : ""}`}>
@@ -1764,7 +1785,7 @@ function NewsTab({ lang }: { lang: Lang }) {
   useEffect(() => {
     doFetch();
     // Refresh every 5 minutes — only NEW articles get prepended, existing stay
-    const interval = setInterval(doFetch, 5 * 60 * 1000);
+    const interval = setInterval(doFetch, 10 * 60 * 1000); // 10 min
     return () => clearInterval(interval);
   }, []);
 
@@ -1814,7 +1835,7 @@ function NewsTab({ lang }: { lang: Lang }) {
         <div>
           <h2 className="text-lg font-bold text-white">{t("news.dailyBriefing", lang)}</h2>
           <div className="text-xs text-white/30 mt-0.5">
-            Apr 18, 2026 · Crisis Day 49 · {usingRss ? rssNews.length : NEWS.length} {t("news.reports", lang)}
+            {live.asOf} · Crisis Day {live.crisisDay} · {usingRss ? rssNews.length : NEWS.length} {t("news.reports", lang)}
             {lastFetched && (
               <span className="ml-2 text-white/20">· {t("news.refreshed", lang)}: {formatLastFetched(lastFetched)} · {t("news.autoRefresh", lang)}</span>
             )}

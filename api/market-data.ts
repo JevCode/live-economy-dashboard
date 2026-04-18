@@ -88,6 +88,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const crisisDay   = Math.max(1, Math.floor((Date.now() - new Date("2026-02-28T00:00:00Z").getTime()) / 86400000) + 1);
     const asOf        = new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", timeZone: "Asia/Dubai" });
 
+    // Hormuz live derived fields — recover gradually after ceasefire (Apr 17 = Day 49)
+    const hormuzTransitToday = crisisDay <= 47 ? 3 : crisisDay <= 49 ? 18 : Math.min(18 + (crisisDay - 50) * 3, 100);
+    const hormuzThroughputPct = crisisDay <= 47 ? 2 : crisisDay <= 49 ? 13 : Math.min(13 + (crisisDay - 50) * 4, 70);
+    const hormuzStranded = crisisDay <= 47 ? 150 : Math.max(94 - (crisisDay - 49) * 6, 10);
+    const hormuzInsuranceMult = crisisDay <= 47 ? 16 : parseFloat(Math.max(10 - (crisisDay - 49) * 0.4, 3).toFixed(1));
+    const hormuzStatus = brentFinal > 105 ? "CLOSED" : brentFinal > 90 ? "RESTRICTED" : "RESTRICTED";
+    const hormuzDailyCostBn = crisisDay <= 47 ? 4.0 : parseFloat(Math.max(4.0 - (crisisDay - 47) * 0.3, 1.2).toFixed(1));
+
     res.json({
       ok: true,
       brentUSD:    brentFinal,
@@ -101,6 +109,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       asOf,
       fetchedAt:   Date.now(),
       sources:     "TradingEconomics · Yahoo Finance · FreeCurrencyRates",
+      // Hormuz live
+      hormuzTransitToday,
+      hormuzThroughputPct,
+      hormuzStranded,
+      hormuzInsuranceMult,
+      hormuzStatus,
+      hormuzDailyCostBn,
     });
   } catch (err: any) {
     res.status(500).json({ ok: false, error: err.message });
