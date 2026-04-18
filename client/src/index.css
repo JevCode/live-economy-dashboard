@@ -54,7 +54,7 @@
 /* Custom scrollbar */
 ::-webkit-scrollbar { width: 4px; height: 4px; }
 ::-webkit-scrollbar-track { background: rgba(255,255,255,0.02); }
-::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
+::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb); border-radius: 2px; }
 ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.18); }
 
 /* Ticker animation */
@@ -151,3 +151,103 @@
 .auto-grid-300 {
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
 }
+
+
+/* ── Light theme ──────────────────────────────────── */
+.light {
+  --bg-page:    #f0f2f5;
+  --bg-card:    #ffffff;
+  --bg-card2:   #f7f8fa;
+  --bg-ticker:  #1a1f2e;
+  --border-sub: rgba(0,0,0,0.07);
+  --border-card:rgba(0,0,0,0.09);
+  --text-primary:   #0d1117;
+  --text-secondary: rgba(0,0,0,0.5);
+  --text-tertiary:  rgba(0,0,0,0.3);
+  --text-ticker:    rgba(255,255,255,0.85);
+  --scrollbar-thumb: rgba(0,0,0,0.15);
+}
+
+/* ── Dark theme (default) ─────────────────────────── */
+:root, .dark {
+  --bg-page:    #070a0f;
+  --bg-card:    #0d1117;
+  --bg-card2:   #0a0e15;
+  --bg-ticker:  #050709;
+  --border-sub: rgba(255,255,255,0.05);
+  --border-card:rgba(255,255,255,0.06);
+  --text-primary:   #ffffff;
+  --text-secondary: rgba(255,255,255,0.5);
+  --text-tertiary:  rgba(255,255,255,0.25);
+  --text-ticker:    rgba(255,255,255,0.8);
+  --scrollbar-thumb: rgba(255,255,255,0.1);
+}
+
+/* ── Light mode overrides ─────────────────────────────────────────────── */
+.light body { background: var(--bg-page); }
+
+/* Text legibility */
+.light .text-white     { color: #0d1117 !important; }
+.light .text-white\/80 { color: rgba(0,0,0,0.80) !important; }
+.light .text-white\/70 { color: rgba(0,0,0,0.70) !important; }
+.light .text-white\/60 { color: rgba(0,0,0,0.60) !important; }
+.light .text-white\/55 { color: rgba(0,0,0,0.55) !important; }
+.light .text-white\/50 { color: rgba(0,0,0,0.50) !important; }
+.light .text-white\/40 { color: rgba(0,0,0,0.40) !important; }
+.light .text-white\/35 { color: rgba(0,0,0,0.35) !important; }
+.light .text-white\/30 { color: rgba(0,0,0,0.30) !important; }
+.light .text-white\/25 { color: rgba(0,0,0,0.25) !important; }
+.light .text-white\/20 { color: rgba(0,0,0,0.20) !important; }
+.light .text-white\/15 { color: rgba(0,0,0,0.15) !important; }
+
+/* Borders */
+.light .border-white\/5  { border-color: rgba(0,0,0,0.06) !important; }
+.light .border-white\/6  { border-color: rgba(0,0,0,0.08) !important; }
+.light .border-white\/10 { border-color: rgba(0,0,0,0.10) !important; }
+.light .border-white\/12 { border-color: rgba(0,0,0,0.12) !important; }
+.light .border-white\/15 { border-color: rgba(0,0,0,0.14) !important; }
+.light .border-white\/4  { border-color: rgba(0,0,0,0.05) !important; }
+.light .border-white\/3  { border-color: rgba(0,0,0,0.04) !important; }
+
+/* Backgrounds */
+.light .bg-white\/2  { background: rgba(0,0,0,0.02) !important; }
+.light .bg-white\/3  { background: rgba(0,0,0,0.03) !important; }
+.light .bg-white\/4  { background: rgba(0,0,0,0.04) !important; }
+.light .bg-white\/5  { background: rgba(0,0,0,0.05) !important; }
+.light .bg-white\/10 { background: rgba(0,0,0,0.06) !important; }
+
+/* Header & nav */
+.light header, .light nav { background: rgba(240,242,245,0.97) !important; border-color: rgba(0,0,0,0.08) !important; }
+
+/* Ticker stays dark always */
+.light .bg-\[var\(--bg-ticker\)\] { background: #1a1f2e !important; }
+
+/* Cards */
+.light .bg-\[var\(--bg-card\)\] { background: #ffffff !important; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
+
+/* Page bg */
+.light .bg-\[var\(--bg-page\)\] { background: #f0f2f5 !important; }
+
+/* Hover states */
+.light .hover\:border-white\/10:hover { border-color: rgba(0,0,0,0.12) !important; }
+.light .hover\:border-white\/12:hover { border-color: rgba(0,0,0,0.14) !important; }
+.light .hover\:bg-white\/2:hover { background: rgba(0,0,0,0.03) !important; }
+
+/* Active tab indicator */
+.light .bg-amber-500\/5 { background: rgba(240,165,0,0.08) !important; }
+
+/* Sticky backdrop */
+.light .backdrop-blur { backdrop-filter: blur(12px); }
+
+/* Footer */
+.light footer { background: rgba(240,242,245,0.97) !important; border-color: rgba(0,0,0,0.07) !important; }
+
+/* Scrollbar */
+.light ::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.15) !important; }
+.light ::-webkit-scrollbar-track { background: rgba(0,0,0,0.03) !important; }
+
+/* Chart tooltip */
+.light .recharts-tooltip-wrapper .recharts-default-tooltip { background: #fff !important; border-color: rgba(0,0,0,0.1) !important; }
+
+/* Theme toggle button light mode */
+.light button[title*="dark"] { border-color: rgba(0,0,0,0.12) !important; background: rgba(0,0,0,0.05) !important; color: #0d1117 !important; }

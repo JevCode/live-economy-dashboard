@@ -148,7 +148,7 @@ function Ticker({ cur, lang }: { cur: string; lang: Lang }) {
   ];
 
   return (
-    <div className="h-9 bg-[#050709] border-b border-white/5 overflow-hidden flex items-center sticky top-0 z-50">
+    <div className="h-9 bg-[var(--bg-ticker)] border-b border-white/5 overflow-hidden flex items-center sticky top-0 z-50">
       <div className="ticker-animate flex shrink-0">
         {[...items, ...items].map((it, i) => (
           <div key={i} className="flex items-center gap-2 px-6 border-r border-white/5 shrink-0 h-9">
@@ -166,7 +166,7 @@ function KpiCard({ label, value, sub, change, changeUp, accent = "#f0a500" }: {
   label: string; value: string; sub?: string; change?: string; changeUp?: boolean; accent?: string;
 }) {
   return (
-    <div className="relative bg-[#0d1117] border border-white/6 rounded-xl p-5 overflow-hidden group hover:border-white/10 transition-all duration-200">
+    <div className="relative bg-[var(--bg-card)] border border-white/6 rounded-xl p-5 overflow-hidden group hover:border-white/10 transition-all duration-200">
       <div className="absolute top-0 left-0 right-0 h-[2px] rounded-t-xl" style={{ background: accent }} />
       <div className="text-[10px] font-bold tracking-widest text-white/30 mb-2 uppercase">{label}</div>
       <div className="text-2xl font-bold font-mono text-white tracking-tight leading-none">{value}</div>
@@ -182,7 +182,7 @@ function KpiCard({ label, value, sub, change, changeUp, accent = "#f0a500" }: {
 
 function StatPill({ label, value, color = "text-white" }: { label: string; value: string; color?: string }) {
   return (
-    <div className="bg-[#0d1117] border border-white/6 rounded-lg px-4 py-3 text-center">
+    <div className="bg-[var(--bg-card)] border border-white/6 rounded-lg px-4 py-3 text-center">
       <div className={`text-lg font-bold font-mono ${color}`}>{value}</div>
       <div className="text-[10px] text-white/30 mt-0.5 tracking-wide">{label}</div>
     </div>
@@ -201,7 +201,7 @@ function OilTab({ cur, lang }: { cur: string; lang: Lang }) {
     if (!active || !payload?.length) return null;
     const row = OIL_TIMELINE.find(item => item.date === label);
     return (
-      <div className="bg-[#0d1117] border border-white/10 rounded-xl p-4 text-xs max-w-xs shadow-2xl">
+      <div className="bg-[var(--bg-card)] border border-white/10 rounded-xl p-4 text-xs max-w-xs shadow-2xl">
         <div className="font-bold text-white mb-1">{label} — {row?.label}</div>
         <div className="text-amber-400 font-mono text-sm font-bold">Brent ${payload[0]?.value}</div>
         {payload[1] && <div className="text-orange-400 font-mono text-sm">WTI ${payload[1]?.value}</div>}
@@ -233,7 +233,7 @@ function OilTab({ cur, lang }: { cur: string; lang: Lang }) {
       </div>
 
       {/* Compact Hormuz Status Strip */}
-      <div className="bg-[#0d1117] border border-amber-500/20 rounded-xl px-5 py-3 flex flex-wrap items-center gap-4">
+      <div className="bg-[var(--bg-card)] border border-amber-500/20 rounded-xl px-5 py-3 flex flex-wrap items-center gap-4">
         <div className="flex items-center gap-2">
           <span className="text-[10px] font-bold tracking-widest text-white/30">⚓ HORMUZ STATUS</span>
           <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full ${
@@ -272,7 +272,7 @@ function OilTab({ cur, lang }: { cur: string; lang: Lang }) {
       {/* Oil Prices in all currencies */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {[{ label: "BRENT CRUDE", usd: live.brentUSD }, { label: "WTI CRUDE", usd: live.wtiUSD }].map(oil => (
-          <div key={oil.label} className="bg-[#0d1117] border border-white/6 rounded-xl p-5">
+          <div key={oil.label} className="bg-[var(--bg-card)] border border-white/6 rounded-xl p-5">
             <div className="text-[10px] font-bold tracking-widest text-white/30 mb-4">{oil.label} — ALL CURRENCIES</div>
             <div className="grid grid-cols-3 gap-3">
               {["USD","MYR","AED"].map(c => (
@@ -287,7 +287,7 @@ function OilTab({ cur, lang }: { cur: string; lang: Lang }) {
       </div>
 
       {/* Timeline chart */}
-      <div className="bg-[#0d1117] border border-white/6 rounded-xl p-6">
+      <div className="bg-[var(--bg-card)] border border-white/6 rounded-xl p-6">
         <div className="text-[10px] font-bold tracking-widest text-white/30 mb-1">{t("oil.priceTimeline", lang)}</div>
         <div className="text-xs text-white/20 mb-5">Feb 27 – Apr 18, 2026 · {t("oil.keyEvents", lang)}</div>
         <ResponsiveContainer width="100%" height={240}>
@@ -314,7 +314,7 @@ function OilTab({ cur, lang }: { cur: string; lang: Lang }) {
       </div>
 
       {/* Timeline events */}
-      <div className="bg-[#0d1117] border border-white/6 rounded-xl p-6">
+      <div className="bg-[var(--bg-card)] border border-white/6 rounded-xl p-6">
         <div className="text-[10px] font-bold tracking-widest text-white/30 mb-5">CRISIS EVENT TIMELINE</div>
         <div className="relative pl-8">
           <div className="absolute left-3 top-0 bottom-0 w-px bg-white/6" />
@@ -354,7 +354,7 @@ function GoldTab({ cur, lang }: { cur: string; lang: Lang }) {
     if (!active || !payload?.length) return null;
     const row = GOLD_TIMELINE.find(item => item.date === label);
     return (
-      <div className="bg-[#0d1117] border border-white/10 rounded-xl p-3 text-xs shadow-2xl">
+      <div className="bg-[var(--bg-card)] border border-white/10 rounded-xl p-3 text-xs shadow-2xl">
         <div className="font-bold text-white mb-1">{label}</div>
         <div className="text-amber-400 font-mono font-bold">${payload[0]?.value?.toLocaleString()}/oz</div>
         <div className="text-white/40 mt-1">{row?.note}</div>
@@ -375,7 +375,7 @@ function GoldTab({ cur, lang }: { cur: string; lang: Lang }) {
       </div>
 
       {/* Gold chart */}
-      <div className="bg-[#0d1117] border border-white/6 rounded-xl p-6">
+      <div className="bg-[var(--bg-card)] border border-white/6 rounded-xl p-6">
         <div className="text-[10px] font-bold tracking-widest text-white/30 mb-1">{t("gold.priceTimeline", lang)}</div>
         <div className="text-xs text-white/20 mb-5">{t("gold.sinceJan2026", lang)}</div>
         <ResponsiveContainer width="100%" height={200}>
@@ -403,7 +403,7 @@ function GoldTab({ cur, lang }: { cur: string; lang: Lang }) {
             const priceG = live.goldGramUSD * k.purity;
             const priceOz = live.goldOzUSD * k.purity;
             return (
-              <div key={k.k} className="bg-[#0d1117] border border-white/6 rounded-xl p-4 hover:border-white/10 transition-all group">
+              <div key={k.k} className="bg-[var(--bg-card)] border border-white/6 rounded-xl p-4 hover:border-white/10 transition-all group">
                 <div className="flex items-center gap-3 mb-3">
                   <div className="w-10 h-10 rounded-full flex items-center justify-center text-[11px] font-bold font-mono shrink-0" style={{ background: k.color + "22", color: k.color, border: `1px solid ${k.color}44` }}>{k.k}</div>
                   <div>
@@ -426,7 +426,7 @@ function GoldTab({ cur, lang }: { cur: string; lang: Lang }) {
       </div>
 
       {/* Karat reference table */}
-      <div className="bg-[#0d1117] border border-white/6 rounded-xl overflow-hidden">
+      <div className="bg-[var(--bg-card)] border border-white/6 rounded-xl overflow-hidden">
         <div className="p-4 border-b border-white/6">
           <div className="text-[10px] font-bold tracking-widest text-white/30">{t("gold.karatGuide", lang).toUpperCase()} · ALL CURRENCIES · {t("gold.perGram", lang).toUpperCase()}</div>
         </div>
@@ -535,14 +535,14 @@ function WorldMapTab({ lang }: { lang: Lang }) {
       </div>
 
       {/* Context box */}
-      <div className="bg-[#0d1117] border-l-2 border-red-500/60 border border-white/5 rounded-xl px-5 py-4 text-xs text-white/50 leading-relaxed">
+      <div className="bg-[var(--bg-card)] border-l-2 border-red-500/60 border border-white/5 rounded-xl px-5 py-4 text-xs text-white/50 leading-relaxed">
         <span className="text-white/70 font-semibold">Context: </span>
         The Strait of Hormuz carries ~20% of world oil and ~30% of LNG. Closed since Mar 4, 2026. 60+ nations activated emergency measures.
         Click any highlighted country for a detailed briefing. Data sourced from Wikipedia, Carbon Brief, and country official announcements.
       </div>
 
       {/* Interactive map */}
-      <div className="bg-[#0d1117] border border-white/6 rounded-xl overflow-hidden relative">
+      <div className="bg-[var(--bg-card)] border border-white/6 rounded-xl overflow-hidden relative">
         <div className="p-4 border-b border-white/5 flex items-center justify-between flex-wrap gap-2">
           <div className="text-[10px] font-bold tracking-widest text-white/30">{t("map.title", lang)}</div>
           <div className="flex items-center gap-3 text-[9px] font-bold tracking-widest">
@@ -596,7 +596,7 @@ function WorldMapTab({ lang }: { lang: Lang }) {
               className="fixed z-50 pointer-events-none"
               style={{ left: tooltip.x, top: tooltip.y, transform:"translate(-50%,-110%)" }}
             >
-              <div className="bg-[#0d1117] border border-white/15 rounded-xl p-3 shadow-2xl text-xs min-w-[180px]">
+              <div className="bg-[var(--bg-card)] border border-white/15 rounded-xl p-3 shadow-2xl text-xs min-w-[180px]">
                 <div className="font-bold text-white flex items-center gap-2">
                   <span>{tooltip.country.flag}</span> {tooltip.country.name}
                 </div>
@@ -619,7 +619,7 @@ function WorldMapTab({ lang }: { lang: Lang }) {
       <div className="flex flex-wrap gap-2 items-center">
         <input
           type="text" placeholder={t("map.searchCountry", lang)}
-          className="bg-[#0d1117] border border-white/8 rounded-lg px-3 py-2 text-xs text-white placeholder-white/20 outline-none focus:border-white/20 w-44 transition-colors"
+          className="bg-[var(--bg-card)] border border-white/8 rounded-lg px-3 py-2 text-xs text-white placeholder-white/20 outline-none focus:border-white/20 w-44 transition-colors"
           value={search} onChange={e => setSearch(e.target.value)}
         />
         {Object.entries(regionCounts).map(([r, count]) => (
@@ -636,7 +636,7 @@ function WorldMapTab({ lang }: { lang: Lang }) {
           <thead>
             <tr className="border-b border-white/5">
               {["Country","Region","Hormuz Dep.","Fuel Impact","Status","Key Action"].map(h => (
-                <th key={h} className="text-left text-[10px] font-bold tracking-widest text-white/25 px-4 py-3 bg-[#0d1117]">{h}</th>
+                <th key={h} className="text-left text-[10px] font-bold tracking-widest text-white/25 px-4 py-3 bg-[var(--bg-card)]">{h}</th>
               ))}
             </tr>
           </thead>
@@ -660,9 +660,9 @@ function WorldMapTab({ lang }: { lang: Lang }) {
       {/* Country detail modal */}
       {selected && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop bg-black/60" onClick={e => { if (e.target === e.currentTarget) setSelected(null); }}>
-          <div className="bg-[#0d1117] border border-white/10 rounded-2xl w-full max-w-2xl max-h-[85vh] overflow-y-auto shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+          <div className="bg-[var(--bg-card)] border border-white/10 rounded-2xl w-full max-w-2xl max-h-[85vh] overflow-y-auto shadow-2xl animate-in fade-in zoom-in-95 duration-200">
             {/* Header */}
-            <div className="sticky top-0 bg-[#0d1117] border-b border-white/6 p-6 flex items-start justify-between rounded-t-2xl">
+            <div className="sticky top-0 bg-[var(--bg-card)] border-b border-white/6 p-6 flex items-start justify-between rounded-t-2xl">
               <div>
                 <div className="flex items-center gap-3 mb-2">
                   <span className="text-3xl">{selected.flag}</span>
@@ -793,7 +793,7 @@ function WarTab({ lang }: { lang: Lang }) {
       </div>
 
       {/* Status bar */}
-      <div className="bg-[#0d1117] border-l-2 border-amber-500/60 border border-white/5 rounded-xl px-5 py-4 text-xs text-white/50 space-y-1">
+      <div className="bg-[var(--bg-card)] border-l-2 border-amber-500/60 border border-white/5 rounded-xl px-5 py-4 text-xs text-white/50 space-y-1">
         <div><span className="text-white/60 font-bold">{t("war.largestStrike", lang)}: </span>{WAR_STATS.largestStrike}</div>
         <div><span className="text-white/60 font-bold">{t("war.hormuzStatus", lang)}: </span><span className="text-emerald-400 font-bold">{WAR_STATS.hormuzStatus}</span></div>
         <div><span className="text-white/60 font-bold">{t("war.asOf", lang)}: </span>Apr 18, 2026 · US-Iran ceasefire talks ongoing · Brent $90.38 · Gold $4,834</div>
@@ -803,7 +803,7 @@ function WarTab({ lang }: { lang: Lang }) {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 
         {/* Top Drone Attacks */}
-        <div className="bg-[#0d1117] border border-white/6 rounded-xl p-5">
+        <div className="bg-[var(--bg-card)] border border-white/6 rounded-xl p-5">
           <div className="text-[10px] font-bold tracking-widest text-orange-400/60 mb-4">{t("war.topDrones", lang)}</div>
           <div className="space-y-3">
             {topByDrones.filter(s => s.droneCount > 0).map((s, i) => (
@@ -828,7 +828,7 @@ function WarTab({ lang }: { lang: Lang }) {
         </div>
 
         {/* Top Missile Attacks */}
-        <div className="bg-[#0d1117] border border-white/6 rounded-xl p-5">
+        <div className="bg-[var(--bg-card)] border border-white/6 rounded-xl p-5">
           <div className="text-[10px] font-bold tracking-widest text-red-400/60 mb-4">{t("war.topMissiles", lang)}</div>
           <div className="space-y-3">
             {topByMissiles.filter(s => s.missileCount > 0).slice(0,5).map((s, i) => (
@@ -854,7 +854,7 @@ function WarTab({ lang }: { lang: Lang }) {
       </div>
 
       {/* ── COUNTRIES AFFECTED BREAKDOWN ── */}
-      <div className="bg-[#0d1117] border border-white/6 rounded-xl p-5">
+      <div className="bg-[var(--bg-card)] border border-white/6 rounded-xl p-5">
         <div className="text-[10px] font-bold tracking-widest text-white/25 mb-4">{t("war.damageByCountry", lang)}</div>
         <div className="overflow-x-auto">
           <table className="w-full text-xs">
@@ -900,7 +900,7 @@ function WarTab({ lang }: { lang: Lang }) {
       </div>
 
       {/* ── HUMAN CASUALTIES BY COUNTRY — OFFICIAL SOURCES ── */}
-      <div className="bg-[#0d1117] border border-white/6 rounded-xl p-5">
+      <div className="bg-[var(--bg-card)] border border-white/6 rounded-xl p-5">
         <div className="flex items-start justify-between flex-wrap gap-2 mb-1">
           <div className="text-[10px] font-bold tracking-widest text-red-400/60">{t("war.casualties", lang)}</div>
           <div className="text-[9px] text-white/20 font-mono">{t("war.asOf", lang)} Apr 7, 2026</div>
@@ -952,7 +952,7 @@ function WarTab({ lang }: { lang: Lang }) {
       </div>
 
       {/* Damage chart */}
-      <div className="bg-[#0d1117] border border-white/6 rounded-xl p-6">
+      <div className="bg-[var(--bg-card)] border border-white/6 rounded-xl p-6">
         <div className="text-[10px] font-bold tracking-widest text-white/30 mb-1">{t("war.strikeDamageChart", lang)}</div>
         <div className="text-xs text-white/20 mb-5">{t("war.perEvent", lang)}</div>
         <ResponsiveContainer width="100%" height={180}>
@@ -984,7 +984,7 @@ function WarTab({ lang }: { lang: Lang }) {
       <div className="space-y-3">
         {filtered.map(s => (
           <div key={s.id}
-            className="strike-card bg-[#0d1117] border border-white/6 rounded-xl p-5 cursor-pointer hover:border-white/10"
+            className="strike-card bg-[var(--bg-card)] border border-white/6 rounded-xl p-5 cursor-pointer hover:border-white/10"
             style={{ borderLeft:`3px solid ${severityColor[s.severity]}` }}
             onClick={() => setSelectedStrike(s)}
           >
@@ -1034,8 +1034,8 @@ function WarTab({ lang }: { lang: Lang }) {
       {/* Strike detail modal */}
       {selectedStrike && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop bg-black/70" onClick={e => { if (e.target === e.currentTarget) setSelectedStrike(null); }}>
-          <div className="bg-[#0d1117] border border-white/10 rounded-2xl w-full max-w-xl max-h-[85vh] overflow-y-auto shadow-2xl">
-            <div className="sticky top-0 bg-[#0d1117] border-b border-white/6 p-6 rounded-t-2xl flex items-start justify-between">
+          <div className="bg-[var(--bg-card)] border border-white/10 rounded-2xl w-full max-w-xl max-h-[85vh] overflow-y-auto shadow-2xl">
+            <div className="sticky top-0 bg-[var(--bg-card)] border-b border-white/6 p-6 rounded-t-2xl flex items-start justify-between">
               <div>
                 <div className="flex items-center gap-2 mb-2">
                   <span className="text-[9px] px-2 py-0.5 rounded font-bold uppercase" style={{ background: severityColor[selectedStrike.severity] + "20", color: severityColor[selectedStrike.severity] }}>{selectedStrike.severity}</span>
@@ -1242,7 +1242,7 @@ function HormuzTab({ lang }: { lang: Lang }) {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
 
         {/* Transit Timeline Chart */}
-        <div className="bg-[#0d1117] border border-white/6 rounded-xl p-6">
+        <div className="bg-[var(--bg-card)] border border-white/6 rounded-xl p-6">
           <div className="text-[10px] font-bold tracking-widest text-white/30 mb-1">WEEKLY TRANSIT COUNT</div>
           <div className="text-xs text-white/20 mb-5">Vessels through Hormuz since Feb 28 (pre-war avg: {HORMUZ.transitAvgPreWar}/week ≈ 966/day×7)</div>
           <ResponsiveContainer width="100%" height={220}>
@@ -1251,7 +1251,7 @@ function HormuzTab({ lang }: { lang: Lang }) {
               <XAxis dataKey="week" tick={{ fill: "#ffffff30", fontSize: 9, fontFamily: "Space Mono" }} axisLine={false} tickLine={false} />
               <YAxis tick={{ fill: "#ffffff30", fontSize: 9, fontFamily: "Space Mono" }} axisLine={false} tickLine={false} />
               <Tooltip
-                contentStyle={{ background: "#0d1117", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "8px", fontSize: "11px" }}
+                contentStyle={{ background: "var(--bg-card)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "8px", fontSize: "11px" }}
                 labelStyle={{ color: "#f0a500", fontWeight: "bold" }}
                 formatter={(val: any, name: any, props: any) => [
                   <span style={{ color: "#f0a500", fontFamily: "Space Mono" }}>{val} vessels</span>,
@@ -1264,7 +1264,7 @@ function HormuzTab({ lang }: { lang: Lang }) {
         </div>
 
         {/* Bypass Pipelines */}
-        <div className="bg-[#0d1117] border border-white/6 rounded-xl p-6">
+        <div className="bg-[var(--bg-card)] border border-white/6 rounded-xl p-6">
           <div className="text-[10px] font-bold tracking-widest text-white/30 mb-4">BYPASS PIPELINES — STATUS</div>
           <div className="mb-4">
             <div className="flex justify-between text-xs text-white/40 mb-2">
@@ -1306,7 +1306,7 @@ function HormuzTab({ lang }: { lang: Lang }) {
       </div>
 
       {/* Carrier Suspension Table */}
-      <div className="bg-[#0d1117] border border-white/6 rounded-xl p-6">
+      <div className="bg-[var(--bg-card)] border border-white/6 rounded-xl p-6">
         <div className="text-[10px] font-bold tracking-widest text-white/30 mb-1">CARRIER SUSPENSION STATUS</div>
         <div className="text-xs text-white/20 mb-4">All 9 major global carriers have suspended Hormuz transits — {HORMUZ.carriers.filter(c => c.status === "SUSPENDED").length}/9 suspended · 192 vessels trapped</div>
         <div className="overflow-x-auto">
@@ -1348,7 +1348,7 @@ function HormuzTab({ lang }: { lang: Lang }) {
       </div>
 
       {/* Company Impact — Winners vs Losers */}
-      <div className="bg-[#0d1117] border border-white/6 rounded-xl p-6">
+      <div className="bg-[var(--bg-card)] border border-white/6 rounded-xl p-6">
         <div className="text-[10px] font-bold tracking-widest text-white/30 mb-4">COMPANY IMPACT — HORMUZ CRISIS WINNERS &amp; LOSERS</div>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
@@ -1419,7 +1419,7 @@ function HormuzTab({ lang }: { lang: Lang }) {
       </div>
 
       {/* Historical Comparison */}
-      <div className="bg-[#0d1117] border border-white/6 rounded-xl p-6">
+      <div className="bg-[var(--bg-card)] border border-white/6 rounded-xl p-6">
         <div className="text-[10px] font-bold tracking-widest text-white/30 mb-4">HISTORICAL COMPARISON — STRAIT DISRUPTIONS</div>
         <div className="overflow-x-auto">
           <table className="w-full text-xs">
@@ -1483,7 +1483,7 @@ function MarketsTab({ lang }: { lang: Lang }) {
       </div>
 
       {/* Global Indices Table */}
-      <div className="bg-[#0d1117] border border-white/6 rounded-xl p-6">
+      <div className="bg-[var(--bg-card)] border border-white/6 rounded-xl p-6">
         <div className="text-[10px] font-bold tracking-widest text-white/30 mb-1">GLOBAL EQUITY INDICES</div>
         <div className="text-xs text-white/20 mb-4">Performance since Feb 28, 2026 crisis onset · Apr 18, 2026</div>
         <div className="overflow-x-auto">
@@ -1523,7 +1523,7 @@ function MarketsTab({ lang }: { lang: Lang }) {
       </div>
 
       {/* Sector Performance */}
-      <div className="bg-[#0d1117] border border-white/6 rounded-xl p-6">
+      <div className="bg-[var(--bg-card)] border border-white/6 rounded-xl p-6">
         <div className="flex items-center justify-between mb-4">
           <div>
             <div className="text-[10px] font-bold tracking-widest text-white/30 mb-1">SECTOR PERFORMANCE — WAR IMPACT</div>
@@ -1576,7 +1576,7 @@ function MarketsTab({ lang }: { lang: Lang }) {
       </div>
 
       {/* War-Impacted Companies */}
-      <div className="bg-[#0d1117] border border-white/6 rounded-xl p-6">
+      <div className="bg-[var(--bg-card)] border border-white/6 rounded-xl p-6">
         <div className="flex items-center justify-between mb-4">
           <div>
             <div className="text-[10px] font-bold tracking-widest text-white/30 mb-1">WAR-IMPACTED COMPANIES</div>
@@ -1630,7 +1630,7 @@ function MarketsTab({ lang }: { lang: Lang }) {
       </div>
 
       {/* Currency Moves */}
-      <div className="bg-[#0d1117] border border-white/6 rounded-xl p-6">
+      <div className="bg-[var(--bg-card)] border border-white/6 rounded-xl p-6">
         <div className="text-[10px] font-bold tracking-widest text-white/30 mb-1">CURRENCY IMPACT — SINCE FEB 28</div>
         <div className="text-xs text-white/20 mb-4">War-driven pressure on oil-importing nations' currencies</div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -1836,7 +1836,7 @@ function NewsTab({ lang }: { lang: Lang }) {
             </button>
           )}
           <button onClick={() => { if (!isFetchingRef.current) doFetch(true); }}
-            className="flex items-center gap-2 bg-[#0d1117] border border-white/6 rounded-full px-4 py-2 hover:border-amber-500/30 transition-colors cursor-pointer">
+            className="flex items-center gap-2 bg-[var(--bg-card)] border border-white/6 rounded-full px-4 py-2 hover:border-amber-500/30 transition-colors cursor-pointer">
             <div className="w-2 h-2 rounded-full bg-red-500 pulse-dot" />
             <span className="text-[10px] font-bold tracking-widest text-white/50">{t("news.liveUpdates", lang)}</span>
           </button>
@@ -1851,7 +1851,7 @@ function NewsTab({ lang }: { lang: Lang }) {
             {t("news.loading", lang)}
           </div>
           {[1,2,3].map(i => (
-            <div key={i} className="bg-[#0d1117] border border-white/6 rounded-xl p-5 animate-pulse">
+            <div key={i} className="bg-[var(--bg-card)] border border-white/6 rounded-xl p-5 animate-pulse">
               <div className="h-3 bg-white/5 rounded w-3/4 mb-3" />
               <div className="h-2 bg-white/3 rounded w-1/2" />
             </div>
@@ -1916,7 +1916,7 @@ function NewsTab({ lang }: { lang: Lang }) {
               : item.isNew ? "shadow-[0_0_12px_rgba(240,165,0,0.12)]" : "";
             return (
               <div key={itemId}
-                className={`news-card bg-[#0d1117] border rounded-xl overflow-hidden transition-all ${ldr || item.isNew ? glowClass : ""} ${ldr ? "border-white/10" : item.isNew ? "border-amber-400/40" : "border-white/6"}`}
+                className={`news-card bg-[var(--bg-card)] border rounded-xl overflow-hidden transition-all ${ldr || item.isNew ? glowClass : ""} ${ldr ? "border-white/10" : item.isNew ? "border-amber-400/40" : "border-white/6"}`}
                 style={{ borderLeft: `3px solid ${borderCol}` }}
               >
                 {/* Leader banner */}
@@ -1994,7 +1994,7 @@ function NewsTab({ lang }: { lang: Lang }) {
             const summary  = lang === "bm" ? translateToBM(n.summary) : n.summary;
             return (
             <div key={n.id}
-              className="news-card bg-[#0d1117] border border-white/6 rounded-xl overflow-hidden cursor-pointer hover:border-white/10"
+              className="news-card bg-[var(--bg-card)] border border-white/6 rounded-xl overflow-hidden cursor-pointer hover:border-white/10"
               style={{ borderLeft: `2px solid ${catColor[n.category]}` }}
               onClick={() => setExpanded(expanded === n.id ? null : n.id)}
             >
@@ -2050,7 +2050,7 @@ function CurrenciesTab({ cur, lang }: { cur: string; lang: Lang }) {
   return (
     <div className="space-y-6 p-6">
       {/* Quick converter */}
-      <div className="bg-[#0d1117] border border-white/6 rounded-xl p-6">
+      <div className="bg-[var(--bg-card)] border border-white/6 rounded-xl p-6">
         <div className="text-[10px] font-bold tracking-widest text-white/30 mb-4">{t("cur.converter", lang)}</div>
         <div className="flex flex-wrap gap-4 items-end">
           <div>
@@ -2089,7 +2089,7 @@ function CurrenciesTab({ cur, lang }: { cur: string; lang: Lang }) {
       </div>
 
       {/* FX table */}
-      <div className="bg-[#0d1117] border border-white/6 rounded-xl overflow-hidden">
+      <div className="bg-[var(--bg-card)] border border-white/6 rounded-xl overflow-hidden">
         <div className="p-4 border-b border-white/5">
           <div className="text-[10px] font-bold tracking-widest text-white/30">{t("cur.fxRates", lang)}</div>
         </div>
@@ -2134,12 +2134,12 @@ function CurrenciesTab({ cur, lang }: { cur: string; lang: Lang }) {
       </div>
 
       {/* DXY info */}
-      <div className="bg-[#0d1117] border-l-2 border-blue-500/60 border border-white/5 rounded-xl px-5 py-4 text-xs text-white/50 leading-relaxed">
+      <div className="bg-[var(--bg-card)] border-l-2 border-blue-500/60 border border-white/5 rounded-xl px-5 py-4 text-xs text-white/50 leading-relaxed">
         <span className="text-white/70 font-bold">{t("cur.dxyInfo", lang)}: 98.37 (▲ +0.36% today)</span> — {t("cur.dxyDesc", lang)}
       </div>
 
       {/* Fill-up calculator */}
-      <div className="bg-[#0d1117] border border-white/6 rounded-xl overflow-hidden">
+      <div className="bg-[var(--bg-card)] border border-white/6 rounded-xl overflow-hidden">
         <div className="p-4 border-b border-white/5">
           <div className="text-[10px] font-bold tracking-widest text-white/30">{t("cur.tankFillUp", lang)}</div>
         </div>
@@ -2183,6 +2183,16 @@ function CurrenciesTab({ cur, lang }: { cur: string; lang: Lang }) {
 export default function App() {
   const [tab, setTab] = useState("oil");
   const { countdown, lastRefresh } = useLiveMeta();
+  const [theme, setTheme] = useState<"dark"|"light">(() => {
+    return (localStorage.getItem("theme") as "dark"|"light") || "dark";
+  });
+  function toggleTheme() {
+    setTheme(t => {
+      const next = t === "dark" ? "light" : "dark";
+      localStorage.setItem("theme", next);
+      return next;
+    });
+  }
   const [cur, setCur] = useState<"USD"|"MYR"|"AED">("USD");
   const [lang, setLang] = useState<Lang>("en");
   const [now] = useState(new Date());
@@ -2201,11 +2211,11 @@ export default function App() {
 
   return (
     <LiveProvider>
-    <div className="min-h-screen bg-[#070a0f] text-white flex flex-col">
+    <div className={`min-h-screen flex flex-col ${theme === "light" ? "light bg-[var(--bg-page)] text-[#0d1117]" : "dark bg-[var(--bg-page)] text-white"}`}>
       <Ticker cur={cur} lang={lang} />
 
       {/* Header */}
-      <header className="sticky top-9 z-40 bg-[#070a0f]/95 backdrop-blur border-b border-white/5 h-14 flex items-center justify-between px-5 shrink-0">
+      <header className="sticky top-9 z-40 bg-[var(--bg-page)]/95 backdrop-blur border-b border-white/5 h-14 flex items-center justify-between px-5 shrink-0">
         <div className="flex items-center gap-3">
           {/* Logo */}
           <svg width="30" height="30" viewBox="0 0 30 30" fill="none" aria-label="Jeff's MarketIntel">
@@ -2235,6 +2245,17 @@ export default function App() {
             </span>
           </div>
           {/* Language toggle */}
+          {/* Theme toggle */}
+          <button
+            onClick={toggleTheme}
+            className="flex items-center justify-center w-8 h-8 rounded-lg border border-white/10 bg-white/5 hover:bg-white/10 transition-all"
+            title={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+          >
+            {theme === "dark"
+              ? <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+              : <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+            }
+          </button>
           <div className="flex bg-white/4 border border-white/6 rounded-lg overflow-hidden">
             {(["en","bm"] as Lang[]).map(l => (
               <button key={l} onClick={() => setLang(l)}
@@ -2256,7 +2277,7 @@ export default function App() {
       </header>
 
       {/* Tabs */}
-      <nav className="sticky top-[88px] z-30 bg-[#070a0f]/95 backdrop-blur border-b border-white/5 flex overflow-x-auto shrink-0">
+      <nav className="sticky top-[88px] z-30 bg-[var(--bg-page)]/95 backdrop-blur border-b border-white/5 flex overflow-x-auto shrink-0">
         {TABS.map(tabItem => (
           <button key={tabItem.id} onClick={() => setTab(tabItem.id)}
             className={`shrink-0 text-[11px] font-bold tracking-widest uppercase px-5 py-3.5 transition-all border-b-2 whitespace-nowrap ${tab === tabItem.id ? "border-amber-400 text-amber-400 bg-amber-500/5" : "border-transparent text-white/30 hover:text-white/60 hover:bg-white/2"}`}>
