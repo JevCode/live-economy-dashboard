@@ -1,5 +1,9 @@
 import { useState, useEffect, useRef, createContext, useContext } from "react";
 import { LIVE as LIVE_STATIC, KARATS, OIL_TIMELINE, GOLD_TIMELINE, COUNTRIES, STRIKE_EVENTS, WAR_STATS, CASUALTIES_BY_COUNTRY, NEWS, FX_RATES, HORMUZ, MARKETS_DATA, type Country, type StrikeEvent, type NewsItem, type CasualtyEntry } from "./lib/data";
+import { ComposableMap, Geographies, Geography, ZoomableGroup } from "react-simple-maps";
+import { AreaChart, Area, LineChart, Line, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, ReferenceLine } from "recharts";
+import { scaleLinear } from "d3-scale";
+import { t, type Lang } from "./lib/i18n";
 
 // ── Live market context — polls /api/market-data every 15 min ────────────
 type LiveData = typeof LIVE_STATIC;
