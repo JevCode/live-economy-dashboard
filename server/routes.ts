@@ -214,10 +214,154 @@ async function backgroundRefresh() {
   fetchAllFeeds().catch(() => {});
 }
 
+// ── LIVE MARKET DATA — fetched server-side, cached 15 min ─────────────────
+const MARKET_TTL = 15 * 60 * 1000;
+let marketCache: { data: Record<string, number | string> | null; fetchedAt: number } = { data: null, fetchedAt: 0 };
+
+function extractPrice(html: string, patterns: RegExp[]): number | null {
+  for (const re of patterns) {
+    const m = html.match(re);
+    if (m) {
+      const val = parseFloat(m[1].replace(/,/g, ""));
+      if (!isNaN(val) && val > 0) return val;
+    }
+  }
+  return null;
+}
+
+async function fetchMarketData(): Promise<Record<string, number | string>> {
+  const now = Date.now();
+  if (marketCache.data && now - marketCache.fetchedAt < MARKET_TTL) return marketCache.data;
+
+  async function fetchHtml(url: string): Promise<string> {
+    return new Promise((resolve, reject) => {
+      execFile(
+        "curl",
+        ["-sL", "--max-time", "15", "--max-redirs", "5",
+          "-H", "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+          "-H", "Accept: text/html,application/xhtml+xml,*/*",
+          "-H", "Accept-Language: en-US,en;q=0.9",
+          url],
+        { maxBuffer: 4 * 1024 * 1024 },
+        (err, stdout) => { err ? reject(err) : resolve(stdout); }
+      );
+    });
+  }
+
+  // Fetch all prices in parallel
+  const [brentHtml, goldHtml, wtiHtml, myrHtml, dxyHtml] = await Promise.allSettled([
+    fetchHtml("https://tradingeconomics.com/commodity/brent-crude-oil"),
+    fetchHtml("https://tradingeconomics.com/commodity/gold"),
+    fetchHtml("https://tradingeconomics.com/commodity/crude-oil"),
+    fetchHtml("https://freecurrencyrates.com/en/exchange-rate-detail/USD/MYR"),
+    fetchHtml("https://finance.yahoo.com/quote/DX-Y.NYB/"),
+  ]);
+
+  function getHtml(r: PromiseSettledResult<string>): string {
+    return r.status === "fulfilled" ? r.value : "";
+  }
+
+  const brentHtmlStr = getHtml(brentHtml);
+  const goldHtmlStr  = getHtml(goldHtml);
+  const wtiHtmlStr   = getHtml(wtiHtml);
+  const myrHtmlStr   = getHtml(myrHtml);
+  const dxyHtmlStr   = getHtml(dxyHtml);
+
+  // Extract Brent
+  const brent = extractPrice(brentHtmlStr, [
+    /"price":\s*"([\d,.]+)"/i,
+    /class="[^"]*price[^"]*"[^>]*>([\d,.]+)/i,
+    /<td[^>]*id="p"[^>]*>([\d,.]+)/i,
+    /Brent[^<]*<\/[^>]+>[^<]*<[^>]+>([\d,.]+)/i,
+    /data-value="([\d.]+)"[^>]*>\s*Brent/i,
+    /(\d{2,3}\.\d{1,3})\s*(?:USD|\$)?\s*\/\s*(?:bbl|barrel)/i,
+  ]);
+
+  // Extract Gold
+  const gold = extractPrice(goldHtmlStr, [
+    /"price":\s*"([\d,.]+)"/i,
+    /class="[^"]*price[^"]*"[^>]*>([\d,.]+)/i,
+    /(3[0-9]{3}|[4-9]\d{3})\.\d{2}/,
+  ]);
+
+  // Extract WTI
+  const wti = extractPrice(wtiHtmlStr, [
+    /"price":\s*"([\d,.]+)"/i,
+    /class="[^"]*price[^"]*"[^>]*>([\d,.]+)/i,
+    /(\d{2,3}\.\d{1,3})\s*(?:USD|\$)?\s*\/\s*(?:bbl|barrel)/i,
+  ]);
+
+  // Extract USD/MYR
+  const myr = extractPrice(myrHtmlStr, [
+    /1\s*USD\s*=\s*([\d.]+)\s*MYR/i,
+    /USD\/MYR[^\d]*([\d.]+)/i,
+    /([3-5]\.\d{3,4})\s*MYR/i,
+    /"rate":\s*"?([\d.]+)"?/i,
+    /([3-5]\.\d{2,4})/,
+  ]);
+
+  // Extract DXY from Yahoo Finance — must be in range 85–130
+  const dxyRaw = extractPrice(dxyHtmlStr, [
+    /"regularMarketPrice":\{"raw":([\d.]+)/i,
+    /data-testid="qsp-price"[^>]*>([\d.]+)/i,
+    /((?:9[0-9]|1[01][0-9]|8[5-9])\.\d{1,3})(?!\d)/,
+  ]);
+  const dxy = dxyRaw !== null && dxyRaw >= 85 && dxyRaw <= 130 ? dxyRaw : null;
+
+  // Validate ranges before accepting
+  function inRange(v: number | null, min: number, max: number): number | null {
+    return v !== null && v >= min && v <= max ? v : null;
+  }
+
+  // Calculate derived values with range validation
+  const brentFinal = inRange(brent, 40, 200) ?? (marketCache.data?.brentUSD as number) ?? 90.38;
+  const goldFinal  = inRange(gold,  2000, 8000) ?? (marketCache.data?.goldOzUSD as number) ?? 4833.6;
+  const wtiFinal   = inRange(wti,   38, 195) ?? (marketCache.data?.wtiUSD as number)    ?? 87.50;
+  const myrFinal   = inRange(myr,   3.0, 6.0)   ?? (marketCache.data?.usdMyr as number)    ?? 3.9525;
+  const dxyFinal   = dxy ?? (marketCache.data?.dxy as number) ?? 98.23;
+
+  const goldGramUSD = parseFloat((goldFinal / 31.1035).toFixed(4));
+  const crisisStart = new Date("2026-02-28T00:00:00Z").getTime();
+  const crisisDay   = Math.max(1, Math.floor((Date.now() - crisisStart) / 86400000) + 1);
+
+  const asOfDate = new Date().toLocaleDateString("en-US", {
+    month: "short", day: "numeric", year: "numeric", timeZone: "Asia/Dubai"
+  });
+
+  const data: Record<string, number | string> = {
+    brentUSD:    brentFinal,
+    wtiUSD:      wtiFinal,
+    goldOzUSD:   goldFinal,
+    goldGramUSD: goldGramUSD,
+    usdMyr:      myrFinal,
+    usdAed:      3.6725,
+    dxy:         dxyFinal,
+    crisisDay,
+    asOf:        asOfDate,
+    fetchedAt:   now,
+    sources: "TradingEconomics · Yahoo Finance · FreeCurrencyRates",
+  };
+
+  marketCache = { data, fetchedAt: now };
+  return data;
+}
+
 export async function registerRoutes(httpServer: Server, app: Express): Promise<Server> {
   // Health check
   app.get("/api/health", (_req, res) => {
     res.json({ status: "ok", dashboard: "Jeff's MarketIntel v3", asOf: "Apr 16, 2026" });
+  });
+
+  // Live market data endpoint — cached 15 min, falls back to last known values
+  app.get("/api/market-data", async (req, res) => {
+    try {
+      const forceRefresh = req.query.refresh === "1";
+      if (forceRefresh) marketCache.fetchedAt = 0;
+      const data = await fetchMarketData();
+      res.json({ ok: true, ...data });
+    } catch (err: any) {
+      res.status(500).json({ ok: false, error: err.message });
+    }
   });
 
   // RSS News endpoint — server-side fetch, no CORS issues
@@ -238,8 +382,9 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
     }
   });
 
-  // Warm up cache on startup
+  // Warm up caches on startup
   setTimeout(() => fetchAllFeeds().catch(() => {}), 2000);
+  setTimeout(() => fetchMarketData().catch(() => {}), 3000);
 
   return httpServer;
 }

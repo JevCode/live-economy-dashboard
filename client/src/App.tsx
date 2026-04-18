@@ -1,9 +1,49 @@
-import { useState, useEffect, useRef } from "react";
-import { LIVE, KARATS, OIL_TIMELINE, GOLD_TIMELINE, COUNTRIES, STRIKE_EVENTS, WAR_STATS, CASUALTIES_BY_COUNTRY, NEWS, FX_RATES, HORMUZ, MARKETS_DATA, type Country, type StrikeEvent, type NewsItem, type CasualtyEntry } from "./lib/data";
-import { ComposableMap, Geographies, Geography, ZoomableGroup } from "react-simple-maps";
-import { AreaChart, Area, LineChart, Line, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, ReferenceLine } from "recharts";
-import { scaleLinear } from "d3-scale";
-import { t, type Lang } from "./lib/i18n";
+import { useState, useEffect, useRef, createContext, useContext } from "react";
+import { LIVE as LIVE_STATIC, KARATS, OIL_TIMELINE, GOLD_TIMELINE, COUNTRIES, STRIKE_EVENTS, WAR_STATS, CASUALTIES_BY_COUNTRY, NEWS, FX_RATES, HORMUZ, MARKETS_DATA, type Country, type StrikeEvent, type NewsItem, type CasualtyEntry } from "./lib/data";
+
+// ── Live market context — polls /api/market-data every 15 min ────────────
+type LiveData = typeof LIVE_STATIC;
+const LiveCtx = createContext<LiveData>(LIVE_STATIC);
+export function useLive() { return useContext(LiveCtx); }
+
+function LiveProvider({ children }: { children: React.ReactNode }) {
+  const [live, setLive] = useState<LiveData>(LIVE_STATIC);
+  const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+
+  async function fetchLive(force = false) {
+    try {
+      const url = force ? "/api/market-data?refresh=1" : "/api/market-data";
+      const res = await fetch(url);
+      if (!res.ok) return;
+      const d = await res.json();
+      if (!d.ok) return;
+      setLive(prev => ({
+        ...prev,
+        brentUSD:    typeof d.brentUSD    === "number" ? d.brentUSD    : prev.brentUSD,
+        wtiUSD:      typeof d.wtiUSD      === "number" ? d.wtiUSD      : prev.wtiUSD,
+        goldOzUSD:   typeof d.goldOzUSD   === "number" ? d.goldOzUSD   : prev.goldOzUSD,
+        goldGramUSD: typeof d.goldGramUSD === "number" ? d.goldGramUSD : prev.goldGramUSD,
+        usdMyr:      typeof d.usdMyr      === "number" ? d.usdMyr      : prev.usdMyr,
+        dxy:         typeof d.dxy         === "number" ? d.dxy         : prev.dxy,
+        crisisDay:   typeof d.crisisDay   === "number" ? d.crisisDay   : prev.crisisDay,
+        asOf:        typeof d.asOf        === "string" ? d.asOf        : prev.asOf,
+      }));
+      setLastRefresh(new Date());
+    } catch { /* keep previous */ }
+  }
+
+  useEffect(() => {
+    fetchLive();                               // immediate on mount
+    const id = setInterval(() => fetchLive(), 15 * 60 * 1000); // every 15 min
+    return () => clearInterval(id);
+  }, []);
+
+  return <LiveCtx.Provider value={live}>{children}</LiveCtx.Provider>;
+}
+// ─────────────────────────────────────────────────────────────────
+
+// Local alias so existing code that references LIVE still works
+const LIVE = LIVE_STATIC;
 
 // ════ HELPERS ════
 const geoUrl = "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json";
@@ -22,8 +62,8 @@ function getCountryByIso(iso: string): Country | undefined {
   return COUNTRIES.find(c => c.iso === iso);
 }
 
-function fmt(usd: number, cur: string, decimals = 2) {
-  const rate = cur === "MYR" ? LIVE.usdMyr : cur === "AED" ? LIVE.usdAed : 1;
+function fmt(usd: number, cur: string, decimals = 2, live = LIVE) {
+  const rate = cur === "MYR" ? live.usdMyr : cur === "AED" ? live.usdAed : 1;
   const val = usd * rate;
   const symbol = cur === "MYR" ? "RM " : cur === "AED" ? "AED " : "$";
   if (val >= 1_000_000) return symbol + (val / 1_000_000).toFixed(2) + "M";
@@ -52,33 +92,37 @@ const impactColor: Record<string, string> = {
 // ════ COMPONENTS ════
 
 function Ticker({ cur, lang }: { cur: string; lang: Lang }) {
-  const [vals, setVals] = useState({
-    brent: LIVE.brentUSD, wti: LIVE.wtiUSD, gold: LIVE.goldOzUSD,
-  });
+  const live = useLive();
+  // Micro-jitter animation seeded from live values
+  const [jitter, setJitter] = useState({ brent: 0, wti: 0, gold: 0 });
   useEffect(() => {
     const timer = setInterval(() => {
-      setVals(v => ({
-        brent: parseFloat((v.brent + (Math.random() - 0.5) * 0.12).toFixed(2)),
-        wti:   parseFloat((v.wti   + (Math.random() - 0.5) * 0.12).toFixed(2)),
-        gold:  parseFloat((v.gold  + (Math.random() - 0.5) * 2.5).toFixed(2)),
-      }));
+      setJitter({
+        brent: parseFloat(((Math.random() - 0.5) * 0.08).toFixed(2)),
+        wti:   parseFloat(((Math.random() - 0.5) * 0.08).toFixed(2)),
+        gold:  parseFloat(((Math.random() - 0.5) * 1.5).toFixed(2)),
+      });
     }, 2800);
     return () => clearInterval(timer);
   }, []);
 
+  const brentChg = pct(live.brentUSD, LIVE_STATIC.brentUSD);
+  const wtiChg   = pct(live.wtiUSD,   LIVE_STATIC.wtiUSD);
+  const goldChg  = pct(live.goldOzUSD, LIVE_STATIC.goldOzUSD);
+
   const items = [
-    { l: t("ticker.brent", lang),         v: `$${vals.brent.toFixed(2)}`,       c: "▼ −0.32% today",                            dn: true },
-    { l: t("ticker.wti", lang),           v: `$${vals.wti.toFixed(2)}`,         c: "▼ −1.65% today",                            dn: true },
-    { l: t("ticker.goldXau", lang),       v: `$${vals.gold.toFixed(2)}/oz`,      c: "▲ +0.75% today",                            dn: false },
-    { l: t("ticker.usdMyr", lang),        v: `${LIVE.usdMyr}`,                  c: t("ticker.ringgitPressure", lang),            dn: true },
-    { l: t("ticker.usdAed", lang),        v: `${LIVE.usdAed}`,                  c: t("ticker.peggedStable", lang),               dn: false },
-    { l: t("ticker.dxy", lang),           v: `${LIVE.dxy}`,                     c: "▼ −0.35%",                                  dn: true },
-    { l: t("ticker.goldGram", lang),      v: fmt(LIVE.goldGramUSD, cur),        c: t("ticker.perGram", lang),                   dn: false },
-    { l: t("ticker.crisis", lang),        v: `Day ${LIVE.crisisDay}`,           c: t("ticker.sinceFeb28", lang),                dn: true },
-    { l: "BRENT PEAK",                    v: `$${LIVE.brentPeak}`,              c: "Mar 18 peak",                               dn: true },
-    { l: "HORMUZ",                        v: `PARTIAL OPEN`,                    c: "US escort",                                 dn: false },
-    { l: "QATAR LNG",                     v: `−17%`,                            c: "Force Majeure",                             dn: true },
-    { l: "IEA RELEASE",                   v: `400M bbl`,                        c: "Largest ever",                              dn: false },
+    { l: t("ticker.brent", lang),    v: `$${(live.brentUSD + jitter.brent).toFixed(2)}`,    c: `${live.brentUSD < LIVE_STATIC.brentUSD ? "▼" : "▲"} ${brentChg}`,  dn: live.brentUSD < LIVE_STATIC.brentUSD },
+    { l: t("ticker.wti", lang),      v: `$${(live.wtiUSD + jitter.wti).toFixed(2)}`,        c: `${live.wtiUSD   < LIVE_STATIC.wtiUSD   ? "▼" : "▲"} ${wtiChg}`,    dn: live.wtiUSD   < LIVE_STATIC.wtiUSD   },
+    { l: t("ticker.goldXau", lang),  v: `$${(live.goldOzUSD + jitter.gold).toFixed(2)}/oz`, c: `${live.goldOzUSD < LIVE_STATIC.goldOzUSD ? "▼" : "▲"} ${goldChg}`,  dn: live.goldOzUSD < LIVE_STATIC.goldOzUSD },
+    { l: t("ticker.usdMyr", lang),   v: `${live.usdMyr}`,                                   c: t("ticker.ringgitPressure", lang),  dn: true  },
+    { l: t("ticker.usdAed", lang),   v: `${live.usdAed}`,                                   c: t("ticker.peggedStable", lang),     dn: false },
+    { l: t("ticker.dxy", lang),      v: `${live.dxy}`,                                      c: "▼ −0.35%",                         dn: true  },
+    { l: t("ticker.goldGram", lang), v: fmt(live.goldGramUSD, cur, 2, live),                 c: t("ticker.perGram", lang),          dn: false },
+    { l: t("ticker.crisis", lang),   v: `Day ${live.crisisDay}`,                             c: t("ticker.sinceFeb28", lang),       dn: true  },
+    { l: "BRENT PEAK",               v: `$${live.brentPeak}`,                                c: "Mar 18 peak",                      dn: true  },
+    { l: "HORMUZ",                   v: `PARTIAL OPEN`,                                      c: "US escort",                        dn: false },
+    { l: "QATAR LNG",                v: `−17%`,                                              c: "Force Majeure",                    dn: true  },
+    { l: "IEA RELEASE",              v: `400M bbl`,                                          c: "Largest ever",                     dn: false },
   ];
 
   return (
@@ -125,8 +169,9 @@ function StatPill({ label, value, color = "text-white" }: { label: string; value
 
 // ── OIL TAB ──
 function OilTab({ cur, lang }: { cur: string; lang: Lang }) {
-  const pctPreWar = pct(LIVE.brentUSD, LIVE.brentPreWar);
-  const pctFromPeak = pct(LIVE.brentUSD, LIVE.brentPeak);
+  const live = useLive();
+  const pctPreWar = pct(live.brentUSD, live.brentPreWar);
+  const pctFromPeak = pct(live.brentUSD, live.brentPeak);
 
   const chartData = OIL_TIMELINE.map(item => ({ ...item, brentFmt: item.brent }));
 
@@ -147,12 +192,12 @@ function OilTab({ cur, lang }: { cur: string; lang: Lang }) {
     <div className="space-y-6 p-6">
       {/* KPI row */}
       <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3">
-        <KpiCard label={t("oil.iranCrisis", lang)} value={`Day ${LIVE.crisisDay}`} sub={t("oil.sinceFeb2026", lang)} change={`${pctPreWar} ${t("oil.fromBaseline", lang)}`} changeUp={false} accent="#ef4444" />
-        <KpiCard label={t("oil.brentCrude", lang)} value={fmt(LIVE.brentUSD, cur)} sub={`${t("oil.perBarrel", lang)} · Apr 16 close`} change="▼ −4.08% today" changeUp={false} accent="#f97316" />
-        <KpiCard label={t("oil.wtiCrude", lang)} value={fmt(LIVE.wtiUSD, cur)} sub={t("oil.perBarrel", lang)} change="▼ −1.65% today" changeUp={false} accent="#f97316" />
-        <KpiCard label={t("oil.peak", lang)} value={fmt(LIVE.brentPeak, cur)} sub={t("oil.iranHitQatar", lang)} change={`${pctFromPeak} ${t("oil.fromPeak", lang)}`} changeUp={false} accent="#8b5cf6" />
-        <KpiCard label={t("oil.dxyIndex", lang)} value={`${LIVE.dxy}`} sub={t("oil.dollarBasket", lang)} change="▼ −0.35% today" changeUp={false} accent="#3b82f6" />
-        <KpiCard label={t("oil.usdMyrRate", lang)} value={LIVE.usdMyr.toString()} sub={t("oil.midMarketRate", lang)} change={t("oil.ringgitUnderPressure", lang)} changeUp={false} accent="#06b6d4" />
+        <KpiCard label={t("oil.iranCrisis", lang)} value={`Day ${live.crisisDay}`} sub={t("oil.sinceFeb2026", lang)} change={`${pctPreWar} ${t("oil.fromBaseline", lang)}`} changeUp={false} accent="#ef4444" />
+        <KpiCard label={t("oil.brentCrude", lang)} value={fmt(live.brentUSD, cur)} sub={`${t("oil.perBarrel", lang)} · ${live.asOf}`} change={`▼ −4.91% vs Apr 16`} changeUp={false} accent="#f97316" />
+        <KpiCard label={t("oil.wtiCrude", lang)} value={fmt(live.wtiUSD, cur)} sub={t("oil.perBarrel", lang)} change="▼ −5.0% vs Apr 16" changeUp={false} accent="#f97316" />
+        <KpiCard label={t("oil.peak", lang)} value={fmt(live.brentPeak, cur)} sub={t("oil.iranHitQatar", lang)} change={`${pctFromPeak} ${t("oil.fromPeak", lang)}`} changeUp={false} accent="#8b5cf6" />
+        <KpiCard label={t("oil.dxyIndex", lang)} value={`${live.dxy}`} sub={t("oil.dollarBasket", lang)} change="▼ −0.35% today" changeUp={false} accent="#3b82f6" />
+        <KpiCard label={t("oil.usdMyrRate", lang)} value={live.usdMyr.toString()} sub={t("oil.midMarketRate", lang)} change={t("oil.ringgitUnderPressure", lang)} changeUp={false} accent="#06b6d4" />
       </div>
 
       {/* Stats */}
@@ -204,7 +249,7 @@ function OilTab({ cur, lang }: { cur: string; lang: Lang }) {
 
       {/* Oil Prices in all currencies */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {[{ label: "BRENT CRUDE", usd: LIVE.brentUSD }, { label: "WTI CRUDE", usd: LIVE.wtiUSD }].map(oil => (
+        {[{ label: "BRENT CRUDE", usd: live.brentUSD }, { label: "WTI CRUDE", usd: live.wtiUSD }].map(oil => (
           <div key={oil.label} className="bg-[#0d1117] border border-white/6 rounded-xl p-5">
             <div className="text-[10px] font-bold tracking-widest text-white/30 mb-4">{oil.label} — ALL CURRENCIES</div>
             <div className="grid grid-cols-3 gap-3">
@@ -222,7 +267,7 @@ function OilTab({ cur, lang }: { cur: string; lang: Lang }) {
       {/* Timeline chart */}
       <div className="bg-[#0d1117] border border-white/6 rounded-xl p-6">
         <div className="text-[10px] font-bold tracking-widest text-white/30 mb-1">{t("oil.priceTimeline", lang)}</div>
-        <div className="text-xs text-white/20 mb-5">Feb 27 – Apr 16, 2026 · {t("oil.keyEvents", lang)}</div>
+        <div className="text-xs text-white/20 mb-5">Feb 27 – Apr 18, 2026 · {t("oil.keyEvents", lang)}</div>
         <ResponsiveContainer width="100%" height={240}>
           <AreaChart data={chartData} margin={{ top:10, right:10, left:0, bottom:0 }}>
             <defs>
@@ -239,7 +284,7 @@ function OilTab({ cur, lang }: { cur: string; lang: Lang }) {
             <XAxis dataKey="date" tick={{ fill:"#ffffff30", fontSize:10, fontFamily:"Space Mono" }} axisLine={false} tickLine={false} />
             <YAxis tick={{ fill:"#ffffff30", fontSize:10, fontFamily:"Space Mono" }} axisLine={false} tickLine={false} tickFormatter={v=>`$${v}`} domain={[55,135]} />
             <Tooltip content={<CustomTooltip />} />
-            <ReferenceLine y={LIVE.brentPreWar} stroke="#22c55e" strokeDasharray="4 4" strokeOpacity={0.5} label={{ value:"Pre-War $65", fill:"#22c55e", fontSize:9, fontFamily:"Space Mono" }} />
+            <ReferenceLine y={live.brentPreWar} stroke="#22c55e" strokeDasharray="4 4" strokeOpacity={0.5} label={{ value:"Pre-War $65", fill:"#22c55e", fontSize:9, fontFamily:"Space Mono" }} />
             <Area type="monotone" dataKey="brent" stroke="#f0a500" strokeWidth={2} fill="url(#brentGrad)" dot={{ fill:"#f0a500", r:3, strokeWidth:0 }} activeDot={{ r:5, fill:"#f0a500" }} name="Brent" />
             <Area type="monotone" dataKey="wti" stroke="#f97316" strokeWidth={1.5} fill="url(#wtiGrad)" strokeDasharray="4 3" dot={false} name="WTI" />
           </AreaChart>
@@ -273,13 +318,14 @@ function OilTab({ cur, lang }: { cur: string; lang: Lang }) {
         </div>
       </div>
 
-      <p className="text-[10px] text-white/20">{t("oil.sources", lang)}: Brent/WTI — OilPrice.com · Gold — TradingEconomics · DXY — Yahoo Finance · USD/MYR — open.er-api.com (Apr 16, 2026)</p>
+      <p className="text-[10px] text-white/20">{t("oil.sources", lang)}: Brent/WTI — OilPrice.com · Gold — TradingEconomics · DXY — Yahoo Finance · USD/MYR — open.er-api.com (Apr 18, 2026)</p>
     </div>
   );
 }
 
 // ── GOLD TAB ──
 function GoldTab({ cur, lang }: { cur: string; lang: Lang }) {
+  const live = useLive();
   const chartData = GOLD_TIMELINE.map(item => ({ ...item }));
 
   const CustomTooltip = ({ active, payload, label }: any) => {
@@ -298,11 +344,11 @@ function GoldTab({ cur, lang }: { cur: string; lang: Lang }) {
     <div className="space-y-6 p-6">
       {/* KPIs */}
       <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3">
-        <KpiCard label={t("gold.spot24k", lang)} value={fmt(LIVE.goldOzUSD, cur)} sub={t("gold.perTroyOz", lang)} change="▲ +0.75% today" changeUp={true} accent="#f0a500" />
-        <KpiCard label={t("gold.perGram24k", lang)} value={fmt(LIVE.goldGramUSD, cur)} sub={t("gold.perGram", lang)} change="▲ +48% year-on-year" changeUp={true} accent="#f0a500" />
-        <KpiCard label={t("gold.ath", lang)} value={`$${LIVE.goldATH.toLocaleString()}`} sub={`${LIVE.goldATHDate} (per oz)`} change={`▼ −14.6% ${t("gold.fromATH", lang)}`} changeUp={false} accent="#8b5cf6" />
-        <KpiCard label={t("gold.inMyrOz", lang)} value={`RM ${(LIVE.goldOzUSD * LIVE.usdMyr).toLocaleString("en-MY", { maximumFractionDigits:0 })}`} sub={t("gold.perTroyOzShort", lang)} change={t("gold.safeHaven", lang)} changeUp={true} accent="#f0a500" />
-        <KpiCard label={t("gold.inAedOz", lang)} value={`AED ${(LIVE.goldOzUSD * LIVE.usdAed).toLocaleString("en-US", { maximumFractionDigits:0 })}`} sub={t("gold.perTroyOzShort", lang)} change={t("gold.aedPegStable", lang)} changeUp={true} accent="#f0a500" />
+        <KpiCard label={t("gold.spot24k", lang)} value={fmt(live.goldOzUSD, cur)} sub={t("gold.perTroyOz", lang)} change="▲ +0.75% today" changeUp={true} accent="#f0a500" />
+        <KpiCard label={t("gold.perGram24k", lang)} value={fmt(live.goldGramUSD, cur)} sub={t("gold.perGram", lang)} change="▲ +48% year-on-year" changeUp={true} accent="#f0a500" />
+        <KpiCard label={t("gold.ath", lang)} value={`$${live.goldATH.toLocaleString()}`} sub={`${live.goldATHDate} (per oz)`} change={`▼ −14.6% ${t("gold.fromATH", lang)}`} changeUp={false} accent="#8b5cf6" />
+        <KpiCard label={t("gold.inMyrOz", lang)} value={`RM ${(live.goldOzUSD * live.usdMyr).toLocaleString("en-MY", { maximumFractionDigits:0 })}`} sub={t("gold.perTroyOzShort", lang)} change={t("gold.safeHaven", lang)} changeUp={true} accent="#f0a500" />
+        <KpiCard label={t("gold.inAedOz", lang)} value={`AED ${(live.goldOzUSD * live.usdAed).toLocaleString("en-US", { maximumFractionDigits:0 })}`} sub={t("gold.perTroyOzShort", lang)} change={t("gold.aedPegStable", lang)} changeUp={true} accent="#f0a500" />
         <KpiCard label="Year-on-Year" value="+48%" sub="War premium driving demand" change="↑ vs pre-crisis gold" changeUp={true} accent="#22c55e" />
       </div>
 
@@ -332,8 +378,8 @@ function GoldTab({ cur, lang }: { cur: string; lang: Lang }) {
         <div className="text-[10px] font-bold tracking-widest text-white/30 mb-4">{t("gold.karatTitle", lang)} · {cur}</div>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {KARATS.map(k => {
-            const priceG = LIVE.goldGramUSD * k.purity;
-            const priceOz = LIVE.goldOzUSD * k.purity;
+            const priceG = live.goldGramUSD * k.purity;
+            const priceOz = live.goldOzUSD * k.purity;
             return (
               <div key={k.k} className="bg-[#0d1117] border border-white/6 rounded-xl p-4 hover:border-white/10 transition-all group">
                 <div className="flex items-center gap-3 mb-3">
@@ -347,8 +393,8 @@ function GoldTab({ cur, lang }: { cur: string; lang: Lang }) {
                 <div className="text-xl font-bold font-mono" style={{ color: k.color }}>{fmt(priceG, cur)}<span className="text-xs text-white/30 ml-1">/g</span></div>
                 <div className="text-[10px] text-white/25 mt-1">
                   {cur !== "USD" && `$${priceG.toFixed(2)}/g · `}
-                  {cur !== "MYR" && `RM ${(priceG * LIVE.usdMyr).toFixed(2)}/g`}
-                  {cur !== "AED" && ` · AED ${(priceG * LIVE.usdAed).toFixed(2)}/g`}
+                  {cur !== "MYR" && `RM ${(priceG * live.usdMyr).toFixed(2)}/g`}
+                  {cur !== "AED" && ` · AED ${(priceG * live.usdAed).toFixed(2)}/g`}
                 </div>
                 <div className="text-[10px] text-white/20 mt-1">= ${priceOz.toLocaleString("en-US", { maximumFractionDigits:0 })}/oz</div>
               </div>
@@ -373,16 +419,16 @@ function GoldTab({ cur, lang }: { cur: string; lang: Lang }) {
             </thead>
             <tbody>
               {KARATS.map((k, i) => {
-                const priceG = LIVE.goldGramUSD * k.purity;
+                const priceG = live.goldGramUSD * k.purity;
                 return (
                   <tr key={k.k} className={`border-b border-white/4 hover:bg-white/2 transition-colors ${i % 2 === 0 ? "" : "bg-white/[0.01]"}`}>
                     <td className="px-4 py-3"><span className="font-bold text-sm font-mono" style={{ color: k.color }}>{k.k}</span></td>
                     <td className="px-4 py-3 font-mono text-white/50">{(k.purity * 100).toFixed(1)}%</td>
                     <td className="px-4 py-3 text-white/40">{k.use}</td>
                     <td className="px-4 py-3 font-mono font-bold text-amber-400">${priceG.toFixed(2)}</td>
-                    <td className="px-4 py-3 font-mono text-white/70">RM {(priceG * LIVE.usdMyr).toFixed(2)}</td>
-                    <td className="px-4 py-3 font-mono text-white/70">AED {(priceG * LIVE.usdAed).toFixed(2)}</td>
-                    <td className="px-4 py-3 font-mono text-white/40">${(LIVE.goldOzUSD * k.purity).toLocaleString("en-US", { maximumFractionDigits:0 })}</td>
+                    <td className="px-4 py-3 font-mono text-white/70">RM {(priceG * live.usdMyr).toFixed(2)}</td>
+                    <td className="px-4 py-3 font-mono text-white/70">AED {(priceG * live.usdAed).toFixed(2)}</td>
+                    <td className="px-4 py-3 font-mono text-white/40">${(live.goldOzUSD * k.purity).toLocaleString("en-US", { maximumFractionDigits:0 })}</td>
                   </tr>
                 );
               })}
@@ -728,7 +774,7 @@ function WarTab({ lang }: { lang: Lang }) {
       <div className="bg-[#0d1117] border-l-2 border-amber-500/60 border border-white/5 rounded-xl px-5 py-4 text-xs text-white/50 space-y-1">
         <div><span className="text-white/60 font-bold">{t("war.largestStrike", lang)}: </span>{WAR_STATS.largestStrike}</div>
         <div><span className="text-white/60 font-bold">{t("war.hormuzStatus", lang)}: </span><span className="text-emerald-400 font-bold">{WAR_STATS.hormuzStatus}</span></div>
-        <div><span className="text-white/60 font-bold">{t("war.asOf", lang)}: </span>Apr 16, 2026 · US-Iran ceasefire talks ongoing · Brent $95.01 · Gold $4,826</div>
+        <div><span className="text-white/60 font-bold">{t("war.asOf", lang)}: </span>Apr 18, 2026 · US-Iran ceasefire talks ongoing · Brent $90.38 · Gold $4,834</div>
       </div>
 
       {/* ── LEADERBOARDS ── */}
@@ -1385,7 +1431,7 @@ function HormuzTab({ lang }: { lang: Lang }) {
         </div>
       </div>
 
-      <p className="text-[10px] text-white/20">Sources: HormuzTracker.com · HormuzStraitMonitor.com · Kpler · Al Jazeera · LSEG · Lloyd's of London · Apr 16, 2026</p>
+      <p className="text-[10px] text-white/20">Sources: HormuzTracker.com · HormuzStraitMonitor.com · Kpler · Al Jazeera · LSEG · Lloyd's of London · Apr 18, 2026</p>
     </div>
   );
 }
@@ -1417,7 +1463,7 @@ function MarketsTab({ lang }: { lang: Lang }) {
       {/* Global Indices Table */}
       <div className="bg-[#0d1117] border border-white/6 rounded-xl p-6">
         <div className="text-[10px] font-bold tracking-widest text-white/30 mb-1">GLOBAL EQUITY INDICES</div>
-        <div className="text-xs text-white/20 mb-4">Performance since Feb 28, 2026 crisis onset · Apr 16, 2026</div>
+        <div className="text-xs text-white/20 mb-4">Performance since Feb 28, 2026 crisis onset · Apr 18, 2026</div>
         <div className="overflow-x-auto">
           <table className="w-full text-xs">
             <thead>
@@ -1593,7 +1639,7 @@ function MarketsTab({ lang }: { lang: Lang }) {
         </div>
       </div>
 
-      <p className="text-[10px] text-white/20">Sources: Yahoo Finance · Bloomberg · Reuters · Morningstar · Seeking Alpha · Korean Exchange · LSEG · Apr 16, 2026</p>
+      <p className="text-[10px] text-white/20">Sources: Yahoo Finance · Bloomberg · Reuters · Morningstar · Seeking Alpha · Korean Exchange · LSEG · Apr 18, 2026</p>
     </div>
   );
 }
@@ -1746,7 +1792,7 @@ function NewsTab({ lang }: { lang: Lang }) {
         <div>
           <h2 className="text-lg font-bold text-white">{t("news.dailyBriefing", lang)}</h2>
           <div className="text-xs text-white/30 mt-0.5">
-            Apr 16, 2026 · Crisis Day 47 · {usingRss ? rssNews.length : NEWS.length} {t("news.reports", lang)}
+            Apr 18, 2026 · Crisis Day 49 · {usingRss ? rssNews.length : NEWS.length} {t("news.reports", lang)}
             {lastFetched && (
               <span className="ml-2 text-white/20">· {t("news.refreshed", lang)}: {formatLastFetched(lastFetched)} · {t("news.autoRefresh", lang)}</span>
             )}
@@ -1965,14 +2011,15 @@ function NewsTab({ lang }: { lang: Lang }) {
 
 // ── CURRENCIES TAB ──
 function CurrenciesTab({ cur, lang }: { cur: string; lang: Lang }) {
+  const live = useLive();
   const [fromCur, setFromCur] = useState("USD");
   const [amount, setAmount] = useState("100");
 
   function convert(a: number, from: string, to: string) {
-    const toUSD = from === "USD" ? a : from === "MYR" ? a / LIVE.usdMyr : from === "AED" ? a / LIVE.usdAed : a;
+    const toUSD = from === "USD" ? a : from === "MYR" ? a / live.usdMyr : from === "AED" ? a / live.usdAed : a;
     if (to === "USD") return toUSD;
-    if (to === "MYR") return toUSD * LIVE.usdMyr;
-    if (to === "AED") return toUSD * LIVE.usdAed;
+    if (to === "MYR") return toUSD * live.usdMyr;
+    if (to === "AED") return toUSD * live.usdAed;
     return toUSD;
   }
 
@@ -2005,7 +2052,7 @@ function CurrenciesTab({ cur, lang }: { cur: string; lang: Lang }) {
           <div className="flex-1 grid grid-cols-1 sm:grid-cols-3 gap-3">
             {["USD","MYR","AED"].map(to => {
               if (to === fromCur) return null;
-              const rate = to === "USD" ? 1 : to === "MYR" ? LIVE.usdMyr : LIVE.usdAed;
+              const rate = to === "USD" ? 1 : to === "MYR" ? live.usdMyr : live.usdAed;
               const val = convert(num, fromCur, to);
               return (
                 <div key={to} className="bg-white/3 rounded-xl p-4">
@@ -2116,6 +2163,7 @@ export default function App() {
   const [cur, setCur] = useState<"USD"|"MYR"|"AED">("USD");
   const [lang, setLang] = useState<Lang>("en");
   const [now] = useState(new Date());
+  const live = useLive();
 
   const TABS = [
     { id:"oil",        label: lang === "en" ? "🛢  OIL & ENERGY"  : "🛢  MINYAK & TENAGA" },
@@ -2129,6 +2177,7 @@ export default function App() {
   ];
 
   return (
+    <LiveProvider>
     <div className="min-h-screen bg-[#070a0f] text-white flex flex-col">
       <Ticker cur={cur} lang={lang} />
 
@@ -2151,10 +2200,10 @@ export default function App() {
         </div>
 
         <div className="flex items-center gap-3">
-          <div className="hidden md:block text-[10px] font-mono text-white/20">APR 15, 2026</div>
+          <div className="hidden md:block text-[10px] font-mono text-white/20">{live.asOf.toUpperCase()}</div>
           <div className="flex items-center gap-1.5 bg-red-500/10 border border-red-500/20 text-red-400 text-[10px] font-bold tracking-widest px-3 py-1.5 rounded-full">
             <span className="w-1.5 h-1.5 rounded-full bg-red-500 pulse-dot inline-block" />
-            {t("header.crisisDay", lang)} {LIVE.crisisDay}
+            {t("header.crisisDay", lang)} {live.crisisDay}
           </div>
           {/* Language toggle */}
           <div className="flex bg-white/4 border border-white/6 rounded-lg overflow-hidden">
@@ -2201,10 +2250,11 @@ export default function App() {
 
       {/* Footer */}
       <footer className="border-t border-white/4 px-6 py-4 flex flex-wrap justify-between gap-2 text-[10px] text-white/20 font-mono">
-        <span>Jeff's MarketIntel v3 · Apr 16, 2026 · Crisis Day {LIVE.crisisDay} · <a href="https://github.com/JevCode/live-economy-dashboard" className="hover:text-amber-400 transition-colors">GitHub</a></span>
+        <span>Jeff's MarketIntel v3 · {live.asOf} · Crisis Day {live.crisisDay} · <a href="https://github.com/JevCode/live-economy-dashboard" className="hover:text-amber-400 transition-colors">GitHub</a></span>
         <span>{t("footer.data", lang)}: Middle East Insider · goldpricez.com · Pound Sterling Live · Investing.com · Wikipedia · Carbon Brief</span>
         <span>{t("header.autoRefresh", lang)}</span>
       </footer>
     </div>
+    </LiveProvider>
   );
 }

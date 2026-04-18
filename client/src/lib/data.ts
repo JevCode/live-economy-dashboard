@@ -1,21 +1,20 @@
 // ═══════════════════════════════════════════════════
 // JEFF'S MARKETINTEL v3 — MASTER DATA FILE
-// All data: Apr 15, 2026 · Crisis Day 46
-// Sources: OilPrice.com, TradingEconomics, Yahoo Finance
-//          open.er-api.com, Wikipedia, Carbon Brief
+// All data: Apr 18, 2026 · Crisis Day 49
+// Sources: TradingEconomics, Yahoo Finance, FreeCurrencyRates
 // ═══════════════════════════════════════════════════
 
 export const LIVE = {
-  brentUSD: 95.005,
-  wtiUSD: 92.10,
-  goldOzUSD: 4825.90,
-  goldGramUSD: 155.16,
-  usdMyr: 3.96,
+  brentUSD: 90.38,
+  wtiUSD: 87.50,
+  goldOzUSD: 4833.60,
+  goldGramUSD: 155.41,
+  usdMyr: 3.9525,
   usdAed: 3.6725,
-  dxy: 97.93,
-  crisisDay: 47,
+  dxy: 98.23,
+  crisisDay: 49,
   crisisStart: "2026-02-28",
-  asOf: "Apr 16, 2026",
+  asOf: "Apr 18, 2026",
   brentPeak: 126.0,
   brentPreWar: 65.0,
   goldATH: 5602.22,
@@ -45,7 +44,9 @@ export const OIL_TIMELINE = [
   { date: "Apr 10", label: "D+41",    brent: 104,   wti: 100,   event: "US-UK navy destroys Iranian southern fleet. Hormuz partially reopens.",             type: "positive", day: 41 },
   { date: "Apr 14", label: "D+45",    brent: 95.51, wti: 93.31, event: "US–Iran peace talks Day 1 in Muscat. Brent −0.4%, WTI −4.7%.",                   type: "positive", day: 45 },
   { date: "Apr 15", label: "D+46",   brent: 99.04, wti: 97.45, event: "US–Iran talks continue. Brent $99.04 (−0.3%). Gold $4,825 (−0.3%). DXY 98.10. USD/MYR 3.9514.", type: "neutral",  day: 46 },
-  { date: "Apr 16", label: "TODAY",   brent: 95.005, wti: 92.10,  event: "Brent falls to $95 on US–Iran ceasefire hopes & OPEC+ hike. WTI $92.10. Gold $4,826 (+0.75%). DXY 97.93. USD/MYR 3.9600.", type: "today",    day: 47 },
+  { date: "Apr 16", label: "D+47",    brent: 95.005, wti: 92.10,  event: "Brent falls to $95 on US–Iran ceasefire hopes & OPEC+ hike. WTI $92.10. Gold $4,826 (+0.75%). DXY 97.93. USD/MYR 3.9600.", type: "positive", day: 47 },
+  { date: "Apr 17", label: "D+48",    brent: 90.38,  wti: 87.50,  event: "Brent plunges 5% to $90 — Iran FM announces Strait of Hormuz fully open during ceasefire. Market relief selloff.",             type: "positive", day: 48 },
+  { date: "Apr 18", label: "TODAY",   brent: 90.38,  wti: 87.50,  event: "Brent holds $90. Gold $4,834 (+0.16%). Hormuz open. DXY 98.23. USD/MYR 3.9525. Crisis Day 49.",                              type: "today",    day: 49 },
 ];
 
 export const GOLD_TIMELINE = [
@@ -60,6 +61,8 @@ export const GOLD_TIMELINE = [
   { date: "Apr 14", price: 4786.69, note: "Peace talks Day 1" },
   { date: "Apr 15", price: 4825.64, note: "Day 2 talks: Gold −0.3% to $4,825" },
   { date: "Apr 16", price: 4825.90, note: "Ceasefire hopes; Gold +0.75% to $4,826" },
+  { date: "Apr 17", price: 4833.60, note: "Hormuz opens; Gold +0.16% to $4,834" },
+  { date: "Apr 18", price: 4833.60, note: "Weekend close; Gold steady $4,834" },
 ];
 
 export type Country = {
@@ -774,15 +777,15 @@ export const HORMUZ = {
     { week: "Apr 5–11",  transits: 58, note: "US blockade on Iranian ports Apr 14" },
     { week: "Apr 12–15", transits: 45, note: "Current week (partial)" },
   ],
-  lastUpdated: "Apr 16, 2026",
+  lastUpdated: "Apr 18, 2026",
   sources: ["HormuzTracker.com", "Al Jazeera", "Kpler", "LSEG", "HormuzStraitMonitor.com"],
 };
 
 // ═══════════════════════════════════════════════════
-// MARKETS DATA — Apr 16, 2026
+// MARKETS DATA — Apr 18, 2026
 // ═══════════════════════════════════════════════════
 export const MARKETS_DATA = {
-  lastUpdated: "Apr 16, 2026",
+  lastUpdated: "Apr 18, 2026",
   // Global Indices
   indices: [
     { name: "S&P 500",        ticker: "SPX",       region: "🇺🇸 USA",        value: 4892,    change: -5.0,  ytd: -5.0,  note: "Tech drag; energy offset" },
