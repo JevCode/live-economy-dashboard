@@ -4,21 +4,110 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%230d1117'/><circle cx='16' cy='13' r='4.5' stroke='%23f0a500' stroke-width='1.8' fill='none'/><line x1='13' y1='13' x2='19' y2='13' stroke='%23f0a500' stroke-width='1.5' stroke-linecap='round'/><line x1='16' y1='8' x2='16' y2='7' stroke='%23f0a500' stroke-width='1.8' stroke-linecap='round'/><line x1='16' y1='17.5' x2='16' y2='21' stroke='%23f0a500' stroke-width='1.8' stroke-linecap='round'/><path d='M9 23 Q11.5 21 14 23 Q16.5 25 19 23 Q21.5 21 24 23' stroke='%23f0a500' stroke-width='1.5' stroke-linecap='round' fill='none'/><circle cx='26' cy='7' r='2.5' fill='%23ef4444'/></svg>" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>HormuzWatch — Live Crisis Intelligence</title>
-    <meta name="description" content="Real-time Strait of Hormuz crisis intelligence — oil prices, gold, war damage, global market impact. USD, MYR, AED. Updated every 10 minutes. Free to use." />
+    <title>CrisisMarket.Live — Real-Time War Economy Intelligence</title>
+    <meta name="description" content="Real-time Strait of Hormuz crisis intelligence — oil prices, gold, war damage, airline disruptions, fuel prices, sanctions tracker, global market impact. USD, MYR, AED. Updated every 10 minutes. Free to use." />
+    <meta name="keywords" content="Hormuz crisis, oil prices, gold price, war economy, Brent crude, WTI, USD MYR, sanctions tracker, airline disruptions, fuel prices Malaysia" />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="https://crisis-market-live.vercel.app" />
 
     <!-- Open Graph / Social sharing -->
     <meta property="og:type" content="website" />
-    <meta property="og:title" content="HormuzWatch — Live Crisis Intelligence" />
-    <meta property="og:description" content="Live Hormuz crisis intelligence: oil prices, gold, global market impact, shipping data, war news. Updated every 10 minutes." />
-    <meta property="og:url" content="https://hormuzwatch.vercel.app" />
+    <meta property="og:title" content="CrisisMarket.Live — Real-Time War Economy Intelligence" />
+    <meta property="og:description" content="Live Hormuz crisis intelligence: oil prices, gold, airline disruptions, sanctions, global market impact. Updated every 10 minutes." />
+    <meta property="og:url" content="https://crisis-market-live.vercel.app" />
+    <meta property="og:image" content="https://crisis-market-live.vercel.app/og-image.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="CrisisMarket.Live — Real-Time War Economy Intelligence" />
+    <meta name="twitter:description" content="Live Hormuz crisis intelligence: oil, gold, airlines, sanctions, markets. Free & updated every 10 minutes." />
 
-    <!-- Umami Analytics — privacy-first, no cookies, GDPR compliant, free -->
-    <!-- Sign up at umami.is → get your website-id → replace the data-website-id below -->
-    <!-- <script defer src="https://cloud.umami.is/script.js" data-website-id="YOUR-WEBSITE-ID-HERE"></script> -->
+    <!-- JSON-LD Structured Data — Financial/News Dataset -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "CrisisMarket.Live",
+      "url": "https://crisis-market-live.vercel.app",
+      "description": "Real-time war economy intelligence dashboard covering oil prices, gold, airline disruptions, sanctions, and global market impact during the Strait of Hormuz crisis.",
+      "publisher": {
+        "@type": "Organization",
+        "name": "CrisisMarket.Live",
+        "url": "https://crisis-market-live.vercel.app"
+      },
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": "https://crisis-market-live.vercel.app/?q={search_term_string}",
+        "query-input": "required name=search_term_string"
+      }
+    }
+    </script>
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Dataset",
+      "name": "Hormuz Crisis Market Data",
+      "description": "Real-time commodity and financial market data during the Strait of Hormuz crisis — including Brent crude, WTI crude, gold spot price, USD/MYR exchange rate, and DXY dollar index.",
+      "url": "https://crisis-market-live.vercel.app",
+      "creator": {
+        "@type": "Organization",
+        "name": "CrisisMarket.Live"
+      },
+      "license": "https://creativecommons.org/licenses/by/4.0/",
+      "temporalCoverage": "2026-02-28/..",
+      "variableMeasured": [
+        "Brent Crude Oil Price (USD)",
+        "WTI Crude Oil Price (USD)",
+        "Gold Spot Price (USD/oz)",
+        "USD/MYR Exchange Rate",
+        "DXY US Dollar Index"
+      ]
+    }
+    </script>
+
+    <!-- Vercel Analytics — zero-config, privacy-friendly, free on Hobby plan -->
+    <script defer src="/_vercel/insights/script.js"></script>
+
+    <!-- CookieYes Consent Banner — free tier, GDPR/PDPA compliant -->
+    <!-- Replace YOUR_SITE_ID with your CookieYes site ID from app.cookieyes.com -->
+    <!-- <script id="cookieyes" type="text/javascript" src="https://cdn-cookieyes.com/client_data/YOUR_SITE_ID/script.js"></script> -->
+    <!-- For now using a minimal inline consent notice instead: -->
+    <style>
+      #cookie-notice {
+        position: fixed; bottom: 0; left: 0; right: 0; z-index: 9999;
+        background: #0d1117; border-top: 1px solid rgba(240,165,0,0.2);
+        padding: 12px 20px; display: flex; align-items: center; justify-content: space-between;
+        flex-wrap: wrap; gap: 10px; font-family: 'Space Mono', monospace; font-size: 11px;
+        color: rgba(255,255,255,0.4);
+      }
+      #cookie-notice a { color: #f0a500; text-decoration: underline; }
+      #cookie-notice button {
+        background: #f0a500; color: #000; border: none; padding: 6px 16px;
+        font-size: 11px; font-weight: bold; cursor: pointer; border-radius: 4px;
+        font-family: 'Space Mono', monospace;
+      }
+      #cookie-notice.hidden { display: none; }
+    </style>
   </head>
   <body>
     <div id="root"></div>
+
+    <!-- Cookie Consent Notice -->
+    <div id="cookie-notice">
+      <span>
+        🍪 We use functional storage only (theme &amp; language preferences). No tracking cookies.
+        <a href="/privacy" style="margin-left:6px;">Privacy Policy</a> ·
+        <a href="/terms" style="margin-left:4px;">Terms of Use</a>
+      </span>
+      <button onclick="document.getElementById('cookie-notice').classList.add('hidden'); localStorage.setItem('cookie_ok','1')">
+        Got it
+      </button>
+    </div>
+    <script>
+      // Hide banner if already accepted
+      if (localStorage.getItem('cookie_ok') === '1') {
+        document.getElementById('cookie-notice').classList.add('hidden');
+      }
+    </script>
+
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

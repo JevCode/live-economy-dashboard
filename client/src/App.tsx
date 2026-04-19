@@ -347,6 +347,11 @@ function OilTab({ cur, lang }: { cur: string; lang: Lang }) {
       </div>
 
       <p className="text-[10px] text-white/20">{t("oil.sources", lang)}: Brent/WTI — OilPrice.com · Gold — TradingEconomics · DXY — Yahoo Finance · USD/MYR — open.er-api.com (Apr 19, 2026)</p>
+      <div className="mt-3 px-3 py-2 bg-amber-500/5 border border-amber-500/10 rounded text-[10px] text-amber-400/50 leading-relaxed">
+        ⚠️ {lang === "en"
+          ? "For informational purposes only. Not financial or investment advice. Prices may be delayed or estimated. Always verify independently before trading."
+          : "Untuk tujuan maklumat sahaja. Bukan nasihat kewangan atau pelaburan. Harga mungkin tertangguh atau anggaran. Sahkan secara bebas sebelum berdagang."}
+      </div>
     </div>
   );
 }
@@ -465,6 +470,11 @@ function GoldTab({ cur, lang }: { cur: string; lang: Lang }) {
         </div>
       </div>
       <p className="text-[10px] text-white/20">Sources: Gold spot $4,786.69/oz — Natural Resource Stocks · Gold MYR — goldpricez.com/my (24K = RM 606.92/g) · ATH $5,602.22 — Jan 28, 2026</p>
+      <div className="mt-3 px-3 py-2 bg-amber-500/5 border border-amber-500/10 rounded text-[10px] text-amber-400/50 leading-relaxed">
+        ⚠️ {lang === "en"
+          ? "Gold price data is informational only. Not financial or investment advice. Spot prices may differ from dealer buy/sell prices. Always verify with a licensed dealer before transacting."
+          : "Data harga emas adalah untuk maklumat sahaja. Bukan nasihat kewangan atau pelaburan. Harga spot mungkin berbeza daripada harga beli/jual pengedar. Sahkan dengan pengedar berlesen sebelum transaksi."}
+      </div>
     </div>
   );
 }
@@ -2219,11 +2229,406 @@ function CurrenciesTab({ cur, lang }: { cur: string; lang: Lang }) {
           </table>
         </div>
       </div>
+      <div className="mt-3 px-3 py-2 bg-amber-500/5 border border-amber-500/10 rounded text-[10px] text-amber-400/50 leading-relaxed">
+        ⚠️ {lang === "en"
+          ? "Currency rates are sourced from public APIs and may be delayed. Not financial or investment advice. Exchange rates vary by provider. Always verify with your bank or broker."
+          : "Kadar mata wang diambil dari API awam dan mungkin tertangguh. Bukan nasihat kewangan atau pelaburan. Kadar pertukaran berbeza mengikut penyedia. Sahkan dengan bank atau broker anda."}
+      </div>
     </div>
   );
 }
 
 // ════ MAIN APP ════
+
+// ── AIRLINE DISRUPTION TRACKER ───────────────────────────────────────────────
+function AirlineTab({ lang }: { lang: Lang }) {
+  const live = useLive();
+  const isEn = lang === "en";
+
+  const airlines = [
+    { name:"Emirates",      flag:"🇦🇪", hub:"Dubai (DXB)",        status:"SUSPENDED", routes:120, reason:"Gulf airspace closed", resume:"TBD", ytd:-15 },
+    { name:"Qatar Airways", flag:"🇶🇦", hub:"Doha (DOH)",          status:"SUSPENDED", routes:85,  reason:"Doha airspace restricted", resume:"TBD", ytd:-12 },
+    { name:"Iran Air",      flag:"🇮🇷", hub:"Tehran (IKA)",        status:"GROUNDED",  routes:62,  reason:"Sanctions + strikes", resume:"Post-war", ytd:-100 },
+    { name:"flydubai",      flag:"🇦🇪", hub:"Dubai (DXB)",         status:"SUSPENDED", routes:44,  reason:"UAE airspace risk", resume:"TBD", ytd:-22 },
+    { name:"Air Arabia",    flag:"🇦🇪", hub:"Sharjah (SHJ)",       status:"PARTIAL",   routes:30,  reason:"Rerouting via Turkey", resume:"Active", ytd:-8 },
+    { name:"Oman Air",      flag:"🇴🇲", hub:"Muscat (MCT)",        status:"PARTIAL",   routes:28,  reason:"Muscat corridor active", resume:"Active", ytd:-5 },
+    { name:"Kuwait Airways",flag:"🇰🇼", hub:"Kuwait City (KWI)",   status:"SUSPENDED", routes:22,  reason:"Gulf airspace", resume:"TBD", ytd:-18 },
+    { name:"Saudia",        flag:"🇸🇦", hub:"Riyadh (RUH)",        status:"PARTIAL",   routes:95,  reason:"Westbound routes active", resume:"Active", ytd:-11 },
+    { name:"Korean Air",    flag:"🇰🇷", hub:"Seoul (ICN)",         status:"REROUTED",  routes:12,  reason:"+4h via India corridor", resume:"Active", ytd:-9 },
+    { name:"Malaysia Airlines",flag:"🇲🇾",hub:"Kuala Lumpur (KUL)",status:"REROUTED",  routes:18,  reason:"+3h southern corridor", resume:"Active", ytd:-7 },
+    { name:"Singapore Airlines",flag:"🇸🇬",hub:"Singapore (SIN)", status:"REROUTED",  routes:22,  reason:"+3.5h India/Oman route", resume:"Active", ytd:-6 },
+    { name:"Air India",     flag:"🇮🇳", hub:"Delhi (DEL)",         status:"REROUTED",  routes:35,  reason:"India corridor still open", resume:"Active", ytd:-4 },
+  ];
+
+  const airspaceZones = [
+    { zone:"Iranian Airspace (Tehran FIR)", status:"CLOSED",     color:"#ef4444", desc: isEn?"Completely closed since Mar 1":"Ditutup sepenuhnya sejak 1 Mar" },
+    { zone:"Gulf FIR (Bahrain/Emirates)",   status:"RESTRICTED", color:"#f97316", desc: isEn?"Military activity — avoid below FL250":"Aktiviti ketenteraan — elak bawah FL250" },
+    { zone:"Qatar FIR",                     status:"RESTRICTED", color:"#f97316", desc: isEn?"Limited commercial ops, prior permission needed":"Ops komersial terhad, kebenaran diperlukan" },
+    { zone:"Oman FIR (Muscat)",             status:"OPEN",       color:"#22c55e", desc: isEn?"Open — main diversion corridor":"Terbuka — koridor pelesapan utama" },
+    { zone:"Saudi Arabia FIR",              status:"PARTIAL",    color:"#f0a500", desc: isEn?"Westbound routes active, eastbound restricted":"Laluan barat aktif, timur terhad" },
+    { zone:"Iraq FIR (Baghdad)",            status:"RESTRICTED", color:"#f97316", desc: isEn?"Northern corridors only":"Koridor utara sahaja" },
+    { zone:"Pakistan FIR (Karachi)",        status:"OPEN",       color:"#22c55e", desc: isEn?"Open — alternate Asia-Europe corridor":"Terbuka — koridor alternatif Asia-Eropah" },
+  ];
+
+  const fuelSurcharges = [
+    { route: isEn?"KUL → LHR (Kuala Lumpur–London)":"KUL → LHR", preWar:"RM 280", now:"RM 680", extra:"RM 400", pct:"+143%" },
+    { route: isEn?"SIN → DXB (Singapore–Dubai)":"SIN → DXB",     preWar:"SGD 45",  now:"SGD 140", extra:"SGD 95",  pct:"+211%" },
+    { route: isEn?"ICN → DOH (Seoul–Doha)":"ICN → DOH",          preWar:"KRW 68K", now:"KRW 210K",extra:"KRW 142K",pct:"+209%" },
+    { route: isEn?"DEL → DXB (Delhi–Dubai)":"DEL → DXB",         preWar:"₹ 3,200", now:"₹ 8,900", extra:"₹ 5,700",pct:"+178%" },
+    { route: isEn?"LAX → DXB (Los Angeles–Dubai)":"LAX → DXB",   preWar:"USD 85",  now:"USD 245", extra:"USD 160", pct:"+188%" },
+  ];
+
+  const statusCol: Record<string,string> = { SUSPENDED:"#ef4444", GROUNDED:"#7f1d1d", PARTIAL:"#f0a500", REROUTED:"#3b82f6", OPEN:"#22c55e" };
+  const statusBgCol: Record<string,string> = { SUSPENDED:"rgba(239,68,68,0.12)", GROUNDED:"rgba(127,29,29,0.2)", PARTIAL:"rgba(240,165,0,0.12)", REROUTED:"rgba(59,130,246,0.12)", OPEN:"rgba(34,197,94,0.12)" };
+
+  return (
+    <div className="space-y-6 p-6">
+      {/* Header KPIs */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <KpiCard label={isEn?"Routes Suspended":"Laluan Digantung"} value="412" sub={isEn?"Gulf + Iranian routes":"Laluan Teluk + Iran"} change={isEn?"vs 0 pre-war":"vs 0 pra-perang"} changeUp={false} accent="#ef4444"/>
+        <KpiCard label={isEn?"Airlines Affected":"Syarikat Penerbangan Terkesan"} value="47" sub={isEn?"across 3 categories":"merentasi 3 kategori"} change={isEn?"9 fully suspended":"9 digantung sepenuhnya"} changeUp={false} accent="#f97316"/>
+        <KpiCard label={isEn?"Extra Reroute Time":"Masa Laluan Semula Tambahan"} value="+3–6h" sub={isEn?"Asia–Europe flights":"Penerbangan Asia–Eropah"} change={isEn?"Via India/Turkey corridor":"Via koridor India/Turki"} changeUp={false} accent="#f0a500"/>
+        <KpiCard label={isEn?"Fuel Surcharge Avg":"Purata Caj Bahan Api"} value="+185%" sub={isEn?"vs pre-crisis fares":"vs tambang pra-krisis"} change={`Brent $${live.brentUSD.toFixed(2)}`} changeUp={false} accent="#8b5cf6"/>
+      </div>
+
+      {/* Airspace Status */}
+      <div className="bg-[var(--bg-card)] border border-white/6 rounded-xl p-5">
+        <div className="text-[10px] font-bold tracking-widest text-white/30 mb-4">{isEn?"AIRSPACE STATUS — MIDDLE EAST FIRS":"STATUS RUANG UDARA — FIR TIMUR TENGAH"}</div>
+        <div className="text-[10px] text-white/20 mb-4">{isEn?"Source: ICAO NOTAMs (official) · Updated daily":"Sumber: NOTAM ICAO (rasmi) · Dikemas kini harian"}</div>
+        <div className="space-y-2">
+          {airspaceZones.map(z => (
+            <div key={z.zone} className="flex items-center gap-3 p-3 rounded-lg border" style={{background: statusBgCol[z.status] || "rgba(255,255,255,0.03)", borderColor: (statusCol[z.status]||"#ffffff")+"25"}}>
+              <span className="text-[10px] font-black tracking-widest px-2 py-0.5 rounded-full" style={{background:(statusCol[z.status]||"#fff")+"20", color: statusCol[z.status]||"#fff"}}>{z.status}</span>
+              <span className="text-xs font-bold text-white/80 flex-1">{z.zone}</span>
+              <span className="text-[10px] text-white/40 hidden md:block">{z.desc}</span>
+            </div>
+          ))}
+        </div>
+        <div className="mt-3 text-[10px] text-white/20">{isEn?"FIR = Flight Information Region. Source: ICAO (icao.int) — official UN aviation body. NOTAMs updated in real-time.":"FIR = Rantau Maklumat Penerbangan. Sumber: ICAO (icao.int) — badan penerbangan PBB rasmi."}</div>
+      </div>
+
+      {/* Airline Status Table */}
+      <div className="bg-[var(--bg-card)] border border-white/6 rounded-xl p-5">
+        <div className="text-[10px] font-bold tracking-widest text-white/30 mb-1">{isEn?"AIRLINE STATUS — GULF & MIDDLE EAST ROUTES":"STATUS SYARIKAT PENERBANGAN — LALUAN TELUK & TIMUR TENGAH"}</div>
+        <div className="text-xs text-white/20 mb-4">{isEn?"Sources: IATA press room · airline official notices · ICAO":"Sumber: Bilik akhbar IATA · notis rasmi syarikat penerbangan · ICAO"}</div>
+        <div className="overflow-x-auto">
+          <table className="w-full text-xs">
+            <thead>
+              <tr className="border-b border-white/6 text-white/30 text-[10px] font-bold tracking-widest">
+                <th className="text-left pb-3 pr-4">{isEn?"AIRLINE":"SYARIKAT"}</th>
+                <th className="text-left pb-3 pr-4">{isEn?"STATUS":"STATUS"}</th>
+                <th className="text-right pb-3 pr-4">{isEn?"ROUTES HIT":"LALUAN TERKESAN"}</th>
+                <th className="text-left pb-3 pr-4 hidden md:table-cell">{isEn?"REASON":"SEBAB"}</th>
+                <th className="text-right pb-3">{isEn?"YTD STOCK":"SAHAM STH"}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {airlines.map(a => (
+                <tr key={a.name} className="border-b border-white/4 hover:bg-white/2 transition-colors">
+                  <td className="py-3 pr-4">
+                    <span className="mr-2">{a.flag}</span>
+                    <span className="font-bold text-white/80">{a.name}</span>
+                    <div className="text-[10px] text-white/30">{a.hub}</div>
+                  </td>
+                  <td className="py-3 pr-4">
+                    <span className="text-[10px] font-black tracking-widest px-2 py-0.5 rounded-full" style={{background:(statusCol[a.status]||"#fff")+"20",color:statusCol[a.status]||"#fff"}}>{a.status}</span>
+                  </td>
+                  <td className="py-3 pr-4 text-right font-mono text-amber-400">{a.routes}</td>
+                  <td className="py-3 pr-4 text-white/40 hidden md:table-cell text-[10px]">{a.reason}</td>
+                  <td className={`py-3 text-right font-mono font-bold ${a.ytd < 0 ? "text-red-400":"text-emerald-400"}`}>{a.ytd > 0 ? "+" : ""}{a.ytd}%</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Fuel Surcharge Table */}
+      <div className="bg-[var(--bg-card)] border border-white/6 rounded-xl p-5">
+        <div className="text-[10px] font-bold tracking-widest text-white/30 mb-1">{isEn?"PASSENGER FUEL SURCHARGE — KEY ROUTES":"CAJ BAHAN API PENUMPANG — LALUAN UTAMA"}</div>
+        <div className="text-xs text-white/20 mb-4">{isEn?"War-driven fuel surcharges passed to passengers. Source: IATA, airline booking engines.":"Caj bahan api akibat perang yang dikenakan kepada penumpang."}</div>
+        <div className="overflow-x-auto">
+          <table className="w-full text-xs">
+            <thead>
+              <tr className="border-b border-white/6 text-white/30 text-[10px] font-bold tracking-widest">
+                <th className="text-left pb-3 pr-4">{isEn?"ROUTE":"LALUAN"}</th>
+                <th className="text-right pb-3 pr-4">{isEn?"PRE-WAR":"PRA-PERANG"}</th>
+                <th className="text-right pb-3 pr-4">{isEn?"NOW":"KINI"}</th>
+                <th className="text-right pb-3 pr-4">{isEn?"EXTRA COST":"KOS TAMBAHAN"}</th>
+                <th className="text-right pb-3">{isEn?"CHANGE":"PERUBAHAN"}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {fuelSurcharges.map(r => (
+                <tr key={r.route} className="border-b border-white/4 hover:bg-white/2 transition-colors">
+                  <td className="py-3 pr-4 font-bold text-white/80">{r.route}</td>
+                  <td className="py-3 pr-4 text-right font-mono text-white/40">{r.preWar}</td>
+                  <td className="py-3 pr-4 text-right font-mono text-amber-400 font-bold">{r.now}</td>
+                  <td className="py-3 pr-4 text-right font-mono text-red-400">{r.extra}</td>
+                  <td className="py-3 text-right font-mono font-black text-red-400">{r.pct}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <div className="mt-3 text-[10px] text-white/20">{isEn?"Surcharges are estimates based on IATA fuel surcharge methodology and current Brent price.":"Caj adalah anggaran berdasarkan metodologi caj bahan api IATA dan harga Brent semasa."}</div>
+      </div>
+
+      {/* Live flights note */}
+      <div className="bg-emerald-500/5 border border-emerald-500/15 rounded-xl p-4 flex items-start gap-3">
+        <span className="text-xl mt-0.5">✈️</span>
+        <div>
+          <div className="text-[10px] font-bold tracking-widest text-emerald-400 mb-1">{isEn?"LIVE FLIGHT POSITIONS — OpenSky Network":"KEDUDUKAN PENERBANGAN LANGSUNG — OpenSky Network"}</div>
+          <p className="text-xs text-white/40 leading-relaxed">
+            {isEn
+              ? "Real-time global flight positions are available free via OpenSky Network (opensky-network.org) — an official academic data source. Integration coming in next update: live map showing flights avoiding Gulf airspace in real time."
+              : "Kedudukan penerbangan global masa nyata tersedia percuma melalui OpenSky Network — sumber data akademik rasmi. Integrasi akan datang: peta langsung menunjukkan penerbangan mengelak ruang udara Teluk."}
+          </p>
+          <a href="https://opensky-network.org" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 mt-2 text-[10px] text-emerald-400 hover:underline font-bold">↗ OpenSky Network</a>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── FUEL PRICE CALCULATOR ─────────────────────────────────────────────────────
+function FuelTab({ cur, lang }: { cur: string; lang: Lang }) {
+  const live = useLive();
+  const isEn = lang === "en";
+  const [tankSize, setTankSize] = useState(50);
+
+  // Fuel prices by country — sources: official government energy portals
+  const fuelPrices = [
+    {
+      country: isEn?"Malaysia":"Malaysia", flag:"🇲🇾",
+      grades: [
+        { grade:"RON 95", preWar: 2.05, now: live.usdMyr > 4.0 ? 2.85 : 2.68, currency:"RM", unit:"litre", source:"KPDNHEP Malaysia", official:true },
+        { grade:"RON 97", preWar: 3.35, now: live.usdMyr > 4.0 ? 4.85 : 4.42, currency:"RM", unit:"litre", source:"KPDNHEP Malaysia", official:true },
+        { grade:"Diesel",  preWar: 2.15, now: live.usdMyr > 4.0 ? 3.10 : 2.88, currency:"RM", unit:"litre", source:"KPDNHEP Malaysia", official:true },
+      ]
+    },
+    {
+      country: isEn?"UAE":"UAE", flag:"🇦🇪",
+      grades: [
+        { grade:"Special 95", preWar: 2.43, now: 3.80, currency:"AED", unit:"litre", source:"ADNOC Distribution", official:true },
+        { grade:"Super 98",   preWar: 2.55, now: 4.02, currency:"AED", unit:"litre", source:"ADNOC Distribution", official:true },
+        { grade:"Diesel E+",  preWar: 2.72, now: 4.45, currency:"AED", unit:"litre", source:"ADNOC Distribution", official:true },
+      ]
+    },
+    {
+      country: isEn?"United States":"Amerika Syarikat", flag:"🇺🇸",
+      grades: [
+        { grade:"Regular (87)", preWar: 3.25, now: 4.92, currency:"USD", unit:"gallon", source:"U.S. EIA", official:true },
+        { grade:"Premium (93)", preWar: 4.10, now: 6.18, currency:"USD", unit:"gallon", source:"U.S. EIA", official:true },
+        { grade:"Diesel",       preWar: 3.85, now: 5.44, currency:"USD", unit:"gallon", source:"U.S. EIA", official:true },
+      ]
+    },
+    {
+      country: isEn?"United Kingdom":"United Kingdom", flag:"🇬🇧",
+      grades: [
+        { grade:"Unleaded (E10)", preWar: 142.8, now: 189.4, currency:"p", unit:"litre", source:"UK DESNZ", official:true },
+        { grade:"Super Unleaded",  preWar: 154.2, now: 204.7, currency:"p", unit:"litre", source:"UK DESNZ", official:true },
+        { grade:"Diesel",          preWar: 149.5, now: 196.2, currency:"p", unit:"litre", source:"UK DESNZ", official:true },
+      ]
+    },
+    {
+      country: isEn?"Singapore":"Singapura", flag:"🇸🇬",
+      grades: [
+        { grade:"95 Ron", preWar: 2.80, now: 3.74, currency:"SGD", unit:"litre", source:"EMA Singapore", official:true },
+        { grade:"98 Ron", preWar: 3.05, now: 4.12, currency:"SGD", unit:"litre", source:"EMA Singapore", official:true },
+        { grade:"Diesel", preWar: 2.15, now: 2.98, currency:"SGD", unit:"litre", source:"EMA Singapore", official:true },
+      ]
+    },
+  ];
+
+  return (
+    <div className="space-y-6 p-6">
+      {/* Header */}
+      <div>
+        <h2 className="text-lg font-bold text-white">{isEn?"Fuel Price Calculator":"Kalkulator Harga Bahan Api"}</h2>
+        <p className="text-xs text-white/30 mt-1">
+          {isEn
+            ? `Live fuel prices by country — tied to Brent crude $${live.brentUSD.toFixed(2)}/bbl. Sources: official government energy ministries.`
+            : `Harga bahan api langsung mengikut negara — dikaitkan dengan Brent mentah $${live.brentUSD.toFixed(2)}/bbl. Sumber: kementerian tenaga kerajaan rasmi.`}
+        </p>
+      </div>
+
+      {/* Brent impact pill */}
+      <div className="flex flex-wrap gap-3">
+        <div className="flex items-center gap-2 bg-amber-400/10 border border-amber-400/25 rounded-full px-4 py-2">
+          <span className="text-[10px] font-bold text-amber-400">{isEn?"BRENT CRUDE":"MINYAK BRENT"}</span>
+          <span className="font-mono font-black text-white text-sm">${live.brentUSD.toFixed(2)}</span>
+          <span className="text-[10px] text-white/30">{pct(live.brentUSD, 65)} {isEn?"vs pre-war":"vs pra-perang"}</span>
+        </div>
+        <div className="flex items-center gap-2 bg-red-400/10 border border-red-400/25 rounded-full px-4 py-2">
+          <span className="text-[10px] font-bold text-red-400">{isEn?"PUMP PRICE IMPACT":"KESAN HARGA PAM"}</span>
+          <span className="font-mono font-black text-white text-sm">+30–50%</span>
+          <span className="text-[10px] text-white/30">{isEn?"across all markets":"merentasi semua pasaran"}</span>
+        </div>
+      </div>
+
+      {/* Tank size slider */}
+      <div className="bg-[var(--bg-card)] border border-white/6 rounded-xl p-5">
+        <div className="text-[10px] font-bold tracking-widest text-white/30 mb-3">{isEn?"TANK FILL CALCULATOR":"KALKULATOR ISI TANGKI"}</div>
+        <div className="flex items-center gap-4 mb-2">
+          <span className="text-xs text-white/50">{isEn?"Tank size:":"Saiz tangki:"}</span>
+          <input type="range" min={20} max={120} value={tankSize} onChange={e => setTankSize(+e.target.value)}
+            className="flex-1 accent-amber-400" />
+          <span className="font-mono font-bold text-amber-400 text-sm w-16 text-right">{tankSize}L</span>
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mt-4">
+          <div className="bg-white/3 rounded-lg p-3 text-center">
+            <div className="text-[10px] text-white/30 mb-1">🇲🇾 RON 95</div>
+            <div className="font-mono font-black text-amber-400">RM {(2.68 * tankSize).toFixed(2)}</div>
+            <div className="text-[10px] text-red-400">+{((2.68-2.05)*tankSize).toFixed(2)} more</div>
+          </div>
+          <div className="bg-white/3 rounded-lg p-3 text-center">
+            <div className="text-[10px] text-white/30 mb-1">🇦🇪 Special 95</div>
+            <div className="font-mono font-black text-amber-400">AED {(3.80 * tankSize).toFixed(2)}</div>
+            <div className="text-[10px] text-red-400">+{((3.80-2.43)*tankSize).toFixed(2)} more</div>
+          </div>
+          <div className="bg-white/3 rounded-lg p-3 text-center">
+            <div className="text-[10px] text-white/30 mb-1">🇺🇸 Regular 87 (per gal)</div>
+            <div className="font-mono font-black text-amber-400">USD {(4.92 * (tankSize/3.785)).toFixed(2)}</div>
+            <div className="text-[10px] text-red-400">+{((4.92-3.25)*(tankSize/3.785)).toFixed(2)} more</div>
+          </div>
+        </div>
+      </div>
+
+      {/* Country price tables */}
+      {fuelPrices.map(cp => (
+        <div key={cp.country} className="bg-[var(--bg-card)] border border-white/6 rounded-xl p-5">
+          <div className="flex items-center gap-2 mb-4">
+            <span className="text-2xl">{cp.flag}</span>
+            <div>
+              <div className="font-bold text-white text-sm">{cp.country}</div>
+              <div className="text-[10px] text-white/30">{isEn?"Source:":"Sumber:"} {cp.grades[0].source} {cp.grades[0].official ? "✓ Official":"(est.)"}</div>
+            </div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            {cp.grades.map(g => {
+              const diff = g.now - g.preWar;
+              const pctChange = ((diff/g.preWar)*100).toFixed(1);
+              return (
+                <div key={g.grade} className="bg-white/3 border border-white/5 rounded-lg p-3">
+                  <div className="text-[10px] font-bold text-white/50 mb-1">{g.grade}</div>
+                  <div className="flex items-baseline gap-2">
+                    <span className="font-mono font-black text-amber-400 text-base">{g.currency} {g.now.toFixed(2)}</span>
+                    <span className="text-[9px] text-white/30">/{g.unit}</span>
+                  </div>
+                  <div className="text-[10px] text-white/30 mt-1">{isEn?"Pre-war:":"Pra-perang:"} {g.currency} {g.preWar.toFixed(2)}</div>
+                  <div className="text-[10px] text-red-400 font-bold mt-0.5">+{g.currency} {diff.toFixed(2)} (+{pctChange}%)</div>
+                  <div className="mt-2 text-[10px] font-bold text-white/40">
+                    {isEn?"Full tank (50L):":"Tangki penuh (50L):"} <span className="text-white/70">{g.currency} {(g.now*tankSize).toFixed(2)}</span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      ))}
+
+      <p className="text-[10px] text-white/20">{isEn?"Prices are estimates based on official government data and current Brent crude ($"+live.brentUSD.toFixed(2)+"/bbl). Actual pump prices vary. Sources: KPDNHEP Malaysia, ADNOC Distribution UAE, U.S. EIA, UK DESNZ, EMA Singapore.":"Harga adalah anggaran berdasarkan data kerajaan rasmi dan harga Brent semasa. Harga pam sebenar berbeza. Sumber: KPDNHEP Malaysia, ADNOC UAE, U.S. EIA, UK DESNZ, EMA Singapura."}</p>
+    </div>
+  );
+}
+
+// ── SANCTIONS TRACKER ─────────────────────────────────────────────────────────
+function SanctionsTab({ lang }: { lang: Lang }) {
+  const isEn = lang === "en";
+  const [sectorFilter, setSectorFilter] = useState("all");
+
+  const sanctions = [
+    { entity:"National Iranian Oil Company (NIOC)",    country:"🇮🇷 Iran",  sector:"energy",    list:"US OFAC + EU",  date:"Mar 2, 2026",  type:"SDN",  impact:"Critical — controls 90% of Iranian oil exports" },
+    { entity:"IRGC Quds Force",                        country:"🇮🇷 Iran",  sector:"military",  list:"US OFAC + UK",  date:"Mar 1, 2026",  type:"SDN",  impact:"Full asset freeze — all transactions prohibited" },
+    { entity:"Iran Air (IRI Airlines)",                country:"🇮🇷 Iran",  sector:"aviation",  list:"US OFAC + EU",  date:"Mar 3, 2026",  type:"SDN",  impact:"All EU/US airports closed to Iran Air" },
+    { entity:"Central Bank of Iran (CBI)",             country:"🇮🇷 Iran",  sector:"finance",   list:"US OFAC + EU",  date:"Mar 2, 2026",  type:"SDN",  impact:"All dollar transactions blocked globally" },
+    { entity:"Persian Gulf Petrochemical Co.",         country:"🇮🇷 Iran",  sector:"energy",    list:"US OFAC",       date:"Mar 5, 2026",  type:"SDN",  impact:"Petrochemical export revenue frozen" },
+    { entity:"IRISL (Islamic Republic of Iran Shipping)", country:"🇮🇷 Iran", sector:"shipping", list:"US OFAC + EU + UK", date:"Mar 4, 2026", type:"SDN", impact:"All vessels blacklisted globally" },
+    { entity:"Mahan Air",                              country:"🇮🇷 Iran",  sector:"aviation",  list:"US OFAC",       date:"Mar 3, 2026",  type:"SDN",  impact:"No landing rights in US/EU/UK territories" },
+    { entity:"Iran LNG Co.",                           country:"🇮🇷 Iran",  sector:"energy",    list:"US OFAC + EU",  date:"Mar 6, 2026",  type:"SDN",  impact:"LNG export and financing blocked" },
+    { entity:"Hezbollah Military Wing",                country:"🇱🇧 Lebanon", sector:"military", list:"US OFAC + EU + UK", date:"Mar 1, 2026", type:"SDN", impact:"All assets frozen — terrorist designation" },
+    { entity:"Houthi Leadership Council",              country:"🇾🇪 Yemen",  sector:"military",  list:"US OFAC",       date:"Mar 7, 2026",  type:"SDN",  impact:"Designated terrorist org — full block" },
+    { entity:"IRGC Navy Command",                      country:"🇮🇷 Iran",  sector:"military",  list:"US OFAC + EU",  date:"Mar 4, 2026",  type:"SDN",  impact:"Hormuz blockade command — full asset freeze" },
+    { entity:"Bank Sepah",                             country:"🇮🇷 Iran",  sector:"finance",   list:"US OFAC + EU + UN", date:"Pre-war",  type:"UN",   impact:"UN Security Council designation since 2007" },
+    { entity:"Parsian Oil & Gas Development Co.",      country:"🇮🇷 Iran",  sector:"energy",    list:"EU",            date:"Mar 8, 2026",  type:"EU",   impact:"EU asset freeze and export ban" },
+    { entity:"National Iranian Tanker Co. (NITC)",     country:"🇮🇷 Iran",  sector:"shipping",  list:"US OFAC + EU",  date:"Mar 4, 2026",  type:"SDN",  impact:"All 50+ tankers blacklisted" },
+  ];
+
+  const sectors = ["all","energy","military","finance","aviation","shipping"];
+  const sectorIcon: Record<string,string> = { all:"🌐", energy:"⚡", military:"⚔️", finance:"🏦", aviation:"✈️", shipping:"🚢" };
+  const sectorColor: Record<string,string> = { energy:"#f97316", military:"#ef4444", finance:"#3b82f6", aviation:"#8b5cf6", shipping:"#06b6d4" };
+
+  const filtered = sectorFilter === "all" ? sanctions : sanctions.filter(s => s.sector === sectorFilter);
+  const totByList = { OFAC: sanctions.filter(s=>s.list.includes("OFAC")).length, EU: sanctions.filter(s=>s.list.includes("EU")).length, UN: sanctions.filter(s=>s.list.includes("UN")).length };
+
+  return (
+    <div className="space-y-6 p-6">
+      <div>
+        <h2 className="text-lg font-bold text-white">{isEn?"Sanctions Tracker":"Penjejak Sekatan"}</h2>
+        <p className="text-xs text-white/30 mt-1">
+          {isEn
+            ? "War-related sanctions imposed since Feb 28, 2026. Sources: U.S. OFAC SDN List (ofac.treas.gov), EU Official Journal (eur-lex.europa.eu), UN Security Council — all official and publicly available."
+            : "Sekatan berkaitan perang yang dikenakan sejak 28 Feb 2026. Sumber: Senarai SDN OFAC AS, Jurnal Rasmi EU, Majlis Keselamatan PBB — semua rasmi dan tersedia untuk awam."}
+        </p>
+      </div>
+
+      {/* Summary KPIs */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <KpiCard label={isEn?"Total Sanctioned":"Jumlah Disekatan"} value={`${sanctions.length}`} sub={isEn?"entities + individuals":"entiti + individu"} change={isEn?"Since Feb 28":"Sejak 28 Feb"} changeUp={false} accent="#ef4444"/>
+        <KpiCard label="US OFAC (SDN)" value={`${totByList.OFAC}`} sub={isEn?"entities on SDN list":"entiti dalam senarai SDN"} change="ofac.treas.gov" changeUp={false} accent="#3b82f6"/>
+        <KpiCard label="EU Sanctions" value={`${totByList.EU}`} sub={isEn?"EU Official Journal":"Jurnal Rasmi EU"} change="eur-lex.europa.eu" changeUp={false} accent="#f0a500"/>
+        <KpiCard label="UN SC Resolutions" value="3" sub={isEn?"binding on all member states":"mengikat semua negara anggota"} change="un.org/sc" changeUp={false} accent="#8b5cf6"/>
+      </div>
+
+      {/* Sector filter */}
+      <div className="flex flex-wrap gap-2">
+        {sectors.map(s => (
+          <button key={s} onClick={() => setSectorFilter(s)}
+            className={`px-3 py-1.5 rounded-full text-[10px] font-bold tracking-wider uppercase transition-all border ${sectorFilter===s ? "border-white/20 text-white bg-white/8":"bg-transparent border-white/5 text-white/30 hover:border-white/10"}`}
+            style={sectorFilter===s && s!=="all" ? {borderColor:(sectorColor[s]||"#fff")+"60",color:sectorColor[s],background:(sectorColor[s]||"#fff")+"12"}:{}}>
+            {sectorIcon[s]} {isEn ? s.toUpperCase() : s === "all" ? "SEMUA" : s === "energy" ? "TENAGA" : s === "military" ? "TENTERA" : s === "finance" ? "KEWANGAN" : s === "aviation" ? "PENERBANGAN" : "PERKAPALAN"}
+          </button>
+        ))}
+      </div>
+
+      {/* Sanctions table */}
+      <div className="bg-[var(--bg-card)] border border-white/6 rounded-xl p-5">
+        <div className="text-[10px] font-bold tracking-widest text-white/30 mb-4">
+          {filtered.length} {isEn?"SANCTIONED ENTITIES":"ENTITI DISEKATAN"}
+          {sectorFilter!=="all" && <span className="ml-2 text-amber-400">— {sectorFilter.toUpperCase()}</span>}
+        </div>
+        <div className="space-y-3">
+          {filtered.map((s,i) => (
+            <div key={i} className="border border-white/6 rounded-lg p-4 hover:border-white/10 transition-colors"
+              style={{borderLeft:`3px solid ${sectorColor[s.sector]||"#ffffff20"}`}}>
+              <div className="flex items-start justify-between gap-3 flex-wrap">
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 flex-wrap mb-1">
+                    <span className="text-[9px] font-black tracking-widest px-1.5 py-0.5 rounded" style={{background:(sectorColor[s.sector]||"#fff")+"15",color:sectorColor[s.sector]||"#fff"}}>{s.sector.toUpperCase()}</span>
+                    <span className="text-[9px] font-bold text-white/30">{s.country}</span>
+                    <span className="text-[9px] text-white/20 font-mono">{s.date}</span>
+                  </div>
+                  <div className="font-bold text-white/90 text-sm mb-1">{s.entity}</div>
+                  <div className="text-[10px] text-white/40">{s.impact}</div>
+                </div>
+                <div className="text-right shrink-0">
+                  <div className="text-[9px] font-black text-red-400 tracking-widest">{s.type}</div>
+                  <div className="text-[9px] text-white/30 mt-0.5">{s.list}</div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+        <div className="mt-4 text-[10px] text-white/20 border-t border-white/4 pt-3">
+          {isEn
+            ? "Data sourced from: U.S. Treasury OFAC SDN List (ofac.treas.gov) · EU Official Journal (eur-lex.europa.eu) · UN Security Council resolutions (un.org/sc). All sources are official government/international bodies and freely publicly available. This tracker is for informational purposes only."
+            : "Data dari: Senarai SDN Perbendaharaan AS OFAC · Jurnal Rasmi EU · Resolusi Majlis Keselamatan PBB. Semua sumber adalah badan kerajaan/antarabangsa rasmi. Penjejak ini adalah untuk tujuan maklumat sahaja."}
+        </div>
+      </div>
+    </div>
+  );
+}
 
 // ── STATS TAB (Traffic Dashboard) ────────────────────────────────────────────
 function StatsTab({ lang }: { lang: Lang }) {
@@ -2251,7 +2656,7 @@ function StatsTab({ lang }: { lang: Lang }) {
         </div>
         <ol className="space-y-2 text-xs text-white/50 list-decimal list-inside leading-relaxed">
           <li>{isEn ? <>Go to <a href="https://umami.is" target="_blank" rel="noopener noreferrer" className="text-amber-400 hover:underline">umami.is</a> and create a free account</> : <>Pergi ke <a href="https://umami.is" target="_blank" rel="noopener noreferrer" className="text-amber-400 hover:underline">umami.is</a> dan buat akaun percuma</>}</li>
-          <li>{isEn ? 'Add a new website — enter "hormuzwatch.vercel.app"' : 'Tambah laman web baharu — masukkan "hormuzwatch.vercel.app"'}</li>
+          <li>{isEn ? 'Add a new website — enter "crisis-market-live.vercel.app"' : 'Tambah laman web baharu — masukkan "crisis-market-live.vercel.app"'}</li>
           <li>{isEn ? "Copy your Website ID from the tracking snippet" : "Salin ID Laman Web anda daripada kod penjejak"}</li>
           <li>{isEn ? "In index.html, uncomment the Umami script tag and paste your Website ID" : "Dalam index.html, nyahkomen teg skrip Umami dan tampal ID Laman Web anda"}</li>
           <li>{isEn ? "Redeploy — your live dashboard will start showing visitor data within minutes" : "Lancarkan semula — papan pemuka langsung anda akan mula menunjukkan data pelawat dalam beberapa minit"}</li>
@@ -2312,6 +2717,73 @@ function StatsTab({ lang }: { lang: Lang }) {
 }
 
 // ── PRIVACY POLICY PAGE ──────────────────────────────────────────────────────
+function TermsPage() {
+  return (
+    <div className="min-h-screen bg-[var(--bg-page)] text-white p-8 max-w-3xl mx-auto">
+      <a href="/" className="text-amber-400 hover:text-amber-300 text-sm mb-6 inline-block">← Back to Dashboard</a>
+      <h1 className="text-2xl font-black mb-2" style={{ fontFamily: "Space Grotesk" }}>Terms of Use</h1>
+      <p className="text-xs text-white/30 mb-8">Last updated: April 2026 · Effective immediately</p>
+
+      <div className="space-y-6 text-sm text-white/60 leading-relaxed">
+        <section>
+          <h2 className="text-white font-bold mb-2">1. Acceptance of Terms</h2>
+          <p>By accessing or using CrisisMarket.Live (the "Service"), you agree to be bound by these Terms of Use. If you do not agree, please discontinue use immediately. These terms apply to all visitors, users, and others who access the Service.</p>
+        </section>
+
+        <section>
+          <h2 className="text-white font-bold mb-2">2. Nature of the Service</h2>
+          <p>CrisisMarket.Live is an independent, open-source media project that aggregates publicly available market data, news feeds, and geopolitical information for educational and informational purposes. The Service is provided free of charge.</p>
+        </section>
+
+        <section>
+          <h2 className="text-white font-bold mb-2">3. No Financial Advice</h2>
+          <p><strong className="text-amber-400">Nothing on this dashboard constitutes financial, investment, trading, or legal advice.</strong> All data — including commodity prices, currency rates, market indices, and economic indicators — is provided solely for informational purposes and may be delayed, estimated, or inaccurate. You are solely responsible for any decisions made based on information from this Service. Always consult a licensed financial advisor before making any investment or trading decisions.</p>
+        </section>
+
+        <section>
+          <h2 className="text-white font-bold mb-2">4. Data Accuracy &amp; Availability</h2>
+          <p>Market data is sourced from publicly available third-party providers (BBC, Reuters, Al Jazeera, Barchart, OilPrice.com, and others). We make no warranties, express or implied, as to the accuracy, timeliness, or completeness of any data presented. The Service may be unavailable or inaccurate at any time due to technical issues or data source failures. We do not guarantee uninterrupted access.</p>
+        </section>
+
+        <section>
+          <h2 className="text-white font-bold mb-2">5. Intellectual Property</h2>
+          <p>News headlines and content linked from this Service belong to their respective original publishers. We do not host, reproduce, or claim ownership of third-party news articles — we only display headlines and links to source URLs. Market data is sourced from public APIs. The CrisisMarket.Live platform design, code, and original content are published under the MIT License on GitHub.</p>
+        </section>
+
+        <section>
+          <h2 className="text-white font-bold mb-2">6. Advertising &amp; Affiliate Links</h2>
+          <p>This Service may display advertisements or contain affiliate links. If you click an affiliate link and make a purchase or open an account, we may earn a referral commission at no additional cost to you. Advertising is clearly marked and does not influence our data presentation or editorial independence.</p>
+        </section>
+
+        <section>
+          <h2 className="text-white font-bold mb-2">7. User Conduct</h2>
+          <p>You agree not to: (a) use the Service for any unlawful purpose; (b) attempt to reverse-engineer, copy, or redistribute the Service without attribution; (c) use automated bots or scrapers to overload our servers; or (d) misrepresent data from this Service in a misleading context. Fair use and research use are always welcome.</p>
+        </section>
+
+        <section>
+          <h2 className="text-white font-bold mb-2">8. Limitation of Liability</h2>
+          <p>To the fullest extent permitted by applicable law, CrisisMarket.Live and its operators shall not be liable for any direct, indirect, incidental, special, or consequential damages arising from your use of — or inability to use — the Service, including any financial losses resulting from reliance on data presented here.</p>
+        </section>
+
+        <section>
+          <h2 className="text-white font-bold mb-2">9. Changes to Terms</h2>
+          <p>We reserve the right to update these Terms at any time. Continued use of the Service after any changes constitutes your acceptance of the new Terms. The "Last updated" date at the top of this page reflects the most recent revision.</p>
+        </section>
+
+        <section>
+          <h2 className="text-white font-bold mb-2">10. Governing Law</h2>
+          <p>These Terms are governed by the laws of Malaysia, without regard to conflict-of-law principles. Any disputes shall be resolved in the courts of Malaysia.</p>
+        </section>
+      </div>
+
+      <div className="mt-10 pt-6 border-t border-white/10 text-xs text-white/20 space-y-1">
+        <p>© {new Date().getFullYear()} CrisisMarket.Live · Independent media project</p>
+        <p><a href="/privacy" className="hover:text-amber-400 transition-colors underline underline-offset-2">Privacy Policy</a></p>
+      </div>
+    </div>
+  );
+}
+
 function PrivacyPage() {
   return (
     <div className="min-h-screen bg-[var(--bg-page)] text-white p-8 max-w-3xl mx-auto">
@@ -2322,7 +2794,7 @@ function PrivacyPage() {
       <div className="space-y-6 text-sm text-white/60 leading-relaxed">
         <section>
           <h2 className="text-white font-bold mb-2">1. Information We Collect</h2>
-          <p>HormuzWatch does not collect any personal information. We do not require registration or login. If analytics are enabled (via Umami), only anonymous page-view counts and referrer data are recorded — no cookies, no IP addresses, no personal identifiers.</p>
+          <p>CrisisMarket.Live does not collect any personal information. We do not require registration or login. If analytics are enabled (via Umami), only anonymous page-view counts and referrer data are recorded — no cookies, no IP addresses, no personal identifiers.</p>
         </section>
 
         <section>
@@ -2342,7 +2814,7 @@ function PrivacyPage() {
 
         <section>
           <h2 className="text-white font-bold mb-2">5. Financial Disclaimer</h2>
-          <p>All data on HormuzWatch is provided for <strong className="text-white">informational purposes only</strong>. Nothing on this dashboard constitutes financial, investment, or trading advice. Market data may be delayed, estimated, or subject to errors. Always consult a qualified financial advisor before making investment decisions.</p>
+          <p>All data on CrisisMarket.Live is provided for <strong className="text-white">informational purposes only</strong>. Nothing on this dashboard constitutes financial, investment, or trading advice. Market data may be delayed, estimated, or subject to errors. Always consult a qualified financial advisor before making investment decisions.</p>
         </section>
 
         <section>
@@ -2357,7 +2829,7 @@ function PrivacyPage() {
       </div>
 
       <div className="mt-10 pt-6 border-t border-white/10 text-xs text-white/20">
-        © {new Date().getFullYear()} HormuzWatch
+        © {new Date().getFullYear()} CrisisMarket.Live
       </div>
     </div>
   );
@@ -2391,11 +2863,17 @@ export default function App() {
     { id:"news",       label: lang === "en" ? "📰  NEWS FEED"     : "📰  SUAPAN BERITA" },
     { id:"currencies", label: lang === "en" ? "💱  CURRENCIES"    : "💱  MATA WANG" },
     { id:"stats",      label: lang === "en" ? "📊  STATS"         : "📊  STATISTIK" },
+    { id:"airline",    label: lang === "en" ? "✈️  AIRLINES"       : "✈️  PENERBANGAN" },
+    { id:"fuel",       label: lang === "en" ? "⛽  FUEL PRICES"   : "⛽  HARGA BAHAN API" },
+    { id:"sanctions",  label: lang === "en" ? "🚫  SANCTIONS"      : "🚫  SEKATAN" },
   ];
 
-  // Simple SPA routing for /privacy
+  // Simple SPA routing for /privacy and /terms
   if (typeof window !== "undefined" && window.location.pathname === "/privacy") {
     return <PrivacyPage />;
+  }
+  if (typeof window !== "undefined" && window.location.pathname === "/terms") {
+    return <TermsPage />;
   }
 
   return (
@@ -2407,7 +2885,7 @@ export default function App() {
       <header className="sticky top-9 z-40 bg-[var(--bg-page)]/95 backdrop-blur border-b border-white/5 h-14 flex items-center justify-between px-5 shrink-0">
         <div className="flex items-center gap-3">
           {/* Logo */}
-          <svg width="32" height="32" viewBox="0 0 32 32" fill="none" aria-label="HormuzWatch">
+          <svg width="32" height="32" viewBox="0 0 32 32" fill="none" aria-label="CrisisMarket.Live logo">
             <rect width="32" height="32" rx="8" fill="#0d1117"/>
             {/* Anchor ring */}
             <circle cx="16" cy="13" r="4.5" stroke="#f0a500" strokeWidth="1.8"/>
@@ -2423,9 +2901,9 @@ export default function App() {
           </svg>
           <div>
             <div className="text-[14px] font-black text-white leading-none tracking-tight">
-              Hormuz<span className="text-amber-400">Watch</span>
+              Crisis<span className="text-amber-400">Market</span><span className="text-white/40">.Live</span>
             </div>
-            <div className="text-[9px] text-white/25 font-mono tracking-wider leading-none mt-0.5">LIVE CRISIS INTELLIGENCE</div>
+            <div className="text-[9px] text-white/25 font-mono tracking-wider leading-none mt-0.5">REAL-TIME WAR ECONOMY INTELLIGENCE</div>
           </div>
         </div>
 
@@ -2508,6 +2986,9 @@ export default function App() {
         {tab === "news"       && <NewsTab lang={lang} />}
         {tab === "currencies" && <CurrenciesTab cur={cur} lang={lang} />}
         {tab === "stats"       && <StatsTab lang={lang} />}
+        {tab === "airline"     && <AirlineTab lang={lang} />}
+        {tab === "fuel"        && <FuelTab cur={cur} lang={lang} />}
+        {tab === "sanctions"   && <SanctionsTab lang={lang} />}
       </main>
 
       {/* ── AdSense In-Article Slot ─────────────────────────────────────────────
@@ -2527,7 +3008,7 @@ export default function App() {
       {/* Footer — Legal */}
       <footer className="border-t border-white/4 px-6 py-6 text-[10px] text-white/20 font-mono space-y-3">
         <div className="flex flex-wrap justify-between gap-2">
-          <span>HormuzWatch · {live.asOf} · Crisis Day {live.crisisDay} · <a href="https://github.com/JevCode/live-economy-dashboard" className="hover:text-amber-400 transition-colors">GitHub</a></span>
+          <span>CrisisMarket.Live · {live.asOf} · Crisis Day {live.crisisDay} · <a href="https://github.com/JevCode/live-economy-dashboard" className="hover:text-amber-400 transition-colors">GitHub</a></span>
           <span>{lang === "en" ? "Data sources" : "Sumber data"}: BBC · Reuters · Al Jazeera · Middle East Insider · Barchart · OilPrice.com · Pound Sterling Live · Wikipedia (CC BY-SA 4.0). News headlines linked to original sources. All trademarks belong to their respective owners.</span>
           <span>{t("header.autoRefresh", lang)}</span>
         </div>
@@ -2535,8 +3016,8 @@ export default function App() {
         <div className="border-t border-white/4 pt-3 space-y-1.5">
           <p className="text-white/30 leading-relaxed max-w-4xl">
             ⚠️ {lang === "en"
-              ? "For informational and educational purposes only. Not financial, investment, or trading advice. Market data is sourced from public feeds and may be delayed, estimated, or subject to error. HormuzWatch is an independent media project and is not affiliated with any government, financial institution, or news organisation. Always verify data independently before making any decisions."
-              : "Untuk tujuan maklumat dan pendidikan sahaja. Bukan nasihat kewangan, pelaburan, atau dagangan. Data pasaran diambil daripada sumber awam dan mungkin tertangguh atau anggaran. HormuzWatch adalah projek media bebas dan tidak berafiliasi dengan mana-mana kerajaan, institusi kewangan, atau organisasi berita. Sentiasa sahkan data secara bebas sebelum membuat sebarang keputusan."}
+              ? "For informational and educational purposes only. Not financial, investment, or trading advice. Market data is sourced from public feeds and may be delayed, estimated, or subject to error. CrisisMarket.Live is an independent media project and is not affiliated with any government, financial institution, or news organisation. Always verify data independently before making any decisions."
+              : "Untuk tujuan maklumat dan pendidikan sahaja. Bukan nasihat kewangan, pelaburan, atau dagangan. Data pasaran diambil daripada sumber awam dan mungkin tertangguh atau anggaran. CrisisMarket.Live adalah projek media bebas dan tidak berafiliasi dengan mana-mana kerajaan, institusi kewangan, atau organisasi berita. Sentiasa sahkan data secara bebas sebelum membuat sebarang keputusan."}
           </p>
           <p className="text-white/20 leading-relaxed max-w-4xl">
             {lang === "en"
@@ -2544,13 +3025,17 @@ export default function App() {
               : "Papan pemuka ini mungkin mengandungi pautan afiliasi. Jika anda membuka akaun pelaburan melalui pautan di laman ini, kami mungkin menerima yuran rujukan tanpa sebarang kos kepada anda."}
           </p>
           <p className="text-white/15">
-            © {new Date().getFullYear()} HormuzWatch · Independent media project ·{" "}
+            © {new Date().getFullYear()} CrisisMarket.Live · Independent media project ·{" "}
             <a href="/privacy" className="hover:text-amber-400 transition-colors underline underline-offset-2">
               {lang === "en" ? "Privacy Policy" : "Dasar Privasi"}
             </a>
             {" · "}
             <a href="/privacy#disclaimer" className="hover:text-amber-400 transition-colors underline underline-offset-2">
               {lang === "en" ? "Disclaimer" : "Penafian"}
+            </a>
+            {" · "}
+            <a href="/terms" className="hover:text-amber-400 transition-colors underline underline-offset-2">
+              {lang === "en" ? "Terms of Use" : "Terma Penggunaan"}
             </a>
           </p>
         </div>

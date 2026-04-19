@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════
-// HORMUZWATCH — MASTER DATA FILE
+// CRISISMARKET.LIVE — MASTER DATA FILE
 // All data: Apr 19, 2026 · Crisis Day 50
 // Sources: TradingEconomics, Yahoo Finance, FreeCurrencyRates
 // ═══════════════════════════════════════════════════
