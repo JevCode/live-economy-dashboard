@@ -221,8 +221,8 @@ function OilTab({ cur, lang }: { cur: string; lang: Lang }) {
       {/* KPI row */}
       <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3">
         <KpiCard label={t("oil.iranCrisis", lang)} value={`Day ${live.crisisDay}`} sub={t("oil.sinceFeb2026", lang)} change={`${pctPreWar} ${t("oil.fromBaseline", lang)}`} changeUp={false} accent="#ef4444" />
-        <KpiCard label={t("oil.brentCrude", lang)} value={fmt(live.brentUSD, cur)} sub={`${t("oil.perBarrel", lang)} · ${live.asOf}`} change={`${live.brentUSD < 95 ? "▼" : "▲"} ${((live.brentUSD - 95.005)/95.005*100).toFixed(1)}% vs Apr 16`} changeUp={false} accent="#f97316" />
-        <KpiCard label={t("oil.wtiCrude", lang)} value={fmt(live.wtiUSD, cur)} sub={t("oil.perBarrel", lang)} change={`${live.wtiUSD < 92.10 ? "▼" : "▲"} ${((live.wtiUSD - 92.10)/92.10*100).toFixed(1)}% vs Apr 16`} changeUp={false} accent="#f97316" />
+        <KpiCard label={t("oil.brentCrude", lang)} value={fmt(live.brentUSD, cur)} sub={`${t("oil.perBarrel", lang)} · ${live.asOf}`} change={`${live.brentUSD < 95 ? "▼" : "▲"} ${((live.brentUSD - 95.005)/95.005*100).toFixed(1)}% vs last week`} changeUp={false} accent="#f97316" />
+        <KpiCard label={t("oil.wtiCrude", lang)} value={fmt(live.wtiUSD, cur)} sub={t("oil.perBarrel", lang)} change={`${live.wtiUSD < 92.10 ? "▼" : "▲"} ${((live.wtiUSD - 92.10)/92.10*100).toFixed(1)}% vs last week`} changeUp={false} accent="#f97316" />
         <KpiCard label={t("oil.peak", lang)} value={fmt(live.brentPeak, cur)} sub={t("oil.iranHitQatar", lang)} change={`${pctFromPeak} ${t("oil.fromPeak", lang)}`} changeUp={false} accent="#8b5cf6" />
         <KpiCard label={t("oil.dxyIndex", lang)} value={`${live.dxy}`} sub={t("oil.dollarBasket", lang)} change="▼ −0.35% today" changeUp={false} accent="#3b82f6" />
         <KpiCard label={t("oil.usdMyrRate", lang)} value={live.usdMyr.toString()} sub={t("oil.midMarketRate", lang)} change={t("oil.ringgitUnderPressure", lang)} changeUp={false} accent="#06b6d4" />
@@ -295,7 +295,7 @@ function OilTab({ cur, lang }: { cur: string; lang: Lang }) {
       {/* Timeline chart */}
       <div className="bg-[var(--bg-card)] border border-white/6 rounded-xl p-6">
         <div className="text-[10px] font-bold tracking-widest text-white/30 mb-1">{t("oil.priceTimeline", lang)}</div>
-        <div className="text-xs text-white/20 mb-5">Feb 27 – Apr 19, 2026 · {t("oil.keyEvents", lang)}</div>
+        <div className="text-xs text-white/20 mb-5">Feb 27 – {live.asOf} · {t("oil.keyEvents", lang)}</div>
         <ResponsiveContainer width="100%" height={240}>
           <AreaChart data={chartData} margin={{ top:10, right:10, left:0, bottom:0 }}>
             <defs>
@@ -346,7 +346,7 @@ function OilTab({ cur, lang }: { cur: string; lang: Lang }) {
         </div>
       </div>
 
-      <p className="text-[10px] text-white/20">{t("oil.sources", lang)}: Brent/WTI — OilPrice.com · Gold — TradingEconomics · DXY — Yahoo Finance · USD/MYR — open.er-api.com (Apr 19, 2026)</p>
+      <p className="text-[10px] text-white/20">{t("oil.sources", lang)}: Brent/WTI — OilPrice.com · Gold — TradingEconomics · DXY — Yahoo Finance · USD/MYR — open.er-api.com ({live.asOf})</p>
       <div className="mt-3 px-3 py-2 bg-amber-500/5 border border-amber-500/10 rounded text-[10px] text-amber-400/50 leading-relaxed">
         ⚠️ {lang === "en"
           ? "For informational purposes only. Not financial or investment advice. Prices may be delayed or estimated. Always verify independently before trading."
@@ -1505,7 +1505,7 @@ function HormuzTab({ lang }: { lang: Lang }) {
         </div>
       </div>
 
-      <p className="text-[10px] text-white/20">Sources: HormuzTracker.com · HormuzStraitMonitor.com · Kpler · Al Jazeera · LSEG · Lloyd's of London · Apr 19, 2026</p>
+      <p className="text-[10px] text-white/20">Sources: HormuzTracker.com · HormuzStraitMonitor.com · Kpler · Al Jazeera · LSEG · Lloyd's of London · {live.asOf}</p>
     </div>
   );
 }
@@ -1538,7 +1538,7 @@ function MarketsTab({ lang }: { lang: Lang }) {
       {/* Global Indices Table */}
       <div className="bg-[var(--bg-card)] border border-white/6 rounded-xl p-6">
         <div className="text-[10px] font-bold tracking-widest text-white/30 mb-1">{t("mkt.globalIndices", lang)}</div>
-        <div className="text-xs text-white/20 mb-4">{t("mkt.indicesDesc", lang)} · Apr 19, 2026</div>
+        <div className="text-xs text-white/20 mb-4">{t("mkt.indicesDesc", lang)} · {live.asOf}</div>
         <div className="overflow-x-auto">
           <table className="w-full text-xs">
             <thead>
@@ -1714,7 +1714,7 @@ function MarketsTab({ lang }: { lang: Lang }) {
         </div>
       </div>
 
-      <p className="text-[10px] text-white/20">Sources: Yahoo Finance · Bloomberg · Reuters · Morningstar · Seeking Alpha · Korean Exchange · LSEG · Apr 19, 2026</p>
+      <p className="text-[10px] text-white/20">Sources: Yahoo Finance · Bloomberg · Reuters · Morningstar · Seeking Alpha · Korean Exchange · LSEG · {live.asOf}</p>
     </div>
   );
 }
@@ -1736,7 +1736,7 @@ function NewsTab({ lang }: { lang: Lang }) {
   const [rssNews, setRssNews] = useState<any[]>([]);
   const [bmNews, setBmNews] = useState<Map<string, { title: string; summary: string }>>(new Map());
   const [bmLoading, setBmLoading] = useState(false);
-  const [loading, setLoading] = useState(false); // show static content immediately; RSS loads on top
+  const [loading, setLoading] = useState(true); // show skeleton until RSS arrives
   const [rssError, setRssError] = useState(false);
   const [lastFetched, setLastFetched] = useState<Date | null>(null);
 
@@ -1807,6 +1807,7 @@ function NewsTab({ lang }: { lang: Lang }) {
     } catch {
       if (isFirst) {
         setRssError(true);
+        setLoading(false);
         setCatFilter("all");
       }
     } finally {
@@ -2966,14 +2967,26 @@ export default function App() {
       </div>
 
       {/* Tabs */}
-      <nav className="sticky top-[88px] z-30 bg-[var(--bg-page)]/95 backdrop-blur border-b border-white/5 flex overflow-x-auto shrink-0">
-        {TABS.map(tabItem => (
-          <button key={tabItem.id} onClick={() => setTab(tabItem.id)}
-            className={`shrink-0 text-[11px] font-bold tracking-widest uppercase px-5 py-3.5 transition-all border-b-2 whitespace-nowrap ${tab === tabItem.id ? "border-amber-400 text-amber-400 bg-amber-500/5" : "border-transparent text-white/30 hover:text-white/60 hover:bg-white/2"}`}>
-            {tabItem.label}
-          </button>
-        ))}
+      <nav className="sticky top-[88px] z-30 bg-[var(--bg-page)]/95 backdrop-blur border-b border-white/5 flex overflow-x-auto shrink-0 scrollbar-hide">
+        {TABS.map(tabItem => {
+          const isNew = ["airline","fuel","sanctions"].includes(tabItem.id);
+          return (
+            <button key={tabItem.id} onClick={() => setTab(tabItem.id)}
+              className={`relative shrink-0 text-[11px] font-bold tracking-widest uppercase px-5 py-3.5 transition-all border-b-2 whitespace-nowrap ${tab === tabItem.id ? "border-amber-400 text-amber-400 bg-amber-500/5" : "border-transparent text-white/30 hover:text-white/60 hover:bg-white/2"}`}>
+              {tabItem.label}
+              {isNew && tab !== tabItem.id && (
+                <span className="absolute top-1.5 right-1.5 text-[8px] font-black bg-emerald-500 text-black px-1 rounded-full leading-tight">NEW</span>
+              )}
+            </button>
+          );
+        })}
       </nav>
+      {/* Scroll hint — shows on mobile so users know there are more tabs */}
+      {tab === "oil" && (
+        <div className="flex items-center justify-end gap-1.5 px-4 py-1 bg-emerald-500/5 border-b border-emerald-500/10">
+          <span className="text-[9px] text-emerald-400/60 font-mono tracking-widest">← SCROLL TABS FOR ✈️ AIRLINES · ⛽ FUEL · 🚫 SANCTIONS →</span>
+        </div>
+      )}
 
       {/* Tab content */}
       <main className="flex-1">

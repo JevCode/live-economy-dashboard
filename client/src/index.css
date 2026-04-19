@@ -72,6 +72,10 @@
 }
 .pulse-dot { animation: pulse-dot 1.6s ease-in-out infinite; }
 
+/* Hide scrollbar but keep scroll functionality */
+.scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+.scrollbar-hide::-webkit-scrollbar { display: none; }
+
 /* Glow effects */
 .glow-gold { box-shadow: 0 0 20px rgba(240,165,0,0.15), 0 0 40px rgba(240,165,0,0.05); }
 .glow-red { box-shadow: 0 0 20px rgba(239,68,68,0.15), 0 0 40px rgba(239,68,68,0.05); }
