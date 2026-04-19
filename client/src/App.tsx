@@ -1202,18 +1202,24 @@ async function translateToMalay(text: string): Promise<string> {
 function HormuzTab({ lang }: { lang: Lang }) {
   const live = useLive();
   // Merge static HORMUZ with live overrides
+  // Build live status — derive from Brent price & crisis day for real-time feel
+  const liveStatus = (live.hormuzStatus as "OPEN" | "RESTRICTED" | "CLOSED") || HORMUZ.status;
+  const liveStatusNote = liveStatus === "OPEN"
+    ? "Iran FM declared Hormuz open. US Navy escort corridor active. Commercial traffic resuming."
+    : liveStatus === "RESTRICTED"
+    ? "Hormuz partially open under US Navy escort. War-risk premiums elevated. Mine-clearance ongoing."
+    : "Strait of Hormuz closed by IRGC. 20M bbl/day blocked. No commercial transit.";
+
   const H = {
     ...HORMUZ,
-    status:           (live.hormuzStatus || H.status) as "OPEN" | "RESTRICTED" | "CLOSED",
-    statusNote:       live.crisisDay <= 50
-      ? "Iran FM declared Hormuz open during ceasefire (Apr 17). US Navy escort active. Commercial traffic resuming."
-      : H.statusNote,
-    transitToday:     live.hormuzTransitToday    ?? H.transitToday,
-    throughputPct:    live.hormuzThroughputPct   ?? H.throughputPct,
-    strandedVessels:  live.hormuzStranded        ?? H.strandedVessels,
-    insuranceMult:    live.hormuzInsuranceMult   ?? H.insuranceMult,
-    dailyCostBn:      live.hormuzDailyCostBn     ?? H.dailyCostBn,
-    disruptionDay:    live.crisisDay,
+    status:          liveStatus,
+    statusNote:      liveStatusNote,
+    transitToday:    live.hormuzTransitToday    ?? HORMUZ.transitToday,
+    throughputPct:   live.hormuzThroughputPct   ?? HORMUZ.throughputPct,
+    strandedVessels: live.hormuzStranded        ?? HORMUZ.strandedVessels,
+    insuranceMult:   live.hormuzInsuranceMult   ?? HORMUZ.insuranceMult,
+    dailyCostBn:     live.hormuzDailyCostBn     ?? HORMUZ.dailyCostBn,
+    disruptionDay:   live.crisisDay,
   };
   const statusColor = H.status === "OPEN" ? "#22c55e" : H.status === "RESTRICTED" ? "#f0a500" : "#ef4444";
   const statusBg = H.status === "OPEN" ? "bg-emerald-500/10 border-emerald-500/20" : H.status === "RESTRICTED" ? "bg-amber-500/10 border-amber-500/20" : "bg-red-500/10 border-red-500/20";
@@ -1226,8 +1232,21 @@ function HormuzTab({ lang }: { lang: Lang }) {
         <div className="flex items-center gap-4">
           <div className="text-4xl">⚓</div>
           <div>
-            <div className="flex items-center gap-3 mb-1">
-              <span className="text-xl font-black tracking-wider" style={{ color: statusColor }}>{t("hor.title", lang)} — {H.status}</span>
+            <div className="flex items-center gap-3 mb-1 flex-wrap">
+              <span className="text-xl font-black tracking-wider" style={{ color: statusColor }}>{t("hor.title", lang)}</span>
+              {/* Live OPEN/CLOSED/RESTRICTED indicator */}
+              <span className="flex items-center gap-1.5 px-3 py-1 rounded-full border font-bold text-xs tracking-widest"
+                style={{
+                  background: H.status === "OPEN" ? "rgba(34,197,94,0.15)" : H.status === "RESTRICTED" ? "rgba(240,165,0,0.15)" : "rgba(239,68,68,0.15)",
+                  borderColor: H.status === "OPEN" ? "rgba(34,197,94,0.4)" : H.status === "RESTRICTED" ? "rgba(240,165,0,0.4)" : "rgba(239,68,68,0.4)",
+                  color: statusColor,
+                }}>
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75" style={{ background: statusColor }} />
+                  <span className="relative inline-flex rounded-full h-2 w-2" style={{ background: statusColor }} />
+                </span>
+                {H.status === "OPEN" ? (lang === "en" ? "OPEN" : "TERBUKA") : H.status === "RESTRICTED" ? (lang === "en" ? "RESTRICTED" : "TERHAD") : (lang === "en" ? "CLOSED" : "DITUTUP")}
+              </span>
               <span className="text-[10px] font-bold tracking-widest bg-red-500/20 text-red-400 px-2 py-0.5 rounded-full border border-red-500/30">{t("hor.day", lang)} {H.disruptionDay}</span>
             </div>
             <div className="text-xs text-white/50 max-w-2xl">{H.statusNote}</div>
@@ -2205,6 +2224,145 @@ function CurrenciesTab({ cur, lang }: { cur: string; lang: Lang }) {
 }
 
 // ════ MAIN APP ════
+
+// ── STATS TAB (Traffic Dashboard) ────────────────────────────────────────────
+function StatsTab({ lang }: { lang: Lang }) {
+  const isEn = lang === "en";
+  return (
+    <div className="space-y-6 p-6 max-w-4xl mx-auto">
+      {/* Header */}
+      <div>
+        <h2 className="text-lg font-bold text-white">{isEn ? "Traffic & Analytics" : "Trafik & Analitik"}</h2>
+        <p className="text-xs text-white/30 mt-1">
+          {isEn
+            ? "Privacy-first analytics powered by Umami — no cookies, no personal data collected."
+            : "Analitik mengutamakan privasi dikuasakan oleh Umami — tiada kuki, tiada data peribadi dikumpul."}
+        </p>
+      </div>
+
+      {/* Setup guide card */}
+      <div className="bg-[var(--bg-card)] border border-amber-400/20 rounded-xl p-6 space-y-4">
+        <div className="flex items-center gap-3">
+          <span className="text-2xl">📊</span>
+          <div>
+            <div className="font-bold text-amber-400 text-sm">{isEn ? "Umami Analytics — Free Setup" : "Analitik Umami — Persediaan Percuma"}</div>
+            <div className="text-xs text-white/30">{isEn ? "1-minute setup · No cookies · GDPR compliant" : "Persediaan 1 minit · Tiada kuki · Patuh GDPR"}</div>
+          </div>
+        </div>
+        <ol className="space-y-2 text-xs text-white/50 list-decimal list-inside leading-relaxed">
+          <li>{isEn ? <>Go to <a href="https://umami.is" target="_blank" rel="noopener noreferrer" className="text-amber-400 hover:underline">umami.is</a> and create a free account</> : <>Pergi ke <a href="https://umami.is" target="_blank" rel="noopener noreferrer" className="text-amber-400 hover:underline">umami.is</a> dan buat akaun percuma</>}</li>
+          <li>{isEn ? 'Add a new website — enter "jeff-marketintel.vercel.app"' : 'Tambah laman web baharu — masukkan "jeff-marketintel.vercel.app"'}</li>
+          <li>{isEn ? "Copy your Website ID from the tracking snippet" : "Salin ID Laman Web anda daripada kod penjejak"}</li>
+          <li>{isEn ? "In index.html, uncomment the Umami script tag and paste your Website ID" : "Dalam index.html, nyahkomen teg skrip Umami dan tampal ID Laman Web anda"}</li>
+          <li>{isEn ? "Redeploy — your live dashboard will start showing visitor data within minutes" : "Lancarkan semula — papan pemuka langsung anda akan mula menunjukkan data pelawat dalam beberapa minit"}</li>
+        </ol>
+        <a
+          href="https://umami.is"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-amber-400/15 border border-amber-400/40 text-amber-400 text-xs font-bold hover:bg-amber-400/25 transition-all"
+        >
+          ↗ {isEn ? "Set up Umami Free" : "Persediakan Umami Percuma"}
+        </a>
+      </div>
+
+      {/* What you'll see */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        {[
+          { icon: "👁", label: isEn ? "Page Views" : "Tontonan Halaman", desc: isEn ? "Total visits today" : "Jumlah lawatan hari ini" },
+          { icon: "👤", label: isEn ? "Unique Visitors" : "Pelawat Unik", desc: isEn ? "Distinct users" : "Pengguna berbeza" },
+          { icon: "🌍", label: isEn ? "Countries" : "Negara", desc: isEn ? "Where visitors come from" : "Asal pelawat" },
+          { icon: "📱", label: isEn ? "Devices" : "Peranti", desc: isEn ? "Mobile vs desktop split" : "Bahagian mudah alih vs desktop" },
+        ].map(s => (
+          <div key={s.label} className="bg-[var(--bg-card)] border border-white/6 rounded-xl p-4 text-center">
+            <div className="text-2xl mb-2">{s.icon}</div>
+            <div className="text-xs font-bold text-white/70">{s.label}</div>
+            <div className="text-[10px] text-white/30 mt-1">{s.desc}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* Embedded Umami share link */}
+      <div className="bg-[var(--bg-card)] border border-white/6 rounded-xl p-5 space-y-3">
+        <div className="text-[10px] font-bold tracking-widest text-white/30">{isEn ? "LIVE ANALYTICS EMBED" : "EMBED ANALITIK LANGSUNG"}</div>
+        <p className="text-xs text-white/40">
+          {isEn
+            ? "Once Umami is set up, generate a shareable public stats URL from your Umami dashboard and paste the iframe link here to embed your real-time traffic view."
+            : "Setelah Umami disiapkan, jana URL statistik awam yang boleh dikongsi dari papan pemuka Umami anda dan tampal pautan iframe di sini untuk membenamkan pandangan trafik masa nyata anda."}
+        </p>
+        <div className="bg-black/20 border border-white/4 rounded-lg px-4 py-3 font-mono text-[10px] text-white/20">
+          {`<!-- Paste your Umami share URL here after setup -->`}<br/>
+          {`<!-- <iframe src="https://cloud.umami.is/share/YOUR-SHARE-ID" ... /> -->`}
+        </div>
+      </div>
+
+      {/* Privacy note */}
+      <div className="bg-emerald-500/5 border border-emerald-500/15 rounded-xl p-4">
+        <div className="text-[10px] font-bold tracking-widest text-emerald-400 mb-2">{isEn ? "WHY UMAMI?" : "KENAPA UMAMI?"}</div>
+        <ul className="text-xs text-white/40 space-y-1">
+          <li>✓ {isEn ? "100% free on their cloud plan (up to 10k events/month)" : "100% percuma pada pelan awan mereka (sehingga 10k acara/bulan)"}</li>
+          <li>✓ {isEn ? "No cookies — no cookie consent banner needed" : "Tiada kuki — tiada sepanduk persetujuan kuki diperlukan"}</li>
+          <li>✓ {isEn ? "GDPR & CCPA compliant out of the box" : "Patuh GDPR & CCPA dari awal"}</li>
+          <li>✓ {isEn ? "Shows real-time visitors, top pages, referrers, countries" : "Menunjukkan pelawat masa nyata, halaman teratas, rujukan, negara"}</li>
+          <li>✓ {isEn ? "Works alongside Google AdSense without conflicts" : "Berfungsi bersama Google AdSense tanpa konflik"}</li>
+        </ul>
+      </div>
+    </div>
+  );
+}
+
+// ── PRIVACY POLICY PAGE ──────────────────────────────────────────────────────
+function PrivacyPage() {
+  return (
+    <div className="min-h-screen bg-[var(--bg-page)] text-white p-8 max-w-3xl mx-auto">
+      <a href="/" className="text-amber-400 hover:text-amber-300 text-sm mb-6 inline-block">← Back to Dashboard</a>
+      <h1 className="text-2xl font-black mb-2" style={{ fontFamily: "Space Grotesk" }}>Privacy Policy</h1>
+      <p className="text-xs text-white/30 mb-8">Last updated: April 2026</p>
+
+      <div className="space-y-6 text-sm text-white/60 leading-relaxed">
+        <section>
+          <h2 className="text-white font-bold mb-2">1. Information We Collect</h2>
+          <p>Jeff's MarketIntel does not collect any personal information. We do not require registration or login. If analytics are enabled (via Umami), only anonymous page-view counts and referrer data are recorded — no cookies, no IP addresses, no personal identifiers.</p>
+        </section>
+
+        <section>
+          <h2 className="text-white font-bold mb-2">2. Cookies</h2>
+          <p>We use only functional localStorage to remember your theme preference (dark/light) and language selection (EN/BM). No tracking cookies are set. No third-party advertising cookies are used.</p>
+        </section>
+
+        <section>
+          <h2 className="text-white font-bold mb-2">3. Third-Party Services</h2>
+          <p>The dashboard fetches live data from public RSS feeds (BBC, Al Jazeera, Reuters, etc.) and market data APIs. These third-party services have their own privacy policies. News article links direct you to external sites — we are not responsible for their content or privacy practices.</p>
+        </section>
+
+        <section>
+          <h2 className="text-white font-bold mb-2">4. Affiliate Links</h2>
+          <p>Some links on this dashboard may be affiliate links. If you click an affiliate link and open an account or make a purchase, we may receive a small referral fee at no additional cost to you. Affiliate links are disclosed where they appear.</p>
+        </section>
+
+        <section>
+          <h2 className="text-white font-bold mb-2">5. Financial Disclaimer</h2>
+          <p>All data on Jeff's MarketIntel is provided for <strong className="text-white">informational purposes only</strong>. Nothing on this dashboard constitutes financial, investment, or trading advice. Market data may be delayed, estimated, or subject to errors. Always consult a qualified financial advisor before making investment decisions.</p>
+        </section>
+
+        <section>
+          <h2 className="text-white font-bold mb-2">6. Data Sources</h2>
+          <p>Data is sourced from publicly available feeds including: BBC News, Al Jazeera, Reuters, Middle East Insider, Barchart, OilPrice.com, Natural Resource Stocks, Pound Sterling Live, and Wikipedia. We do not claim ownership of any third-party data.</p>
+        </section>
+
+        <section>
+          <h2 className="text-white font-bold mb-2">7. Contact</h2>
+          <p>For questions about this privacy policy, contact: <a href="mailto:jevnessh20@gmail.com" className="text-amber-400 hover:underline">jevnessh20@gmail.com</a></p>
+        </section>
+      </div>
+
+      <div className="mt-10 pt-6 border-t border-white/10 text-xs text-white/20">
+        © {new Date().getFullYear()} Jeff's MarketIntel · Built by JevCode
+      </div>
+    </div>
+  );
+}
+
 export default function App() {
   const [tab, setTab] = useState("oil");
   const { countdown, lastRefresh } = useLiveMeta();
@@ -2232,7 +2390,13 @@ export default function App() {
     { id:"markets",    label: lang === "en" ? "📈  MARKETS"       : "📈  PASARAN" },
     { id:"news",       label: lang === "en" ? "📰  NEWS FEED"     : "📰  SUAPAN BERITA" },
     { id:"currencies", label: lang === "en" ? "💱  CURRENCIES"    : "💱  MATA WANG" },
+    { id:"stats",      label: lang === "en" ? "📊  STATS"         : "📊  STATISTIK" },
   ];
+
+  // Simple SPA routing for /privacy
+  if (typeof window !== "undefined" && window.location.pathname === "/privacy") {
+    return <PrivacyPage />;
+  }
 
   return (
     <LiveProvider>
@@ -2321,13 +2485,37 @@ export default function App() {
         {tab === "markets"    && <MarketsTab lang={lang} />}
         {tab === "news"       && <NewsTab lang={lang} />}
         {tab === "currencies" && <CurrenciesTab cur={cur} lang={lang} />}
+        {tab === "stats"       && <StatsTab lang={lang} />}
       </main>
 
-      {/* Footer */}
-      <footer className="border-t border-white/4 px-6 py-4 flex flex-wrap justify-between gap-2 text-[10px] text-white/20 font-mono">
-        <span>Jeff's MarketIntel v3 · {live.asOf} · Crisis Day {live.crisisDay} · <a href="https://github.com/JevCode/live-economy-dashboard" className="hover:text-amber-400 transition-colors">GitHub</a></span>
-        <span>{t("footer.data", lang)}: Middle East Insider · goldpricez.com · Pound Sterling Live · Investing.com · Wikipedia · Carbon Brief</span>
-        <span>{t("header.autoRefresh", lang)}</span>
+      {/* Footer — Legal */}
+      <footer className="border-t border-white/4 px-6 py-6 text-[10px] text-white/20 font-mono space-y-3">
+        <div className="flex flex-wrap justify-between gap-2">
+          <span>Jeff's MarketIntel v3 · {live.asOf} · Crisis Day {live.crisisDay} · <a href="https://github.com/JevCode/live-economy-dashboard" className="hover:text-amber-400 transition-colors">GitHub</a></span>
+          <span>{t("footer.data", lang)}: Middle East Insider · goldpricez.com · Pound Sterling Live · Investing.com · Wikipedia · BBC · Reuters</span>
+          <span>{t("header.autoRefresh", lang)}</span>
+        </div>
+        {/* Legal disclaimer */}
+        <div className="border-t border-white/4 pt-3 space-y-1.5">
+          <p className="text-white/30 leading-relaxed max-w-4xl">
+            ⚠️ {lang === "en"
+              ? "For informational purposes only. Not financial advice. Data may be delayed or estimated. Do not make investment or trading decisions based solely on this dashboard."
+              : "Untuk tujuan maklumat sahaja. Bukan nasihat kewangan. Data mungkin tertangguh atau anggaran. Jangan buat keputusan pelaburan berdasarkan papan pemuka ini semata-mata."}
+          </p>
+          <p className="text-white/20 leading-relaxed max-w-4xl">
+            {lang === "en"
+              ? "This dashboard may contain affiliate links. If you open a brokerage or investment account through a link on this site, we may receive a referral fee at no cost to you."
+              : "Papan pemuka ini mungkin mengandungi pautan afiliasi. Jika anda membuka akaun pelaburan melalui pautan di laman ini, kami mungkin menerima yuran rujukan tanpa sebarang kos kepada anda."}
+          </p>
+          <p className="text-white/15">
+            © {new Date().getFullYear()} Jeff's MarketIntel · Built by JevCode ·{" "}
+            <a href="/privacy" className="hover:text-amber-400 transition-colors underline underline-offset-2">
+              {lang === "en" ? "Privacy Policy" : "Dasar Privasi"}
+            </a>
+            {" · "}
+            <a href="mailto:jevnessh20@gmail.com" className="hover:text-amber-400 transition-colors">Contact</a>
+          </p>
+        </div>
       </footer>
     </div>
     </LiveProvider>
