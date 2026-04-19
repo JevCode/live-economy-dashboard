@@ -4,6 +4,14 @@
 // Sources: TradingEconomics, Yahoo Finance, FreeCurrencyRates
 // ═══════════════════════════════════════════════════
 
+// Crisis day is always computed from today — never hardcoded
+const _warStart = new Date("2026-02-28T00:00:00Z");
+const _today = new Date();
+const _msPerDay = 1000 * 60 * 60 * 24;
+const _computedCrisisDay = Math.floor((_today.getTime() - _warStart.getTime()) / _msPerDay) + 1;
+const _months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+const _asOf = `${_months[_today.getMonth()]} ${_today.getDate()}, ${_today.getFullYear()}`;
+
 export const LIVE = {
   brentUSD: 90.65,
   wtiUSD: 83.85,
@@ -12,9 +20,9 @@ export const LIVE = {
   usdMyr: 3.9539,
   usdAed: 3.6725,
   dxy: 98.23,
-  crisisDay: 50,
+  crisisDay: _computedCrisisDay,
   crisisStart: "2026-02-28",
-  asOf: "Apr 19, 2026",
+  asOf: _asOf,
   brentPeak: 126.0,
   brentPreWar: 65.0,
   goldATH: 5602.22,
