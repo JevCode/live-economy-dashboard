@@ -2251,7 +2251,7 @@ function StatsTab({ lang }: { lang: Lang }) {
         </div>
         <ol className="space-y-2 text-xs text-white/50 list-decimal list-inside leading-relaxed">
           <li>{isEn ? <>Go to <a href="https://umami.is" target="_blank" rel="noopener noreferrer" className="text-amber-400 hover:underline">umami.is</a> and create a free account</> : <>Pergi ke <a href="https://umami.is" target="_blank" rel="noopener noreferrer" className="text-amber-400 hover:underline">umami.is</a> dan buat akaun percuma</>}</li>
-          <li>{isEn ? 'Add a new website — enter "jeff-marketintel.vercel.app"' : 'Tambah laman web baharu — masukkan "jeff-marketintel.vercel.app"'}</li>
+          <li>{isEn ? 'Add a new website — enter "hormuzwatch.vercel.app"' : 'Tambah laman web baharu — masukkan "hormuzwatch.vercel.app"'}</li>
           <li>{isEn ? "Copy your Website ID from the tracking snippet" : "Salin ID Laman Web anda daripada kod penjejak"}</li>
           <li>{isEn ? "In index.html, uncomment the Umami script tag and paste your Website ID" : "Dalam index.html, nyahkomen teg skrip Umami dan tampal ID Laman Web anda"}</li>
           <li>{isEn ? "Redeploy — your live dashboard will start showing visitor data within minutes" : "Lancarkan semula — papan pemuka langsung anda akan mula menunjukkan data pelawat dalam beberapa minit"}</li>
@@ -2322,7 +2322,7 @@ function PrivacyPage() {
       <div className="space-y-6 text-sm text-white/60 leading-relaxed">
         <section>
           <h2 className="text-white font-bold mb-2">1. Information We Collect</h2>
-          <p>Jeff's MarketIntel does not collect any personal information. We do not require registration or login. If analytics are enabled (via Umami), only anonymous page-view counts and referrer data are recorded — no cookies, no IP addresses, no personal identifiers.</p>
+          <p>HormuzWatch does not collect any personal information. We do not require registration or login. If analytics are enabled (via Umami), only anonymous page-view counts and referrer data are recorded — no cookies, no IP addresses, no personal identifiers.</p>
         </section>
 
         <section>
@@ -2342,7 +2342,7 @@ function PrivacyPage() {
 
         <section>
           <h2 className="text-white font-bold mb-2">5. Financial Disclaimer</h2>
-          <p>All data on Jeff's MarketIntel is provided for <strong className="text-white">informational purposes only</strong>. Nothing on this dashboard constitutes financial, investment, or trading advice. Market data may be delayed, estimated, or subject to errors. Always consult a qualified financial advisor before making investment decisions.</p>
+          <p>All data on HormuzWatch is provided for <strong className="text-white">informational purposes only</strong>. Nothing on this dashboard constitutes financial, investment, or trading advice. Market data may be delayed, estimated, or subject to errors. Always consult a qualified financial advisor before making investment decisions.</p>
         </section>
 
         <section>
@@ -2357,7 +2357,7 @@ function PrivacyPage() {
       </div>
 
       <div className="mt-10 pt-6 border-t border-white/10 text-xs text-white/20">
-        © {new Date().getFullYear()} Jeff's MarketIntel
+        © {new Date().getFullYear()} HormuzWatch
       </div>
     </div>
   );
@@ -2407,17 +2407,25 @@ export default function App() {
       <header className="sticky top-9 z-40 bg-[var(--bg-page)]/95 backdrop-blur border-b border-white/5 h-14 flex items-center justify-between px-5 shrink-0">
         <div className="flex items-center gap-3">
           {/* Logo */}
-          <svg width="30" height="30" viewBox="0 0 30 30" fill="none" aria-label="Jeff's MarketIntel">
-            <rect width="30" height="30" rx="7" fill="#0d1117"/>
-            <polyline points="3,21 9,13 15,17 21,7 27,11" stroke="#f0a500" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-            <circle cx="21" cy="7" r="2" fill="#f0a500"/>
-            <line x1="3" y1="25" x2="27" y2="25" stroke="#1e2530" strokeWidth="1"/>
+          <svg width="32" height="32" viewBox="0 0 32 32" fill="none" aria-label="HormuzWatch">
+            <rect width="32" height="32" rx="8" fill="#0d1117"/>
+            {/* Anchor ring */}
+            <circle cx="16" cy="13" r="4.5" stroke="#f0a500" strokeWidth="1.8"/>
+            {/* Anchor top bar */}
+            <line x1="13" y1="13" x2="19" y2="13" stroke="#f0a500" strokeWidth="1.5" strokeLinecap="round"/>
+            {/* Anchor stem */}
+            <line x1="16" y1="8" x2="16" y2="7" stroke="#f0a500" strokeWidth="1.8" strokeLinecap="round"/>
+            <line x1="16" y1="17.5" x2="16" y2="21" stroke="#f0a500" strokeWidth="1.8" strokeLinecap="round"/>
+            {/* Wave base */}
+            <path d="M9 23 Q11.5 21 14 23 Q16.5 25 19 23 Q21.5 21 24 23" stroke="#f0a500" strokeWidth="1.5" strokeLinecap="round" fill="none"/>
+            {/* Live red dot */}
+            <circle cx="26" cy="7" r="2.5" fill="#ef4444"/>
           </svg>
           <div>
-            <div className="text-[13px] font-bold text-white leading-none">
-              Jeff's <span className="text-amber-400">MarketIntel</span>
+            <div className="text-[14px] font-black text-white leading-none tracking-tight">
+              Hormuz<span className="text-amber-400">Watch</span>
             </div>
-            <div className="text-[9px] text-white/25 font-mono tracking-wider leading-none mt-0.5">{t("header.liveEconomy", lang)}</div>
+            <div className="text-[9px] text-white/25 font-mono tracking-wider leading-none mt-0.5">LIVE CRISIS INTELLIGENCE</div>
           </div>
         </div>
 
@@ -2465,6 +2473,20 @@ export default function App() {
         </div>
       </header>
 
+      {/* ── Google AdSense Banner (728×90 leaderboard) ─────────────────────────
+           Replace the inner div with your actual AdSense <ins> tag once approved.
+           AdSense policy: must be live site with real traffic before approval.
+           Sign up: https://adsense.google.com  ────────────────────────────── */}
+      <div id="ad-banner-top" className="w-full flex justify-center items-center bg-black/20 border-b border-white/4 py-1 min-h-[52px]">
+        {/* ADSENSE SLOT — uncomment and replace once approved:
+        <ins className="adsbygoogle"
+          style={{ display:"block", width:"728px", height:"90px" }}
+          data-ad-client="ca-pub-XXXXXXXXXXXXXXXXX"
+          data-ad-slot="XXXXXXXXXX" />
+        */}
+        <span className="text-[9px] text-white/10 font-mono tracking-widest">ADVERTISEMENT</span>
+      </div>
+
       {/* Tabs */}
       <nav className="sticky top-[88px] z-30 bg-[var(--bg-page)]/95 backdrop-blur border-b border-white/5 flex overflow-x-auto shrink-0">
         {TABS.map(tabItem => (
@@ -2488,19 +2510,33 @@ export default function App() {
         {tab === "stats"       && <StatsTab lang={lang} />}
       </main>
 
+      {/* ── AdSense In-Article Slot ─────────────────────────────────────────────
+           Place between content sections. Replace with actual <ins> once approved. */}
+      <div id="ad-inline-mid" className="w-full flex justify-center items-center py-3 border-t border-white/4">
+        {/* ADSENSE SLOT — uncomment and replace once approved:
+        <ins className="adsbygoogle"
+          style={{ display:"block" }}
+          data-ad-client="ca-pub-XXXXXXXXXXXXXXXXX"
+          data-ad-slot="XXXXXXXXXX"
+          data-ad-format="auto"
+          data-full-width-responsive="true" />
+        */}
+        <span className="text-[9px] text-white/10 font-mono tracking-widest">ADVERTISEMENT</span>
+      </div>
+
       {/* Footer — Legal */}
       <footer className="border-t border-white/4 px-6 py-6 text-[10px] text-white/20 font-mono space-y-3">
         <div className="flex flex-wrap justify-between gap-2">
-          <span>Jeff's MarketIntel v3 · {live.asOf} · Crisis Day {live.crisisDay} · <a href="https://github.com/JevCode/live-economy-dashboard" className="hover:text-amber-400 transition-colors">GitHub</a></span>
-          <span>{t("footer.data", lang)}: Middle East Insider · goldpricez.com · Pound Sterling Live · Investing.com · Wikipedia · BBC · Reuters</span>
+          <span>HormuzWatch · {live.asOf} · Crisis Day {live.crisisDay} · <a href="https://github.com/JevCode/live-economy-dashboard" className="hover:text-amber-400 transition-colors">GitHub</a></span>
+          <span>{lang === "en" ? "Data sources" : "Sumber data"}: BBC · Reuters · Al Jazeera · Middle East Insider · Barchart · OilPrice.com · Pound Sterling Live · Wikipedia (CC BY-SA 4.0). News headlines linked to original sources. All trademarks belong to their respective owners.</span>
           <span>{t("header.autoRefresh", lang)}</span>
         </div>
         {/* Legal disclaimer */}
         <div className="border-t border-white/4 pt-3 space-y-1.5">
           <p className="text-white/30 leading-relaxed max-w-4xl">
             ⚠️ {lang === "en"
-              ? "For informational purposes only. Not financial advice. Data may be delayed or estimated. Do not make investment or trading decisions based solely on this dashboard."
-              : "Untuk tujuan maklumat sahaja. Bukan nasihat kewangan. Data mungkin tertangguh atau anggaran. Jangan buat keputusan pelaburan berdasarkan papan pemuka ini semata-mata."}
+              ? "For informational and educational purposes only. Not financial, investment, or trading advice. Market data is sourced from public feeds and may be delayed, estimated, or subject to error. HormuzWatch is an independent media project and is not affiliated with any government, financial institution, or news organisation. Always verify data independently before making any decisions."
+              : "Untuk tujuan maklumat dan pendidikan sahaja. Bukan nasihat kewangan, pelaburan, atau dagangan. Data pasaran diambil daripada sumber awam dan mungkin tertangguh atau anggaran. HormuzWatch adalah projek media bebas dan tidak berafiliasi dengan mana-mana kerajaan, institusi kewangan, atau organisasi berita. Sentiasa sahkan data secara bebas sebelum membuat sebarang keputusan."}
           </p>
           <p className="text-white/20 leading-relaxed max-w-4xl">
             {lang === "en"
@@ -2508,12 +2544,14 @@ export default function App() {
               : "Papan pemuka ini mungkin mengandungi pautan afiliasi. Jika anda membuka akaun pelaburan melalui pautan di laman ini, kami mungkin menerima yuran rujukan tanpa sebarang kos kepada anda."}
           </p>
           <p className="text-white/15">
-            © {new Date().getFullYear()} Jeff's MarketIntel ·{" "}
+            © {new Date().getFullYear()} HormuzWatch · Independent media project ·{" "}
             <a href="/privacy" className="hover:text-amber-400 transition-colors underline underline-offset-2">
               {lang === "en" ? "Privacy Policy" : "Dasar Privasi"}
             </a>
             {" · "}
-<a href="/privacy" className="hover:text-amber-400 transition-colors">{lang === "en" ? "Contact" : "Hubungi"}</a>
+            <a href="/privacy#disclaimer" className="hover:text-amber-400 transition-colors underline underline-offset-2">
+              {lang === "en" ? "Disclaimer" : "Penafian"}
+            </a>
           </p>
         </div>
       </footer>

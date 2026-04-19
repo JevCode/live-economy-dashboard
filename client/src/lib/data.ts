@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════
-// JEFF'S MARKETINTEL v3 — MASTER DATA FILE
+// HORMUZWATCH — MASTER DATA FILE
 // All data: Apr 19, 2026 · Crisis Day 50
 // Sources: TradingEconomics, Yahoo Finance, FreeCurrencyRates
 // ═══════════════════════════════════════════════════
