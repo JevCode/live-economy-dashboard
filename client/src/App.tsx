@@ -2352,12 +2352,12 @@ function PrivacyPage() {
 
         <section>
           <h2 className="text-white font-bold mb-2">7. Contact</h2>
-          <p>For questions about this privacy policy, contact: <a href="mailto:jevnessh20@gmail.com" className="text-amber-400 hover:underline">jevnessh20@gmail.com</a></p>
+          <p>{isEn ? "For questions about this privacy policy, use the contact form linked below." : "Untuk pertanyaan tentang dasar privasi ini, gunakan borang hubungi yang dihubungkan di bawah."}</p>
         </section>
       </div>
 
       <div className="mt-10 pt-6 border-t border-white/10 text-xs text-white/20">
-        © {new Date().getFullYear()} Jeff's MarketIntel · Built by JevCode
+        © {new Date().getFullYear()} Jeff's MarketIntel
       </div>
     </div>
   );
@@ -2508,12 +2508,12 @@ export default function App() {
               : "Papan pemuka ini mungkin mengandungi pautan afiliasi. Jika anda membuka akaun pelaburan melalui pautan di laman ini, kami mungkin menerima yuran rujukan tanpa sebarang kos kepada anda."}
           </p>
           <p className="text-white/15">
-            © {new Date().getFullYear()} Jeff's MarketIntel · Built by JevCode ·{" "}
+            © {new Date().getFullYear()} Jeff's MarketIntel ·{" "}
             <a href="/privacy" className="hover:text-amber-400 transition-colors underline underline-offset-2">
               {lang === "en" ? "Privacy Policy" : "Dasar Privasi"}
             </a>
             {" · "}
-            <a href="mailto:jevnessh20@gmail.com" className="hover:text-amber-400 transition-colors">Contact</a>
+<a href="/privacy" className="hover:text-amber-400 transition-colors">{lang === "en" ? "Contact" : "Hubungi"}</a>
           </p>
         </div>
       </footer>
