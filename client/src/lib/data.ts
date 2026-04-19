@@ -7,8 +7,8 @@
 export const LIVE = {
   brentUSD: 90.65,
   wtiUSD: 83.85,
-  goldOzUSD: 4838.14,
-  goldGramUSD: 155.55,
+  goldOzUSD: 4808.32,
+  goldGramUSD: 154.59,
   usdMyr: 3.9539,
   usdAed: 3.6725,
   dxy: 98.23,
