@@ -295,7 +295,7 @@ function OilTab({ cur, lang }: { cur: string; lang: Lang }) {
       {/* Timeline chart */}
       <div className="bg-[var(--bg-card)] border border-white/6 rounded-xl p-6">
         <div className="text-[10px] font-bold tracking-widest text-white/30 mb-1">{t("oil.priceTimeline", lang)}</div>
-        <div className="text-xs text-white/20 mb-5">Feb 27 – Apr 18, 2026 · {t("oil.keyEvents", lang)}</div>
+        <div className="text-xs text-white/20 mb-5">Feb 27 – Apr 19, 2026 · {t("oil.keyEvents", lang)}</div>
         <ResponsiveContainer width="100%" height={240}>
           <AreaChart data={chartData} margin={{ top:10, right:10, left:0, bottom:0 }}>
             <defs>
@@ -346,7 +346,7 @@ function OilTab({ cur, lang }: { cur: string; lang: Lang }) {
         </div>
       </div>
 
-      <p className="text-[10px] text-white/20">{t("oil.sources", lang)}: Brent/WTI — OilPrice.com · Gold — TradingEconomics · DXY — Yahoo Finance · USD/MYR — open.er-api.com (Apr 18, 2026)</p>
+      <p className="text-[10px] text-white/20">{t("oil.sources", lang)}: Brent/WTI — OilPrice.com · Gold — TradingEconomics · DXY — Yahoo Finance · USD/MYR — open.er-api.com (Apr 19, 2026)</p>
     </div>
   );
 }
@@ -1205,7 +1205,7 @@ function HormuzTab({ lang }: { lang: Lang }) {
   const H = {
     ...HORMUZ,
     status:           (live.hormuzStatus || H.status) as "OPEN" | "RESTRICTED" | "CLOSED",
-    statusNote:       live.crisisDay <= 49
+    statusNote:       live.crisisDay <= 50
       ? "Iran FM declared Hormuz open during ceasefire (Apr 17). US Navy escort active. Commercial traffic resuming."
       : H.statusNote,
     transitToday:     live.hormuzTransitToday    ?? H.transitToday,
@@ -1476,7 +1476,7 @@ function HormuzTab({ lang }: { lang: Lang }) {
         </div>
       </div>
 
-      <p className="text-[10px] text-white/20">Sources: HormuzTracker.com · HormuzStraitMonitor.com · Kpler · Al Jazeera · LSEG · Lloyd's of London · Apr 18, 2026</p>
+      <p className="text-[10px] text-white/20">Sources: HormuzTracker.com · HormuzStraitMonitor.com · Kpler · Al Jazeera · LSEG · Lloyd's of London · Apr 19, 2026</p>
     </div>
   );
 }
@@ -1509,7 +1509,7 @@ function MarketsTab({ lang }: { lang: Lang }) {
       {/* Global Indices Table */}
       <div className="bg-[var(--bg-card)] border border-white/6 rounded-xl p-6">
         <div className="text-[10px] font-bold tracking-widest text-white/30 mb-1">{t("mkt.globalIndices", lang)}</div>
-        <div className="text-xs text-white/20 mb-4">{t("mkt.indicesDesc", lang)} · Apr 18, 2026</div>
+        <div className="text-xs text-white/20 mb-4">{t("mkt.indicesDesc", lang)} · Apr 19, 2026</div>
         <div className="overflow-x-auto">
           <table className="w-full text-xs">
             <thead>
@@ -1685,7 +1685,7 @@ function MarketsTab({ lang }: { lang: Lang }) {
         </div>
       </div>
 
-      <p className="text-[10px] text-white/20">Sources: Yahoo Finance · Bloomberg · Reuters · Morningstar · Seeking Alpha · Korean Exchange · LSEG · Apr 18, 2026</p>
+      <p className="text-[10px] text-white/20">Sources: Yahoo Finance · Bloomberg · Reuters · Morningstar · Seeking Alpha · Korean Exchange · LSEG · Apr 19, 2026</p>
     </div>
   );
 }

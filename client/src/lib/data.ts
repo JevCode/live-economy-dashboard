@@ -1,20 +1,20 @@
 // ═══════════════════════════════════════════════════
 // JEFF'S MARKETINTEL v3 — MASTER DATA FILE
-// All data: Apr 18, 2026 · Crisis Day 49
+// All data: Apr 19, 2026 · Crisis Day 50
 // Sources: TradingEconomics, Yahoo Finance, FreeCurrencyRates
 // ═══════════════════════════════════════════════════
 
 export const LIVE = {
-  brentUSD: 90.38,
-  wtiUSD: 87.50,
-  goldOzUSD: 4833.60,
-  goldGramUSD: 155.41,
-  usdMyr: 3.9525,
+  brentUSD: 90.65,
+  wtiUSD: 83.85,
+  goldOzUSD: 4838.14,
+  goldGramUSD: 155.55,
+  usdMyr: 3.9539,
   usdAed: 3.6725,
   dxy: 98.23,
-  crisisDay: 49,
+  crisisDay: 50,
   crisisStart: "2026-02-28",
-  asOf: "Apr 18, 2026",
+  asOf: "Apr 19, 2026",
   brentPeak: 126.0,
   brentPreWar: 65.0,
   goldATH: 5602.22,
@@ -53,7 +53,8 @@ export const OIL_TIMELINE = [
   { date: "Apr 15", label: "D+46",   brent: 99.04, wti: 97.45, event: "US–Iran talks continue. Brent $99.04 (−0.3%). Gold $4,825 (−0.3%). DXY 98.10. USD/MYR 3.9514.", type: "neutral",  day: 46 },
   { date: "Apr 16", label: "D+47",    brent: 95.005, wti: 92.10,  event: "Brent falls to $95 on US–Iran ceasefire hopes & OPEC+ hike. WTI $92.10. Gold $4,826 (+0.75%). DXY 97.93. USD/MYR 3.9600.", type: "positive", day: 47 },
   { date: "Apr 17", label: "D+48",    brent: 90.38,  wti: 87.50,  event: "Brent plunges 5% to $90 — Iran FM announces Strait of Hormuz fully open during ceasefire. Market relief selloff.",             type: "positive", day: 48 },
-  { date: "Apr 18", label: "TODAY",   brent: 90.38,  wti: 87.50,  event: "Brent holds $90. Gold $4,834 (+0.16%). Hormuz open. DXY 98.23. USD/MYR 3.9525. Crisis Day 49.",                              type: "today",    day: 49 },
+  { date: "Apr 18", label: "D+49",   brent: 90.38,  wti: 87.50,  event: "Brent holds $90. Gold $4,834 (+0.16%). Hormuz open. DXY 98.23. USD/MYR 3.9525. Crisis Day 49.",                              type: "today",    day: 49 },
+  { date: "Apr 19", label: "TODAY",  brent: 90.65,  wti: 83.85,  event: "Brent $90.65. WTI $83.85. Gold $4,838/oz. DXY 98.23. USD/MYR 3.9539. Crisis Day 50.",                                                     type: "today",    day: 50 },
 ];
 
 export const GOLD_TIMELINE = [
@@ -70,6 +71,7 @@ export const GOLD_TIMELINE = [
   { date: "Apr 16", price: 4825.90, note: "Ceasefire hopes; Gold +0.75% to $4,826" },
   { date: "Apr 17", price: 4833.60, note: "Hormuz opens; Gold +0.16% to $4,834" },
   { date: "Apr 18", price: 4833.60, note: "Weekend close; Gold steady $4,834" },
+  { date: "Apr 19", price: 4838.14, note: "Gold ticks up to $4,838" },
 ];
 
 export type Country = {
