@@ -1,22 +1,37 @@
 // ═══════════════════════════════════════════════════
-// JEFF'S MARKETINTEL v3 — i18n TRANSLATIONS
-// EN (English) + BM (Bahasa Melayu)
+// CRISISMARKET.LIVE — i18n TRANSLATIONS
+// 10 languages: EN, BM, AR, ZH, HI, FR, ES, DE, JA, KO, TR, RU
 // ═══════════════════════════════════════════════════
 
-export type Lang = "en" | "bm";
+export type Lang = "en" | "bm" | "ar" | "zh" | "hi" | "fr" | "es" | "de" | "ja" | "ko" | "tr" | "ru";
+
+export const LANGUAGES: { code: Lang; flag: string; name: string; nativeName: string }[] = [
+  { code: "en", flag: "🇺🇸", name: "English",           nativeName: "English" },
+  { code: "bm", flag: "🇲🇾", name: "Bahasa Melayu",     nativeName: "Bahasa Melayu" },
+  { code: "ar", flag: "🇸🇦", name: "Arabic",            nativeName: "العربية" },
+  { code: "zh", flag: "🇨🇳", name: "Chinese",           nativeName: "中文" },
+  { code: "hi", flag: "🇮🇳", name: "Hindi",             nativeName: "हिन्दी" },
+  { code: "fr", flag: "🇫🇷", name: "French",            nativeName: "Français" },
+  { code: "es", flag: "🇪🇸", name: "Spanish",           nativeName: "Español" },
+  { code: "de", flag: "🇩🇪", name: "German",            nativeName: "Deutsch" },
+  { code: "ja", flag: "🇯🇵", name: "Japanese",          nativeName: "日本語" },
+  { code: "ko", flag: "🇰🇷", name: "Korean",            nativeName: "한국어" },
+  { code: "tr", flag: "🇹🇷", name: "Turkish",           nativeName: "Türkçe" },
+  { code: "ru", flag: "🇷🇺", name: "Russian",           nativeName: "Русский" },
+];
 
 const translations = {
   // ── TABS ──
-  "tab.oil": { en: "OIL & ENERGY", bm: "MINYAK & TENAGA" },
-  "tab.gold": { en: "GOLD", bm: "EMAS" },
-  "tab.map": { en: "WORLD MAP", bm: "PETA DUNIA" },
-  "tab.war": { en: "WAR DAMAGE", bm: "KEROSAKAN PERANG" },
-  "tab.news": { en: "NEWS FEED", bm: "SUAPAN BERITA" },
-  "tab.currencies": { en: "CURRENCIES", bm: "MATA WANG" },
+  "tab.oil": { en: "OIL & ENERGY", bm: "MINYAK & TENAGA", ar: "النفط والطاقة", zh: "石油与能源", hi: "तेल और ऊर्जा", fr: "PÉTROLE & ÉNERGIE", es: "PETRÓLEO Y ENERGÍA", de: "ÖL & ENERGIE", ja: "石油・エネルギー", ko: "석유 및 에너지", tr: "PETROL & ENERJİ", ru: "НЕФТЬ И ЭНЕРГИЯ" },
+  "tab.gold": { en: "GOLD", bm: "EMAS", ar: "الذهب", zh: "黄金", hi: "सोना", fr: "OR", es: "ORO", de: "GOLD", ja: "金", ko: "금", tr: "ALTIN", ru: "ЗОЛОТО" },
+  "tab.map": { en: "WORLD MAP", bm: "PETA DUNIA", ar: "خريطة العالم", zh: "世界地图", hi: "विश्व मानचित्र", fr: "CARTE MONDIALE", es: "MAPA MUNDIAL", de: "WELTKARTE", ja: "世界地図", ko: "세계지도", tr: "DÜNYA HARİTASI", ru: "КАРТА МИРА" },
+  "tab.war": { en: "WAR DAMAGE", bm: "KEROSAKAN PERANG", ar: "أضرار الحرب", zh: "战争损失", hi: "युद्ध क्षति", fr: "DOMMAGES DE GUERRE", es: "DAÑOS DE GUERRA", de: "KRIEGSSCHÄDEN", ja: "戦争被害", ko: "전쟁 피해", tr: "SAVAŞ HASARI", ru: "УЩЕРБ ОТ ВОЙНЫ" },
+  "tab.news": { en: "NEWS FEED", bm: "SUAPAN BERITA", ar: "موجز الأخبار", zh: "新闻动态", hi: "समाचार फ़ीड", fr: "FIL D'ACTUALITÉS", es: "NOTICIAS", de: "NACHRICHTEN", ja: "ニュースフィード", ko: "뉴스 피드", tr: "HABER AKIŞI", ru: "НОВОСТИ" },
+  "tab.currencies": { en: "CURRENCIES", bm: "MATA WANG", ar: "العملات", zh: "货币", hi: "मुद्राएँ", fr: "DEVISES", es: "DIVISAS", de: "WÄHRUNGEN", ja: "通貨", ko: "통화", tr: "DÖVİZ", ru: "ВАЛЮТЫ" },
 
   // ── HEADER / NAV ──
-  "header.liveEconomy": { en: "LIVE ECONOMY DASHBOARD v3", bm: "PAPAN PEMUKA EKONOMI LANGSUNG v3" },
-  "header.crisisDay": { en: "CRISIS DAY", bm: "HARI KRISIS" },
+  "header.liveEconomy": { en: "REAL-TIME WAR ECONOMY INTELLIGENCE", bm: "RISIKAN EKONOMI PERANG MASA NYATA", ar: "استخبارات اقتصاد الحرب اللحظية", zh: "实时战争经济情报", hi: "रियल-टाइम युद्ध अर्थव्यवस्था इंटेलिजेंस", fr: "INTELLIGENCE ÉCONOMIQUE DE GUERRE", es: "INTELIGENCIA ECONÓMICA EN TIEMPO REAL", de: "ECHTZEIT-KRIEGSWIRTSCHAFTSINTELLIGENZ", ja: "リアルタイム戦争経済インテリジェンス", ko: "실시간 전쟁 경제 인텔리전스", tr: "GERÇEK ZAMANLI SAVAŞ EKONOMİSİ", ru: "РАЗВЕДКА ВОЕННОЙ ЭКОНОМИКИ" },
+  "header.crisisDay": { en: "CRISIS DAY", bm: "HARI KRISIS", ar: "يوم الأزمة", zh: "危机第", hi: "संकट दिवस", fr: "JOUR DE CRISE", es: "DÍA DE CRISIS", de: "KRISISTAG", ja: "危機日", ko: "위기의 날", tr: "KRİZ GÜNÜ", ru: "ДЕНЬ КРИЗИСА" },
   "header.autoRefresh": { en: "Auto-refreshes daily 08:00 UAE", bm: "Muat semula automatik setiap hari 08:00 UAE" },
 
   // ── TICKER ──
@@ -27,7 +42,7 @@ const translations = {
   "ticker.usdAed": { en: "USD/AED", bm: "USD/AED" },
   "ticker.dxy": { en: "DXY INDEX", bm: "INDEKS DXY" },
   "ticker.goldGram": { en: "GOLD/g 24K", bm: "EMAS/g 24K" },
-  "ticker.crisis": { en: "CRISIS DAY", bm: "HARI KRISIS" },
+  "ticker.crisis": { en: "CRISIS DAY", bm: "HARI KRISIS", ar: "يوم الأزمة", zh: "危机第", hi: "संकट दिवस", fr: "JOUR DE CRISE", es: "DÍA DE CRISIS", de: "KRISISTAG", ja: "危機日", ko: "위기의 날", tr: "KRİZ GÜNÜ", ru: "ДЕНЬ КРИЗИСА" },
   "ticker.ringgitPressure": { en: "Ringgit pressure", bm: "Tekanan Ringgit" },
   "ticker.peggedStable": { en: "Pegged stable", bm: "Tambatan stabil" },
   "ticker.perGram": { en: "per gram", bm: "per gram" },
@@ -35,8 +50,8 @@ const translations = {
 
   // ── OIL TAB ──
   "oil.iranCrisis": { en: "Iran Crisis — Day", bm: "Krisis Iran — Hari" },
-  "oil.brentCrude": { en: "Brent Crude", bm: "Minyak Mentah Brent" },
-  "oil.wtiCrude": { en: "WTI Crude", bm: "Minyak Mentah WTI" },
+  "oil.brentCrude": { en: "Brent Crude", bm: "Minyak Mentah Brent", ar: "خام برنت", zh: "布伦特原油", hi: "ब्रेंट क्रूड", fr: "Pétrole Brent", es: "Crudo Brent", de: "Brent Rohöl", ja: "ブレント原油", ko: "브렌트 원유", tr: "Brent Ham Petrol", ru: "Нефть Brent" },
+  "oil.wtiCrude": { en: "WTI Crude", bm: "Minyak Mentah WTI", ar: "خام WTI", zh: "WTI原油", hi: "WTI क्रूड", fr: "Pétrole WTI", es: "Crudo WTI", de: "WTI Rohöl", ja: "WTI原油", ko: "WTI 원유", tr: "WTI Ham Petrol", ru: "Нефть WTI" },
   "oil.peak": { en: "Peak (Mar 18)", bm: "Puncak (18 Mac)" },
   "oil.dxyIndex": { en: "DXY USD Index", bm: "Indeks DXY USD" },
   "oil.usdMyrRate": { en: "USD / MYR", bm: "USD / MYR" },
@@ -316,9 +331,9 @@ const translations = {
 type TranslationKey = keyof typeof translations;
 
 export function t(key: TranslationKey, lang: Lang): string {
-  const entry = translations[key];
+  const entry = translations[key] as Record<string, string> | undefined;
   if (!entry) return key;
-  return entry[lang] || entry.en;
+  return entry[lang] || entry["en"] || key;
 }
 
 export default translations;

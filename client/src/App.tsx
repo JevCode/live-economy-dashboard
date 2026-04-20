@@ -3,7 +3,8 @@ import { LIVE as LIVE_STATIC, KARATS, OIL_TIMELINE, GOLD_TIMELINE, COUNTRIES, ST
 import { ComposableMap, Geographies, Geography, ZoomableGroup } from "react-simple-maps";
 import { AreaChart, Area, LineChart, Line, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, ReferenceLine } from "recharts";
 import { scaleLinear } from "d3-scale";
-import { t, type Lang } from "./lib/i18n";
+import { t, type Lang, LANGUAGES } from "./lib/i18n";
+import { WORLD_CURRENCIES, FALLBACK_RATES, type Currency } from "./lib/currencies";
 
 // ── Live market context — polls /api/market-data every 15 min ────────────
 type LiveData = typeof LIVE_STATIC;
@@ -90,13 +91,22 @@ function getCountryByIso(iso: string): Country | undefined {
   return COUNTRIES.find(c => c.iso === iso);
 }
 
-function fmt(usd: number, cur: string, decimals = 2, live = LIVE) {
-  const rate = cur === "MYR" ? live.usdMyr : cur === "AED" ? live.usdAed : 1;
+// Dynamic multi-currency formatter
+function fmtCur(usd: number, cur: string, rates: Record<string,number>, decimals = 2): string {
+  const rate = rates[cur] ?? FALLBACK_RATES[cur] ?? 1;
   const val = usd * rate;
-  const symbol = cur === "MYR" ? "RM " : cur === "AED" ? "AED " : "$";
-  if (val >= 1_000_000) return symbol + (val / 1_000_000).toFixed(2) + "M";
-  if (val >= 10_000)    return symbol + val.toLocaleString("en-US", { maximumFractionDigits: 0 });
+  const curData = WORLD_CURRENCIES.find(c => c.code === cur);
+  const symbol = curData ? curData.symbol + " " : cur + " ";
+  if (val >= 1_000_000_000) return symbol + (val / 1_000_000_000).toFixed(2) + "B";
+  if (val >= 1_000_000)     return symbol + (val / 1_000_000).toFixed(2) + "M";
+  if (val >= 10_000)        return symbol + val.toLocaleString("en-US", { maximumFractionDigits: 0 });
   return symbol + val.toLocaleString("en-US", { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
+}
+
+// Legacy fmt() wrapper — passes live rates from context where available
+function fmt(usd: number, cur: string, decimals = 2, live = LIVE): string {
+  const rates: Record<string,number> = { USD:1, MYR: live.usdMyr, AED: live.usdAed, ...FALLBACK_RATES };
+  return fmtCur(usd, cur, rates, decimals);
 }
 
 function pct(val: number, ref: number) {
@@ -196,8 +206,9 @@ function StatPill({ label, value, color = "text-white" }: { label: string; value
 }
 
 // ── OIL TAB ──
-function OilTab({ cur, lang }: { cur: string; lang: Lang }) {
+function OilTab({ cur, lang, fxRates = FALLBACK_RATES }: { cur: string; lang: Lang; fxRates?: Record<string,number> }) {
   const live = useLive();
+  const fmtO = (usd: number, dec = 2) => fmtCur(usd, cur, { USD:1, MYR: live.usdMyr, AED: live.usdAed, ...fxRates }, dec);
   const pctPreWar = pct(live.brentUSD, live.brentPreWar);
   const pctFromPeak = pct(live.brentUSD, live.brentPeak);
 
@@ -221,8 +232,8 @@ function OilTab({ cur, lang }: { cur: string; lang: Lang }) {
       {/* KPI row */}
       <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3">
         <KpiCard label={t("oil.iranCrisis", lang)} value={`Day ${live.crisisDay}`} sub={t("oil.sinceFeb2026", lang)} change={`${pctPreWar} ${t("oil.fromBaseline", lang)}`} changeUp={false} accent="#ef4444" />
-        <KpiCard label={t("oil.brentCrude", lang)} value={fmt(live.brentUSD, cur)} sub={`${t("oil.perBarrel", lang)} · ${live.asOf}`} change={`${live.brentUSD < 95 ? "▼" : "▲"} ${((live.brentUSD - 95.005)/95.005*100).toFixed(1)}% vs last week`} changeUp={false} accent="#f97316" />
-        <KpiCard label={t("oil.wtiCrude", lang)} value={fmt(live.wtiUSD, cur)} sub={t("oil.perBarrel", lang)} change={`${live.wtiUSD < 92.10 ? "▼" : "▲"} ${((live.wtiUSD - 92.10)/92.10*100).toFixed(1)}% vs last week`} changeUp={false} accent="#f97316" />
+        <KpiCard label={t("oil.brentCrude", lang)} value={fmtO(live.brentUSD)} sub={`${t("oil.perBarrel", lang)} · ${live.asOf}`} change={`${live.brentUSD < 95 ? "▼" : "▲"} ${((live.brentUSD - 95.005)/95.005*100).toFixed(1)}% vs last week`} changeUp={false} accent="#f97316" />
+        <KpiCard label={t("oil.wtiCrude", lang)} value={fmtO(live.wtiUSD)} sub={t("oil.perBarrel", lang)} change={`${live.wtiUSD < 92.10 ? "▼" : "▲"} ${((live.wtiUSD - 92.10)/92.10*100).toFixed(1)}% vs last week`} changeUp={false} accent="#f97316" />
         <KpiCard label={t("oil.peak", lang)} value={fmt(live.brentPeak, cur)} sub={t("oil.iranHitQatar", lang)} change={`${pctFromPeak} ${t("oil.fromPeak", lang)}`} changeUp={false} accent="#8b5cf6" />
         <KpiCard label={t("oil.dxyIndex", lang)} value={`${live.dxy}`} sub={t("oil.dollarBasket", lang)} change="▼ −0.35% today" changeUp={false} accent="#3b82f6" />
         <KpiCard label={t("oil.usdMyrRate", lang)} value={live.usdMyr.toString()} sub={t("oil.midMarketRate", lang)} change={t("oil.ringgitUnderPressure", lang)} changeUp={false} accent="#06b6d4" />
@@ -357,8 +368,9 @@ function OilTab({ cur, lang }: { cur: string; lang: Lang }) {
 }
 
 // ── GOLD TAB ──
-function GoldTab({ cur, lang }: { cur: string; lang: Lang }) {
+function GoldTab({ cur, lang, fxRates = FALLBACK_RATES }: { cur: string; lang: Lang; fxRates?: Record<string,number> }) {
   const live = useLive();
+  const fmtG = (usd: number, dec = 2) => fmtCur(usd, cur, { USD:1, MYR: live.usdMyr, AED: live.usdAed, ...fxRates }, dec);
   const chartData = GOLD_TIMELINE.map(item => ({ ...item }));
 
   const CustomTooltip = ({ active, payload, label }: any) => {
@@ -2087,7 +2099,7 @@ function NewsTab({ lang }: { lang: Lang }) {
 }
 
 // ── CURRENCIES TAB ──
-function CurrenciesTab({ cur, lang }: { cur: string; lang: Lang }) {
+function CurrenciesTab({ cur, lang, fxRates = FALLBACK_RATES }: { cur: string; lang: Lang; fxRates?: Record<string,number> }) {
   const live = useLive();
   const [fromCur, setFromCur] = useState("USD");
   const [amount, setAmount] = useState("100");
@@ -2393,7 +2405,7 @@ function AirlineTab({ lang }: { lang: Lang }) {
 }
 
 // ── FUEL PRICE CALCULATOR ─────────────────────────────────────────────────────
-function FuelTab({ cur, lang }: { cur: string; lang: Lang }) {
+function FuelTab({ cur, lang, fxRates = FALLBACK_RATES }: { cur: string; lang: Lang; fxRates?: Record<string,number> }) {
   const live = useLive();
   const isEn = lang === "en";
   const [tankSize, setTankSize] = useState(50);
@@ -2849,8 +2861,17 @@ export default function App() {
       return next;
     });
   }
-  const [cur, setCur] = useState<"USD"|"MYR"|"AED">("USD");
+  const [cur, setCur] = useState<string>("USD");
   const [lang, setLang] = useState<Lang>("en");
+  const [fxRates, setFxRates] = useState<Record<string,number>>(FALLBACK_RATES);
+
+  // Fetch live FX rates on mount (free open.er-api.com, no key needed)
+  useEffect(() => {
+    fetch("https://open.er-api.com/v6/latest/USD")
+      .then(r => r.json())
+      .then(d => { if (d.rates) setFxRates(d.rates); })
+      .catch(() => {}); // silently fall back to static rates
+  }, []);
   const [now] = useState(new Date());
   const live = useLive();
 
@@ -2934,7 +2955,7 @@ export default function App() {
             }
           </button>
 
-          {/* Language dropdown */}
+          {/* Language dropdown — all 12 languages */}
           <div className="relative">
             <select
               value={lang}
@@ -2942,22 +2963,30 @@ export default function App() {
               className="appearance-none bg-white/5 border border-white/10 text-white text-[11px] font-bold tracking-wider rounded-lg pl-3 pr-7 py-1.5 cursor-pointer hover:bg-white/10 transition-all focus:outline-none focus:border-amber-500/50"
               style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23ffffff40' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 8px center' }}
             >
-              <option value="en">🌐 EN — English</option>
-              <option value="bm">🌐 BM — Bahasa Melayu</option>
+              {LANGUAGES.map(l => (
+                <option key={l.code} value={l.code}>{l.flag} {l.nativeName}</option>
+              ))}
             </select>
           </div>
 
-          {/* Currency dropdown */}
+          {/* Currency dropdown — 60+ world currencies */}
           <div className="relative">
             <select
               value={cur}
-              onChange={e => setCur(e.target.value as "USD"|"MYR"|"AED")}
+              onChange={e => setCur(e.target.value)}
               className="appearance-none bg-amber-500/10 border border-amber-500/20 text-amber-400 text-[11px] font-bold tracking-wider rounded-lg pl-3 pr-7 py-1.5 cursor-pointer hover:bg-amber-500/20 transition-all focus:outline-none focus:border-amber-500/50"
               style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23f0a500' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 8px center' }}
             >
-              <option value="USD">💵 USD — US Dollar</option>
-              <option value="MYR">💴 MYR — Malaysian Ringgit</option>
-              <option value="AED">💴 AED — UAE Dirham</option>
+              {(() => {
+                const regions = [...new Set(WORLD_CURRENCIES.map(c => c.region))];
+                return regions.map(region => (
+                  <optgroup key={region} label={region}>
+                    {WORLD_CURRENCIES.filter(c => c.region === region).map(c => (
+                      <option key={c.code} value={c.code}>{c.flag} {c.code} — {c.name}</option>
+                    ))}
+                  </optgroup>
+                ));
+              })()}
             </select>
           </div>
         </div>
@@ -3001,17 +3030,17 @@ export default function App() {
 
       {/* Tab content */}
       <main className="flex-1">
-        {tab === "oil"        && <OilTab cur={cur} lang={lang} />}
-        {tab === "gold"       && <GoldTab cur={cur} lang={lang} />}
+        {tab === "oil"        && <OilTab cur={cur} lang={lang} fxRates={fxRates} />}
+        {tab === "gold"       && <GoldTab cur={cur} lang={lang} fxRates={fxRates} />}
         {tab === "map"        && <WorldMapTab lang={lang} />}
         {tab === "war"        && <WarTab lang={lang} />}
         {tab === "hormuz"     && <HormuzTab lang={lang} />}
         {tab === "markets"    && <MarketsTab lang={lang} />}
         {tab === "news"       && <NewsTab lang={lang} />}
-        {tab === "currencies" && <CurrenciesTab cur={cur} lang={lang} />}
+        {tab === "currencies" && <CurrenciesTab cur={cur} lang={lang} fxRates={fxRates} />}
         {tab === "stats"       && <StatsTab lang={lang} />}
         {tab === "airline"     && <AirlineTab lang={lang} />}
-        {tab === "fuel"        && <FuelTab cur={cur} lang={lang} />}
+        {tab === "fuel"        && <FuelTab cur={cur} lang={lang} fxRates={fxRates} />}
         {tab === "sanctions"   && <SanctionsTab lang={lang} />}
       </main>
 
