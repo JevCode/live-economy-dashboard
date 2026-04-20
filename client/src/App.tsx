@@ -2909,7 +2909,9 @@ export default function App() {
         </div>
 
         <div className="flex items-center gap-3">
-          <div className="hidden md:block text-[10px] font-mono text-white/20">{live.asOf.toUpperCase()}</div>
+          <div className="hidden md:block text-[10px] font-mono text-white/20">
+            {new Date().toLocaleDateString("en-GB", { day:"2-digit", month:"short", year:"numeric" }).toUpperCase()}
+          </div>
           <div className="flex items-center gap-1.5 bg-red-500/10 border border-red-500/20 text-red-400 text-[10px] font-bold tracking-widest px-3 py-1.5 rounded-full">
             <span className="w-1.5 h-1.5 rounded-full bg-red-500 pulse-dot inline-block" />
             {t("header.crisisDay", lang)} {live.crisisDay}
@@ -2920,7 +2922,6 @@ export default function App() {
               {lastRefresh ? `↻ ${countdown}` : "● LIVE"}
             </span>
           </div>
-          {/* Language toggle */}
           {/* Theme toggle */}
           <button
             onClick={toggleTheme}
@@ -2932,22 +2933,32 @@ export default function App() {
               : <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
             }
           </button>
-          <div className="flex bg-white/4 border border-white/6 rounded-lg overflow-hidden">
-            {(["en","bm"] as Lang[]).map(l => (
-              <button key={l} onClick={() => setLang(l)}
-                className={`text-[11px] font-bold px-3 py-1.5 transition-all ${lang === l ? "bg-amber-500 text-black" : "text-white/40 hover:text-white/70"}`}>
-                {l.toUpperCase()}
-              </button>
-            ))}
+
+          {/* Language dropdown */}
+          <div className="relative">
+            <select
+              value={lang}
+              onChange={e => setLang(e.target.value as Lang)}
+              className="appearance-none bg-white/5 border border-white/10 text-white text-[11px] font-bold tracking-wider rounded-lg pl-3 pr-7 py-1.5 cursor-pointer hover:bg-white/10 transition-all focus:outline-none focus:border-amber-500/50"
+              style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23ffffff40' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 8px center' }}
+            >
+              <option value="en">🌐 EN — English</option>
+              <option value="bm">🌐 BM — Bahasa Melayu</option>
+            </select>
           </div>
-          {/* Currency toggle */}
-          <div className="flex bg-white/4 border border-white/6 rounded-lg overflow-hidden">
-            {(["USD","MYR","AED"] as const).map(c => (
-              <button key={c} onClick={() => setCur(c)}
-                className={`text-[11px] font-bold px-3 py-1.5 transition-all ${cur === c ? "bg-amber-500 text-black" : "text-white/40 hover:text-white/70"}`}>
-                {c}
-              </button>
-            ))}
+
+          {/* Currency dropdown */}
+          <div className="relative">
+            <select
+              value={cur}
+              onChange={e => setCur(e.target.value as "USD"|"MYR"|"AED")}
+              className="appearance-none bg-amber-500/10 border border-amber-500/20 text-amber-400 text-[11px] font-bold tracking-wider rounded-lg pl-3 pr-7 py-1.5 cursor-pointer hover:bg-amber-500/20 transition-all focus:outline-none focus:border-amber-500/50"
+              style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23f0a500' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 8px center' }}
+            >
+              <option value="USD">💵 USD — US Dollar</option>
+              <option value="MYR">💴 MYR — Malaysian Ringgit</option>
+              <option value="AED">💴 AED — UAE Dirham</option>
+            </select>
           </div>
         </div>
       </header>

@@ -76,6 +76,13 @@
 .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
 .scrollbar-hide::-webkit-scrollbar { display: none; }
 
+/* Dropdown select dark styling */
+select option {
+  background-color: #0d1117;
+  color: #ffffff;
+  font-weight: 600;
+}
+
 /* Glow effects */
 .glow-gold { box-shadow: 0 0 20px rgba(240,165,0,0.15), 0 0 40px rgba(240,165,0,0.05); }
 .glow-red { box-shadow: 0 0 20px rgba(239,68,68,0.15), 0 0 40px rgba(239,68,68,0.05); }
