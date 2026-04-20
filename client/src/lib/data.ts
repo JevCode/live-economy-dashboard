@@ -1,6 +1,6 @@
 // ═══════════════════════════════════════════════════
 // CRISISMARKET.LIVE — MASTER DATA FILE
-// All data: Apr 19, 2026 · Crisis Day 50
+// All data: Apr 20, 2026 · Crisis Day 51
 // Sources: TradingEconomics, Yahoo Finance, FreeCurrencyRates
 // ═══════════════════════════════════════════════════
 
@@ -14,12 +14,12 @@ const _asOf = `${_months[_today.getMonth()]} ${_today.getDate()}, ${_today.getFu
 
 export const LIVE = {
   brentUSD: 90.65,
-  wtiUSD: 83.85,
+  wtiUSD: 89.01,
   goldOzUSD: 4808.32,
   goldGramUSD: 154.59,
-  usdMyr: 3.9539,
+  usdMyr: 3.9542,
   usdAed: 3.6725,
-  dxy: 98.23,
+  dxy: 98.30,
   crisisDay: _computedCrisisDay,
   crisisStart: "2026-02-28",
   asOf: _asOf,
@@ -63,7 +63,8 @@ export const OIL_TIMELINE = [
   { date: "Apr 17", label: "D+48",    brent: 90.38,  wti: 87.50,  event: "Brent plunges 5% to $90 — Iran FM announces Strait of Hormuz fully open during ceasefire. Market relief selloff.",             type: "positive", day: 48 },
   { date: "Apr 18", label: "D+49",   brent: 90.38,  wti: 87.50,  event: "Brent holds $90. Gold $4,834 (+0.16%). Hormuz open. DXY 98.23. USD/MYR 3.9525. Crisis Day 49.",                              type: "positive", day: 49 },
   { date: "Apr 19", label: `D+50`,   brent: 90.65,  wti: 83.85,  event: "Brent $90.65. WTI $83.85. Gold $4,838/oz. DXY 98.23. USD/MYR 3.9539. Crisis Day 50.",                                                     type: "positive", day: 50 },
-  { date: _asOf,    label: `D+${_computedCrisisDay}`, brent: 90.65, wti: 83.85, event: `Live — Crisis Day ${_computedCrisisDay}. Data refreshes every 10 min.`, type: "today", day: _computedCrisisDay },
+  { date: "Apr 20", label: `D+51`,   brent: 90.65,  wti: 89.01,  event: "Brent $90.65. WTI $89.01. Gold $4,808/oz. DXY 98.30. USD/MYR 3.9542. Crisis Day 51.",                                                     type: "neutral", day: 51 },
+  { date: _asOf,    label: `D+${_computedCrisisDay}`, brent: 90.65, wti: 89.01, event: `Live — Crisis Day ${_computedCrisisDay}. Data refreshes every 10 min.`, type: "today", day: _computedCrisisDay },
 ];
 
 export const GOLD_TIMELINE = [
@@ -81,6 +82,7 @@ export const GOLD_TIMELINE = [
   { date: "Apr 17", price: 4833.60, note: "Hormuz opens; Gold +0.16% to $4,834" },
   { date: "Apr 18", price: 4833.60, note: "Weekend close; Gold steady $4,834" },
   { date: "Apr 19", price: 4838.14, note: "Gold ticks up to $4,838" },
+  { date: "Apr 20", price: 4808.32, note: "Gold at $4,808" },
   { date: _asOf,    price: 4808.32,  note: `Live — updates every 10 min` },
 ];
 

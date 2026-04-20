@@ -377,7 +377,7 @@ function GoldTab({ cur, lang }: { cur: string; lang: Lang }) {
     <div className="space-y-6 p-6">
       {/* KPIs */}
       <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3">
-        <KpiCard label={t("gold.spot24k", lang)} value={fmt(live.goldOzUSD, cur)} sub={t("gold.perTroyOz", lang)} change="▲ +0.75% today" changeUp={true} accent="#f0a500" />
+        <KpiCard label={t("gold.spot24k", lang)} value={fmt(live.goldOzUSD, cur)} sub={t("gold.perTroyOz", lang)} change="▼ -0.62% today" changeUp={true} accent="#f0a500" />
         <KpiCard label={t("gold.perGram24k", lang)} value={fmt(live.goldGramUSD, cur)} sub={t("gold.perGram", lang)} change="▲ +48% year-on-year" changeUp={true} accent="#f0a500" />
         <KpiCard label={t("gold.ath", lang)} value={`$${live.goldATH.toLocaleString()}`} sub={`${live.goldATHDate} (per oz)`} change={`▼ −14.6% ${t("gold.fromATH", lang)}`} changeUp={false} accent="#8b5cf6" />
         <KpiCard label={t("gold.inMyrOz", lang)} value={`RM ${(live.goldOzUSD * live.usdMyr).toLocaleString("en-MY", { maximumFractionDigits:0 })}`} sub={t("gold.perTroyOzShort", lang)} change={t("gold.safeHaven", lang)} changeUp={true} accent="#f0a500" />
@@ -2190,7 +2190,7 @@ function CurrenciesTab({ cur, lang }: { cur: string; lang: Lang }) {
 
       {/* DXY info */}
       <div className="bg-[var(--bg-card)] border-l-2 border-blue-500/60 border border-white/5 rounded-xl px-5 py-4 text-xs text-white/50 leading-relaxed">
-        <span className="text-white/70 font-bold">{t("cur.dxyInfo", lang)}: 98.37 (▲ +0.36% today)</span> — {t("cur.dxyDesc", lang)}
+        <span className="text-white/70 font-bold">{t("cur.dxyInfo", lang)}: 98.30 (▲ +0.12% today)</span> — {t("cur.dxyDesc", lang)}
       </div>
 
       {/* Fill-up calculator */}
