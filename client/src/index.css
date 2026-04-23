@@ -164,7 +164,7 @@ select option {
 }
 
 
-/* ── Light theme ──────────────────────────────────── */
+/* ââ Light theme ââââââââââââââââââââââââââââââââââââ */
 .light {
   --bg-page:    #f0f2f5;
   --bg-card:    #ffffff;
@@ -179,7 +179,7 @@ select option {
   --scrollbar-thumb: rgba(0,0,0,0.15);
 }
 
-/* ── Dark theme (default) ─────────────────────────── */
+/* ââ Dark theme (default) âââââââââââââââââââââââââââ */
 :root, .dark {
   --bg-page:    #070a0f;
   --bg-card:    #0d1117;
@@ -194,7 +194,7 @@ select option {
   --scrollbar-thumb: rgba(255,255,255,0.1);
 }
 
-/* ── Light mode overrides ─────────────────────────────────────────────── */
+/* ââ Light mode overrides âââââââââââââââââââââââââââââââââââââââââââââââ */
 .light body { background: var(--bg-page); }
 
 /* Text legibility */
@@ -262,3 +262,123 @@ select option {
 
 /* Theme toggle button light mode */
 .light button[title*="dark"] { border-color: rgba(0,0,0,0.12) !important; background: rgba(0,0,0,0.05) !important; color: #0d1117 !important; }
+
+
+/* ═══════════════════════════════════════════
+   MOBILE RESPONSIVE — CrisisMarket.Live
+   Touch-friendly, optimized for phones
+   ═══════════════════════════════════════════ */
+
+/* ── TICKER: single line, scrolling ── */
+@media (max-width: 768px) {
+  .ticker-wrap { font-size: 10px; }
+  
+  /* ── HEADER ── */
+  .mast-row { flex-direction: column; gap: 4px; }
+  .mast-title { font-size: 20px; }
+  .mast-pills { flex-wrap: wrap; gap: 4px; }
+  .pill { font-size: 10px; padding: 2px 8px; }
+
+  /* ── NAV TABS: horizontal scroll ── */
+  nav, .nav, [class*="tab-bar"], [class*="tabs-container"] {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    scrollbar-width: none !important;
+    white-space: nowrap !important;
+    flex-wrap: nowrap !important;
+    padding-bottom: 4px;
+  }
+  nav::-webkit-scrollbar,
+  .nav::-webkit-scrollbar { display: none; }
+
+  /* ── NAV BUTTONS: smaller on mobile ── */
+  nav button, .nav button, [class*="tab-btn"], [class*="nav-btn"] {
+    font-size: 10px !important;
+    padding: 6px 10px !important;
+    min-width: auto !important;
+    white-space: nowrap !important;
+  }
+
+  /* ── CARDS GRID: 1 or 2 col ── */
+  .grid-cols-3, .grid-cols-4, .grid-cols-6 { grid-template-columns: repeat(2, 1fr) !important; }
+  .grid-cols-2 { grid-template-columns: 1fr !important; }
+
+  /* ── HERO PRICE ── */
+  [class*="hero-price"], [class*="heroPrice"] { font-size: 32px !important; }
+  [class*="hero-lbl"], [class*="heroLbl"] { font-size: 11px !important; }
+
+  /* ── STAT CARDS ── */
+  [class*="stat-card"], [class*="statCard"], [class*="kpi-card"] {
+    padding: 10px 12px !important;
+  }
+  [class*="stat-val"], [class*="statVal"] { font-size: 18px !important; }
+  [class*="stat-lbl"], [class*="statLbl"] { font-size: 9px !important; }
+
+  /* ── CHARTS ── */
+  .recharts-wrapper, [class*="chart-wrap"] {
+    width: 100% !important;
+    overflow-x: auto;
+  }
+
+  /* ── TABLES: scroll horizontally ── */
+  table, [class*="data-table"] {
+    display: block;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    font-size: 11px;
+  }
+  th, td { padding: 6px 8px !important; white-space: nowrap; }
+
+  /* ── WORLD MAP ── */
+  [class*="map-container"], [class*="MapContainer"] {
+    height: 280px !important;
+  }
+
+  /* ── LANGUAGE + CURRENCY SELECTORS ── */
+  select, [class*="lang-select"], [class*="currency-select"] {
+    font-size: 12px !important;
+    max-width: 130px !important;
+  }
+
+  /* ── HORMUZ STATUS BAR ── */
+  [class*="hormuz-bar"], [class*="status-bar"] {
+    flex-wrap: wrap !important;
+    gap: 6px !important;
+    font-size: 10px !important;
+  }
+
+  /* ── NEWS CARDS ── */
+  [class*="news-card"], [class*="newsCard"] {
+    padding: 10px !important;
+  }
+  [class*="news-title"], [class*="newsTitle"] { font-size: 13px !important; }
+
+  /* ── TOOLTIP / POPUP ── */
+  [class*="tooltip"], [class*="popup"], [class*="modal"] {
+    max-width: 90vw !important;
+    left: 5vw !important;
+    transform: none !important;
+  }
+
+  /* ── GENERAL PADDING ── */
+  main, .main, [class*="panel"], [class*="pnl"] {
+    padding: 8px !important;
+  }
+
+  /* ── HIDE non-essential columns on small screens ── */
+  .hide-mobile { display: none !important; }
+
+  /* ── FONT SIZES ── */
+  body { font-size: 13px; }
+  h1, [class*="section-title"] { font-size: 14px !important; }
+  h2 { font-size: 13px !important; }
+
+  /* ── SCROLL HINT BANNERS ── */
+  [class*="scroll-hint"] { display: block !important; }
+}
+
+@media (max-width: 480px) {
+  .grid-cols-3, .grid-cols-4, .grid-cols-6 { grid-template-columns: 1fr !important; }
+  [class*="hero-price"], [class*="heroPrice"] { font-size: 26px !important; }
+  [class*="map-container"], [class*="MapContainer"] { height: 220px !important; }
+}
